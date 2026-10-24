@@ -202,6 +202,12 @@ expects to find "beside" itself must either ship or be documented as the user's 
 layout is a plugin marketplace (one directory per plugin, each with its skills), which lets people
 install a piece at a time.
 
+**A rewritten example has two more ends than the paragraph you changed.** Grep the whole skill for
+the case's other mentions: a summary line can keep the old domain while its reference file moves to a
+new one, so the case reads in both. And a case moved into an invented domain is no longer measured:
+drop "real", "Evidence:" and kept counts, and label it an illustrative composite. Cold-read the diff
+with a fresh agent before the gates.
+
 ## Stop rule: converge, don't ping-pong
 
 A sync is finished when both sides **behave** the same way — not when neither side has any remaining
