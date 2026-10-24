@@ -1,0 +1,11 @@
+{
+  "name": "secret-guard",
+  "version": "1.0.0",
+  "description": "Redacts secrets from Bash and Read output before they reach the model, using gitleaks plus extra rules.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

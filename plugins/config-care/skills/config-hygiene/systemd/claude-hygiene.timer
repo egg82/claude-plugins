@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the Claude config hygiene sweep monthly
+
+[Timer]
+# Monthly, not weekly: the session-start hook treats a report older than 45 days as a finding, so a
+# weekly schedule can miss six runs before anything says so.
+OnCalendar=monthly
+Persistent=true
+RandomizedDelaySec=15m
+
+[Install]
+WantedBy=timers.target

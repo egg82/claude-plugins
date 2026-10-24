@@ -1,0 +1,11 @@
+{
+  "name": "delegation",
+  "version": "1.0.1",
+  "description": "Subagent fan-outs that stay affordable: briefs, a model named per agent, depth limits, a checkout shared safely with agents and other sessions.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

@@ -1,0 +1,46 @@
+{
+  "_note": "Task briefs. The ONLY per-arm difference is the {{ARM_LINE}} substitution. Never mention benchmarking, comparison, or that this is an experiment -- that is an instruction the agent can act on.",
+  "arm_lines": {
+    "A": "Load the `search-craft` skill before your first web search.",
+    "B": "Load the `search-craft-v2` skill before your first web search.",
+    "C": "Do not load any skill. Use your own judgement."
+  },
+  "brief_template": "You are a LEAF agent: do not spawn subagents, zero Agent tool calls. Do the work yourself.\n\n{{ARM_LINE}}\n\nCAP: at most 12 web searches and at most 10 page fetches. Stay within it.\n\nTASK: {{NEED}}\n\nReport in exactly this format and nothing else:\nANSWER: <the answer in one or two sentences, or the single word UNRESOLVED>\nSOURCE: <the URL you took it from>\nCONFIDENCE: <high|medium|low>",
+  "tasks": [
+    {
+      "id": "T1",
+      "kind": "control-fails",
+      "need": "On a Claude Max plan, when you use Claude Fable 5, does that usage count against BOTH the \"All models\" weekly limit AND the separate model-specific weekly limit, or only the model-specific one? I need an authoritative answer, not an inference from a UI label."
+    },
+    {
+      "id": "T2",
+      "kind": "router-fetch",
+      "need": "Find the canonical published size and SHA256 of the official Debian 12.5 amd64 netinst ISO, as published by Debian."
+    },
+    {
+      "id": "T3",
+      "kind": "genre-target",
+      "need": "Find what independent reviewers actually DID to test umbrella wind resistance -- the test methodology and protocol, not their conclusions or product picks."
+    },
+    {
+      "id": "T4",
+      "kind": "term-of-art",
+      "need": "Determine which cAdvisor metric should be used to monitor container memory in Kubernetes, and why."
+    },
+    {
+      "id": "T5",
+      "kind": "two-entity-relation",
+      "need": "Determine whether a Grafana command-line tool called `gcx` exists, and what its relationship is to `grafanactl`."
+    },
+    {
+      "id": "T6",
+      "kind": "negative-control-expect-tie",
+      "need": "Find the official cert-manager documentation page describing the ACME HTTP01 challenge solver."
+    },
+    {
+      "id": "T7",
+      "kind": "false-premise",
+      "need": "Find out why Grafana renamed its `grafanactl` command-line tool to `grafctl` in 2025, and what the migration path was."
+    }
+  ]
+}

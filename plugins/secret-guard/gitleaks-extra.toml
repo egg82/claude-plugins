@@ -1,0 +1,37 @@
+# Extra gitleaks rules for the secret-redact PostToolUse hook.
+#
+# gitleaks' default rule set was measured against a 15-case corpus of the shapes that
+# actually leak here: it caught 14 with ZERO false positives across 8
+# control cases, including the base64-wrapped PEM that Talos machine configs store
+# cluster PKI in -- the shape that leaked twice in one session. Re-measure against
+# YOUR shapes before trusting that number; the corpus is the part that does not travel.
+#
+# This file exists for the one genuine gap. Keep it that way: every rule added here is
+# a rule that drifts from upstream and that nobody else maintains. Prefer opening an
+# upstream issue over growing this file.
+
+[extend]
+useDefault = true
+
+# GAP 1/1: basic-auth credentials embedded in a URL. gitleaks has no default rule for
+# this, and it is not exotic -- secret stores, registries, S3-compatible object stores
+# and a lot of ordinary internal tooling accept `https://user:pass@host` forms, and they
+# turn up in curl invocations, connection strings and config files.
+#
+# Anchored on `://` and a literal `@` with no whitespace between, so it cannot match
+# ordinary prose containing a colon. The password group is what gets redacted; the
+# scheme, username and host stay readable, because knowing WHICH account leaked is the
+# first thing you need in order to rotate it.
+[[rules]]
+id = "url-basic-auth"
+description = "Credentials embedded in a URL (scheme://user:password@host)"
+regex = '''(?i)\b[a-z][a-z0-9+.-]{1,15}://[^\s:/?#\[\]@"']{1,64}:([^\s/?#\[\]@"']{6,})@'''
+secretGroup = 1
+keywords = ["://"]
+
+[rules.allowlist]
+# Placeholders and documentation, which are not credentials and whose redaction would
+# make real docs unreadable. Matching here suppresses the finding.
+regexes = [
+  '''(?i)^(?:pass(?:word)?|passwd|secret|token|changeme|example|placeholder|invalid|redacted|user|username|xxx+|\*+|<[^>]*>|\$\{[^}]*\}|%[a-z_]+%)$''',
+]

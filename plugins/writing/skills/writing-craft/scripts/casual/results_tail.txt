@@ -1,0 +1,26 @@
+
+WHICH DIFFERENCES ARE CLEAR (Claude minus HN, 95% interval excludes 0)
+  lower:  sentences starting lowercase (-2.3 points), messages ending without . ! ? (-10 points), messages where the
+          first sentence is more formal than the last (-9.7 points), sentence-length SD (-2.9 words), dictionary
+          misses (-0.8 per 100 words; mostly Claude using fewer product names, see hand check, not a vocabulary
+          finding), semicolons (-0.10 per 100 words; the interval's upper end is -0.00, so borderline).
+  Seventeen metrics were tested, so one or two of the six could be chance; the first four are the solid ones.
+WHICH ARE NOT CLEAR
+  MATTR-25, uncommon-word share, LLM-list words (zero in both groups, so the list does not fire on short
+  replies; the counter returns non-zero on a control string), lowercase "i" (zero in both), em dashes,
+  colons, apostrophe drops, contractions (Claude is higher by 0.4 per 100 words, interval spans 0), acronyms in both
+  cases (zero in both), the mean drift score.
+
+LIMITS
+  - HN is a tech forum, more careful than texts or Discord. HN humans start 97.5% of sentences capitalised, so
+    gaps there are small; a looser casual register would show larger gaps.
+  - One model wrote all Claude replies, in one session, knowing the task was a comparison. It wrote them from the
+    parent text alone and saw only the human reply's word count. Length matching forced several trims and extensions,
+    which can distort how a reply ends. Thread context beyond the parent was not available to either side.
+  - "Outside the 2,000 most frequent words" was not built as stated: no frequency list exists on this host, so
+    the common set is the embedded list plus HN parent-comment words seen twice or more, 828 words in total. The
+    share is relative to that set and its level is not comparable with other studies; the HN-vs-Claude comparison
+    is fair because the set was built from parent comments, which neither side contains.
+  - Sentence splitting is by . ! ? and newlines; lists and code in HN comments blur it. A first word with a capital
+    inside it (iOS, jemalloc-style names) is not counted as a lowercase start. Quoted lines (>) and URLs are removed.
+  - Dictionary: /usr/share/dict/words (present). Its misses are mostly names and newer words, per the hand check.

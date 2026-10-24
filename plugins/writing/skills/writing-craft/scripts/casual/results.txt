@@ -1,0 +1,80 @@
+CASUAL REGISTER: HN human replies vs Claude replies
+
+Question: is Claude's casual writing "too well-educated" (wider vocabulary, tidier capitalisation and punctuation,
+no drift within a message)?
+
+Answer in one paragraph. On this sample the vocabulary half is not supported: word variety (MATTR), the share of
+uncommon words and contraction use do not differ clearly between HN humans and Claude. The tidiness half is
+supported, with a small absolute size because HN commenters are themselves tidy: Claude almost never starts a
+sentence lowercase (0.25% vs 2.5%), never ends a message without terminal punctuation (0% vs 10%), never gets
+sloppier from the first sentence to the last (0% vs 9.7% of 3+ sentence messages), uses fewer semicolons, and varies
+sentence length less (SD 6.4 vs 9.4 words). HN is a careful forum, so the baseline understates how casual casual
+can be.
+
+Method and data: human.jsonl (100 HN reply comments, 2015-2019, 25-150 words, parent a comment, seeded sampling
+by fetch_hn.py), claude.jsonl (one reply per parent, written before seeing the human reply, each within +-20% of the
+human reply's word count; build_claude.py joins replies/*.txt), measure.py (stdlib; run with --results to rebuild
+this file).
+
+How to read the table: HN and Claude are the pooled values (ratios of sums, or means over messages where
+the metric is per message). Each difference has a bootstrap 95% interval. "CLEAR" means the interval excludes 0;
+"not clear" means it does not, which is not evidence of no difference at n=100.
+
+
+N messages: HN human 100, Claude 100
+  HN human     words/msg mean 61.2 median 52; MATTR defined for 98 msgs; drift defined for 72 msgs
+  Claude       words/msg mean 62.3 median 55; MATTR defined for 96 msgs; drift defined for 93 msgs
+common-word set: 828 words (283 embedded + 545 from HN parent comments seen 2+ times); target 2,000, so the HN-parent part is smaller than a true top-2,000 list and the rare-word share is relative to it.
+dictionary: /usr/share/dict/words (462980 words)
+Quoted lines (starting >) and URLs are removed before measuring. Intervals: bootstrap 95%, 1000 resamples, seed 7; HN-vs-Claude resamples pairs together.
+
+metric                                                               HN   Claude | Claude-HN [95%]        verdict
+MATTR-25 (msgs with >=25 words)                                    0.91     0.92 | 0.01 [-0.00, 0.02]     not clear
+words outside common set, % of words                              27.61    27.74 | 0.12 [-1.77, 1.96]     not clear
+LLM-list words per 100 words                                       0.00     0.00 | 0.00 [0.00, 0.00]      not clear
+sentences starting lowercase, %                                    2.50     0.25 | -2.25 [-4.81, -0.26]   CLEAR
+msgs with any lowercase sentence start, %                          6.00     1.00 | -5.00 [-10.00, 0.00]   not clear
+msgs with lowercase 'i', %                                         0.00     0.00 | 0.00 [0.00, 0.00]      not clear
+msgs with acronym in both cases, %                                 0.00     0.00 | 0.00 [0.00, 0.00]      not clear
+msgs ending without . ! ?, %                                      10.00     0.00 | -10.00 [-16.00, -5.00] CLEAR
+em dashes per 100 words                                            0.03     0.00 | -0.03 [-0.08, 0.00]    not clear
+semicolons per 100 words                                           0.11     0.02 | -0.10 [-0.21, -0.00]   CLEAR
+colons per 100 words                                               0.36     0.19 | -0.17 [-0.38, 0.06]    not clear
+apostrophe drops per 100 words                                     0.02     0.03 | 0.02 [-0.04, 0.08]     not clear
+contractions per 100 words                                         2.52     2.92 | 0.41 [-0.20, 0.95]     not clear
+drift: first minus last sentence formality (0-2), msgs with 3+     0.10    -0.01 | -0.11 [-0.23, 0.01]    not clear
+drift: msgs where first more formal than last, %                   9.72     0.00 | -9.72 [-16.67, -2.99]  CLEAR
+non-dictionary words per 100 words (not hand-corrected)            1.47     0.64 | -0.83 [-1.27, -0.40]   CLEAR
+sentence-length SD within msg (msgs with 2+ sentences)             9.35     6.43 | -2.92 [-4.30, -1.76]   CLEAR
+
+Hand check of non-dictionary tokens (20 sampled per side, seed 7; classified by reading each token):
+  HN human: 2 of 20 flagged tokens were real typos or garbles ('thosed', 'dift'); 18 were product names, brand names, identifiers or newer words missing from the dictionary (Uber, FreeBSD, jemalloc, website, blogs).
+  Claude: 0 of 20 were typos; all were product names, newer words or jargon (ptrace, Mavic, metadata, toolchain, website).
+  reading: Samples are 20 per side, so the typo shares (about 10% and 0%) carry wide error; they say the dictionary flag is mostly jargon, and that real typos are rare on both sides. Not a measured difference.
+
+
+WHICH DIFFERENCES ARE CLEAR (Claude minus HN, 95% interval excludes 0)
+  lower:  sentences starting lowercase (-2.3 points), messages ending without . ! ? (-10 points), messages where the
+          first sentence is more formal than the last (-9.7 points), sentence-length SD (-2.9 words), dictionary
+          misses (-0.8 per 100 words; mostly Claude using fewer product names, see hand check, not a vocabulary
+          finding), semicolons (-0.10 per 100 words; the interval's upper end is -0.00, so borderline).
+  Seventeen metrics were tested, so one or two of the six could be chance; the first four are the solid ones.
+WHICH ARE NOT CLEAR
+  MATTR-25, uncommon-word share, LLM-list words (zero in both groups, so the list does not fire on short
+  replies; the counter returns non-zero on a control string), lowercase "i" (zero in both), em dashes,
+  colons, apostrophe drops, contractions (Claude is higher by 0.4 per 100 words, interval spans 0), acronyms in both
+  cases (zero in both), the mean drift score.
+
+LIMITS
+  - HN is a tech forum, more careful than texts or Discord. HN humans start 97.5% of sentences capitalised, so
+    gaps there are small; a looser casual register would show larger gaps.
+  - One model wrote all Claude replies, in one session, knowing the task was a comparison. It wrote them from the
+    parent text alone and saw only the human reply's word count. Length matching forced several trims and extensions,
+    which can distort how a reply ends. Thread context beyond the parent was not available to either side.
+  - "Outside the 2,000 most frequent words" was not built as stated: no frequency list exists on this host, so
+    the common set is the embedded list plus HN parent-comment words seen twice or more, 828 words in total. The
+    share is relative to that set and its level is not comparable with other studies; the HN-vs-Claude comparison
+    is fair because the set was built from parent comments, which neither side contains.
+  - Sentence splitting is by . ! ? and newlines; lists and code in HN comments blur it. A first word with a capital
+    inside it (iOS, jemalloc-style names) is not counted as a lowercase start. Quoted lines (>) and URLs are removed.
+  - Dictionary: /usr/share/dict/words (present). Its misses are mostly names and newer words, per the hand check.

@@ -1,0 +1,11 @@
+{
+  "name": "linux-workstation",
+  "version": "1.0.0",
+  "description": "Immutable bootc/OSTree RHEL-family workstations: installing software, pinned-version scans, LUKS with TPM unlock, NVIDIA driver failures.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

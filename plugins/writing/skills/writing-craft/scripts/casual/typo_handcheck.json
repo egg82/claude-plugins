@@ -1,0 +1,5 @@
+{
+  "HN human": "2 of 20 flagged tokens were real typos or garbles ('thosed', 'dift'); 18 were product names, brand names, identifiers or newer words missing from the dictionary (Uber, FreeBSD, jemalloc, website, blogs).",
+  "Claude": "0 of 20 were typos; all were product names, newer words or jargon (ptrace, Mavic, metadata, toolchain, website).",
+  "reading": "Samples are 20 per side, so the typo shares (about 10% and 0%) carry wide error; they say the dictionary flag is mostly jargon, and that real typos are rare on both sides. Not a measured difference."
+}

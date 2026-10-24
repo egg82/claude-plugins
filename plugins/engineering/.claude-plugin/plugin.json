@@ -1,0 +1,11 @@
+{
+  "name": "engineering",
+  "version": "1.0.1",
+  "description": "Keep an agent-built codebase well designed: structural gates with held ledgers, tests proven able to fail, bug hunts proven by running them, API contracts.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

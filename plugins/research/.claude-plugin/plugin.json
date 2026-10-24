@@ -1,0 +1,11 @@
+{
+  "name": "research",
+  "version": "1.0.0",
+  "description": "Web searches that find the answer: query construction, reading a bad result set, and a gate that loads the method first.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

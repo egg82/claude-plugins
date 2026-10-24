@@ -1,0 +1,11 @@
+{
+  "name": "game-dev",
+  "version": "1.0.1",
+  "description": "Game design method with evidence labels, and choosing sound you can't hear.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

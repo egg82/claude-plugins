@@ -1,0 +1,11 @@
+{
+  "name": "vetting",
+  "version": "1.0.1",
+  "description": "Decide whether to adopt something: orient in an unfamiliar repo, vet a third-party project, judge a hyped AI tool, compare self-hosted apps.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

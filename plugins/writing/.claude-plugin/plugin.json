@@ -1,0 +1,11 @@
+{
+  "name": "writing",
+  "version": "1.0.1",
+  "description": "Prose that doesn't read as model-written; READMEs, PR descriptions and wiki pages a stranger can read cold.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

@@ -1,0 +1,17 @@
+[Unit]
+Description=Claude config hygiene sweep (writes ~/.claude/.hygiene-report)
+
+[Service]
+Type=oneshot
+# Point ExecStart at YOUR copy of run-sweep.sh (it ships in the config-care plugin's config-hygiene skill
+# directory; the plugin cache path changes on update, so copy the script somewhere stable first).
+# %h/.claude/local/config-hygiene/run-sweep.sh below is only an example location.
+# Repos for the docs checks: Environment=HYGIENE_REPOS="%h/src/one %h/src/two" (see run-sweep.sh header).
+ExecStart=%h/.claude/local/config-hygiene/run-sweep.sh
+# Reports only; the script never edits config.
+#
+# The probe gate is opted into HERE rather than by the script. A `check:` line is shell out of a
+# file's frontmatter, so enabling it is the operator's decision about their own machine — not
+# something a shipped script should self-grant. Safe while every memory file is yours; remove this
+# line if any memory directory becomes shared or writable by others.
+# Environment=HYGIENE_RUN_PROBES=1   # uncomment only when every memory file is yours

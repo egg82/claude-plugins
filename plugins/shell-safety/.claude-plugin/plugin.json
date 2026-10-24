@@ -1,0 +1,11 @@
+{
+  "name": "shell-safety",
+  "version": "1.0.1",
+  "description": "Blocks shell commands whose result would lie silently, lints scripts as they're written, and catches detached work nobody is waiting on. Assumes the Bash tool runs bash.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

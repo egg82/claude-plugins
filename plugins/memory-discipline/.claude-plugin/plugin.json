@@ -1,0 +1,11 @@
+{
+  "name": "memory-discipline",
+  "version": "1.0.0",
+  "description": "Opinionated memory rules: refuses memory notes that are neither user/feedback nor carry a check, catches memory written from Bash, nudges lessons into the right home. Pair with stances/rules/memory-write-discipline.md.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

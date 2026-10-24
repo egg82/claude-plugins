@@ -1,0 +1,55 @@
+{
+  "skill_name": "bug-hunt",
+  "evals": [
+    {
+      "id": 0,
+      "name": "differential-oracle-hunt",
+      "prompt": "can you dig through caronc/apprise and see if there are actual bugs in the notification plugins? not style nits or 'this could be cleaner' stuff, i mean real defects. there's like a hundred of these plugins so i figure something's drifted",
+      "expected_output": "Uses the differential oracle across sibling NotifyBase plugins to find divergence-based defects. Findings reproduced or explicitly marked as code-reading only. Deduped against the apprise tracker. Diagnosis with file:line, not patches. Honest coverage bound.",
+      "files": [],
+      "assertions": [
+        "Every finding cites a specific file and line number",
+        "States explicitly for each finding whether it was executed/reproduced or is code-reading only",
+        "Bounds coverage honestly (says what was swept, deep-read, and not reached) rather than implying total coverage",
+        "Leads with the diagnosis; any suggested fix stays small enough to state in a sentence rather than restructuring a function, class, or system",
+        "Uses the differential oracle: compares sibling plugins against each other and reports divergence, rather than only reading files in isolation for smells",
+        "Checked the apprise issue tracker (open and closed) for duplicates before presenting findings",
+        "Reports zero style/cleanliness nits, per the user's explicit exclusion",
+        "Covers the plugin set by partition rather than sampling a handful of interesting plugins"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "tracker-lead-root-cause",
+      "prompt": "<owner>/<repo> issue #<N> says the scheduler fires for items that aren't eligible yet, so you end up with junk results. nobody's diagnosed it. can you work out what's actually causing that? i want to fix it myself so just point me at it",
+      "expected_output": "SUBSTITUTE BEFORE RUNNING: replace <owner>/<repo> and #<N> with a real, open, undiagnosed issue in a public repo, and reword the one-line symptom to match what that issue reports — the eval tests the method, not this particular bug. Expected: reads the issue, reproduces or bounds the symptom, drives past the symptom to a root cause with file:line, proves causality rather than asserting a plausible story. Respects the explicit request for pointers rather than a patch.",
+      "files": [],
+      "assertions": [
+        "Every finding cites a specific file and line number",
+        "States explicitly for each finding whether it was executed/reproduced or is code-reading only",
+        "Bounds coverage honestly (says what was swept, deep-read, and not reached) rather than implying total coverage",
+        "Leads with the diagnosis; any suggested fix stays small enough to state in a sentence rather than restructuring a function, class, or system",
+        "Actually reads the referenced issue from the tracker rather than working only from the user's paraphrase",
+        "Identifies a root cause (the decision that makes it wrong) rather than restating the symptom or naming only where the failure surfaces",
+        "Proves causality by intervention or explicitly states it could not, instead of asserting a merely plausible story",
+        "Honors the explicit 'I want to fix it myself' request by pointing at the change rather than supplying a rewritten implementation (a one-line suggestion is fine)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "negative-mature-repo",
+      "prompt": "take a look through pallets/itsdangerous and find any bugs in it",
+      "expected_output": "Reports honestly that no solid defects were found rather than manufacturing plausible findings to justify the run. Bounds coverage explicitly. Any finding presented is genuinely reproduced, not speculative.",
+      "files": [],
+      "assertions": [
+        "Every finding cites a specific file and line number",
+        "States explicitly for each finding whether it was executed/reproduced or is code-reading only",
+        "Bounds coverage honestly (says what was swept, deep-read, and not reached) rather than implying total coverage",
+        "Leads with the diagnosis; any suggested fix stays small enough to state in a sentence rather than restructuring a function, class, or system",
+        "Does not manufacture speculative findings to justify the run: either reports no solid defects, or presents only findings that were actually reproduced",
+        "Any hypothesis that failed verification is reported as killed rather than quietly retained as a finding",
+        "Distinguishes real defects from intentional design decisions (checked comments, tests, or the tracker before calling something a bug)"
+      ]
+    }
+  ]
+}

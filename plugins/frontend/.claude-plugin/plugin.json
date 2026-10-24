@@ -1,0 +1,11 @@
+{
+  "name": "frontend",
+  "version": "1.0.1",
+  "description": "Web UIs that look alive without lying, rendered and looked at before they're called done; promo videos of a real site.",
+  "author": {
+    "name": "egg82",
+    "url": "https://github.com/egg82"
+  },
+  "repository": "https://github.com/egg82/claude-plugins",
+  "license": "MIT"
+}

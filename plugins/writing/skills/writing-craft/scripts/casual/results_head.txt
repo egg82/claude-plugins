@@ -1,0 +1,22 @@
+CASUAL REGISTER: HN human replies vs Claude replies
+
+Question: is Claude's casual writing "too well-educated" (wider vocabulary, tidier capitalisation and punctuation,
+no drift within a message)?
+
+Answer in one paragraph. On this sample the vocabulary half is not supported: word variety (MATTR), the share of
+uncommon words and contraction use do not differ clearly between HN humans and Claude. The tidiness half is
+supported, with a small absolute size because HN commenters are themselves tidy: Claude almost never starts a
+sentence lowercase (0.25% vs 2.5%), never ends a message without terminal punctuation (0% vs 10%), never gets
+sloppier from the first sentence to the last (0% vs 9.7% of 3+ sentence messages), uses fewer semicolons, and varies
+sentence length less (SD 6.4 vs 9.4 words). HN is a careful forum, so the baseline understates how casual casual
+can be.
+
+Method and data: human.jsonl (100 HN reply comments, 2015-2019, 25-150 words, parent a comment, seeded sampling
+by fetch_hn.py), claude.jsonl (one reply per parent, written before seeing the human reply, each within +-20% of the
+human reply's word count; build_claude.py joins replies/*.txt), measure.py (stdlib; run with --results to rebuild
+this file).
+
+How to read the table: HN and Claude are the pooled values (ratios of sums, or means over messages where
+the metric is per message). Each difference has a bootstrap 95% interval. "CLEAR" means the interval excludes 0;
+"not clear" means it does not, which is not evidence of no difference at n=100.
+

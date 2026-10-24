@@ -1,0 +1,99 @@
+scripts/flagcheck.py on scripts/controls.jsonl (30 pre-2022 human lines from A Dark Room, Kittens Game, Universal
+Paperclips; 30 Claude Sonnet lines for the same slots), batches of 20, labels hidden, both orders pooled. As of 2026-10-21.
+
+grader                   flatten   TPR (model called machine)   FPR (human called machine)   TPR-FPR   order agreement
+gemini-3.1-pro-preview   no        0.52 (31/60)                 0.10 (6/60)                  +0.42     0.85
+gemini-3.1-pro-preview   yes       0.48 (29/60)                 0.12 (7/60)                  +0.37     0.83
+gpt-5.2                  no        0.15 (9/60)                  0.37 (22/60)                 -0.22     0.88
+gpt-5.2                  yes       0.20 (12/60)                 0.37 (22/60)                 -0.17     0.90
+
+Reading: Gemini 3.1 Pro separates the two halves and keeps doing so with case and final punctuation flattened; usable
+as a screen. GPT-5.2 calls the human lines machine more often than the model lines; unusable as a flagger here.
+What Gemini caught: the model lines it flagged in both orders carried a lyrical turn, quoted as the giveaway
+("the river remembers", "tastes of iron", "nobody asks", "stops asking", "the honest people of us all"); the model lines it
+passed were plain labels and plain log lines ("Bar the door", "Two of the riders do not come back."). In short game
+text the tell is the personification or aphoristic flourish, not the plain sentence.
+Second set (scripts/controls-v2.jsonl: obscure pre-2022 human text, 40 lines per register, half Claude Sonnet lines
+written plainly for the same slots), gemini-3.1-pro-preview, both orders pooled:
+  overall  TPR 0.22  FPR 0.22  (flattened: 0.22 / 0.25)  no discrimination
+  chat     TPR 0.05  FPR 0.07
+  game     TPR 0.07  FPR 0.15
+  prose    TPR 0.68  FPR 0.60  (both halves of amateur fan fiction called machine alike)
+  ui       TPR 0.07  FPR 0.05
+Reading: the first set's signal came from the model half's aphorisms and lyrical turns ("Salt keeps. So do grudges.");
+plainly written Claude lines pass as human, and human lines are flagged at the same rate as model ones. Gemini detects
+the flourish, not the authorship, so it is a check for that one tell, never a general screen for short text. Since the
+human game FPR barely moved between sets (0.10 to 0.15), recognition of famous lines is not needed to explain the first
+result.
+gpt-5.2 on the second set: overall TPR 0.26, FPR 0.39 (TPR-FPR -0.13); chat -0.10, game -0.05, prose -0.28, ui -0.10.
+Neither family separates plainly written Claude lines from obscure human ones in any register.
+Caveat on older evidence: several measured tells elsewhere in this folder were measured on GPT-4o or earlier models;
+treat them as hypotheses for current models until re-measured.
+Flourish set (scripts/flourish/: 40 human lines from pre-1929 Project Gutenberg fiction, 32 obscure / 8 famous;
+40 Claude Sonnet lines per condition for the same slots), gemini-3.1-pro-preview, neutral prompt, both orders pooled:
+  claude-default (natural flourish)            TPR 0.99  FPR 0.01
+  claude-skill (skill rules + 15 exemplars)    TPR 0.81  FPR 0.12
+  claude-period (skill, matched period diction) TPR 0.75 FPR 0.11
+Reading: Claude's default flourish is almost always caught. Writing under the skill lowers the catch rate but leaves it
+far above the human false-positive rate. The quoted giveaways moved from lyrical turns to contrived quirky specifics
+("a dead wife's gloves", "smelled of wet iron", "depth of a spoon", "ate the wreath"): the instruction to be odd and
+concrete became a recognisable tic of its own. Confounds: model lines ran ~10 words longer than the human ones; the
+human lines are period prose (the period condition narrows but does not remove that); self-preference does not apply
+(Gemini grading Claude). Human readers are the next check.
+First of two blind human raters (scripts/quiz_score.py): 20/30; human lines called human 9/10, Claude default
+called machine 6/10, Claude under the skill called machine 5/10 (chance; Gemini caught the same set at 81%). One rater,
+10 items per condition: a hint, not a result.
+Second rater: 26/30; human called human 6/10, Claude default
+caught 10/10, Claude skill caught 10/10. The "wrong"
+human calls were period purple prose judged to be confused metaphor (a flower image whose referent was unclear):
+modern readers read ornate prose as AI whoever wrote it, and the pre-1929 control set is florid, which inflates false
+positives. The human lines called AI were, on a second look, good trap sentences, of the kind models
+imitate. Pre-1919 Gutenberg books are a standard training corpus (PG-19, part of The Pile), so a florid model voice and
+Edwardian purple prose plausibly share ancestry; how heavily any lab weights them is not public. Consequence: old
+public-domain prose is a muddied control for flourish (the model is partly being compared with its own sources), and
+readers conflate "bad prose" with "AI prose". The modern control (scripts/modern/, 2018 Reddit fiction) addresses it.
+Candidate tell from the first rater ("and had"): past perfect in descriptive flourish. Lines containing "had":
+human 9/40 (1.0 per 100 words), Claude-skill 20/40 (1.6), Claude-default 17/40 (1.8). Claude Sonnet, one set of 120
+lines; replicate on another set before treating as established. Of the "had" lines that rater saw, 9 of 12 were Claude's.
+The appended beat (the same rater noticed a tacked-on beat at the very end, as if the model could not stop adding a
+little more): lines whose last sentence ends on a ", and ..." clause: human-test 10/40, claude-default 14/40,
+claude-skill 25/40, round2 budget 25/40, edited 26/40, period-budget 29/40, completion 15/40, exemplars 2/15.
+The skill's ban on closing turns pushed the close into an appended coordinated clause; the completion frame did not.
+Device tags (Gemini 3.1 Pro tagging devices per line, not authorship; scratchpad devtag.py), 40 lines per set:
+                    wry personification  wry sweep  opens on its most poetic phrase
+  human-test               11               3              16
+  claude-default           23               5               0
+  claude-skill              8               8               4
+  round2/completion         3               2               4
+  round2/budget             1               5               2
+  round2/edited             3               1               4
+Lines with a proper name (heuristic capitalised-word count): human 14/40, default 5/40, skill 15/40, completion 4/40,
+budget 2/40, edited 5/40. The skill's exemplars carried names; the round-2 rules did not ask for them.
+Round 2 (every Claude line within 3 words of its paired human line), gemini-3.1-pro-preview, both orders pooled:
+  budget (one quirk at most)        TPR 0.80  FPR 0.05
+  edited (default lines revised)    TPR 0.90  FPR 0.03
+  period-budget                     TPR 0.78  FPR 0.10
+  completion (continue 2 real sentences by the same author)  TPR 0.68  FPR 0.11
+Pangram on 100-word paragraphs, 15 human vs 15 Claude: default caught 14/15, budget 12/15, human false positives 0/15.
+Reading: length matching removed one giveaway and changed little. Rules about which moves to avoid shuffle the tells;
+the edit pass is worst because it keeps the model's sentence shapes. Continuing real human text did best, and also kept
+the appended-beat rate near human (15/40). Nothing tried passes a current grader yet.
+Round 3, old set (generate five continuations per slot, Gemini keeps the most human-reading one, Pangram judges):
+  Gemini mean P(machine): lines selected 0.12 vs random 0.43; paragraphs selected 0.21 vs random 0.57.
+  Pangram on 15 paragraphs: Gemini-selected caught 13/15, random pick 12/15.
+Reading: selection against one grader fools that grader and does not transfer to a stronger one. Gemini keys on
+visible moves (flourish, turns, appended beats); Pangram on something no rewrite strategy tried so far has moved:
+80-93% of Claude paragraphs caught under every strategy, 0/15 human paragraphs flagged.
+Round 3, modern set (scripts/modern/: 2018 r/WritingPrompts human lines and paragraphs, Claude continuations of the
+same two-sentence frames, length-matched):
+  Gemini, lines: default TPR 0.20 / FPR 0.45; Gemini-selected TPR 0.00 / FPR 0.55; random TPR 0.17 / FPR 0.53.
+  Pangram, paragraphs: default 15/15 caught, human 0/15 flagged; Gemini-selected 14/15; random 14/15.
+Reading: against modern amateur prose Gemini cannot tell at all (it flags the human writers' earnest similes more than
+Claude's lines), while Pangram catches Claude paragraphs almost every time on both control sets and under every
+prompting and selection strategy tried. Two tiers: visible style (readers, model graders) can be brought to passing;
+paragraph-level statistical detection by a strong detector has not moved with any prompt-side method.
+Gemini 3.1 Pro drafting the same 15 modern paragraph continuations (temperature 1.0): Pangram caught 14/15. A
+different model family drafting does not get past a strong detector either.
+Earlier open confound (now answered by the second set): the human lines are from well-known games and may be in the graders' training data, so a low FPR could
+be recognition rather than judgement. The test that removes it is human lines no model has seen (fresh lines written
+by a person for the same slots).
