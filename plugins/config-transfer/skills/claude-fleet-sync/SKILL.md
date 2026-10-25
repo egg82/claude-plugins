@@ -84,7 +84,9 @@ path** across hosts (the transports are `$HOME`-relative). Preview any command w
   carries the *scripts*; the registration lives here, and a host holding an unregistered hook
   looks exactly like one whose hook found nothing. Mirrored, not unioned: the same command under
   two matchers would both survive a union and fire twice. A hook registered on a peer but not on
-  the hub stops the mirror and is reported rather than deleted.
+  the hub — or under an event/matcher the hub lacks — stops the mirror and is reported rather than
+  deleted. **A peer whose hook scripts are newer usually re-registered something too**: carry its
+  `hooks` block to the hub before mirroring.
 - **ssh `Host` aliases** — union of `Host` blocks; missing ones appended (own blocks
   and global preamble never overwritten).
 - **toolkit dirs** — auto-discovered `~/<dir>` a skill references (a helper/creds dir a
@@ -223,9 +225,10 @@ commands and `verify`. The hand-reconcile step only matters when content actuall
   it into the hub first.
 - **"The hub is newer" is not evidence the hub is a superset.** A rewrite is a deletion you did not
   notice: condensing a note drops detail, and the peer's older copy is then the only record of what
-  went. So before pushing, diff each diverging file against the peer and **read the lines that would
-  disappear**, not just the ones you added: `diff peer hub | grep '^<'`. Every line should be one you
-  deliberately replaced. Restore anything else. It is the only check that catches your own edits.
+  went, even when every divergence is a same-day hub edit and the mirror looks safe. So before pushing, diff each
+  diverging file against the peer and **read the lines that would disappear**, not just the ones you
+  added: `diff peer hub | grep '^<'`. Every line should be one you deliberately replaced. Restore
+  anything else. This is cheap and it is the only check that catches your own edits.
 - **Deletions don't propagate.** `push` is a union copy and never deletes, so a note or skill you
   *intend* to remove is resurrected from a peer on the next absorb unless you delete it on **every**
   host first. A **rename or move is a delete plus an add**, so it leaves the old path behind on every

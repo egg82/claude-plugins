@@ -22,6 +22,7 @@ turn 40000  > "$TD/small.jsonl"
 turn 250000 > "$TD/quarter.jsonl"
 turn 350000 > "$TD/mid.jsonl"
 turn 480000 > "$TD/big.jsonl"
+{ turn 390000; echo '{"type":"system","subtype":"compact_boundary","compactMetadata":{"preTokens":390000,"postTokens":28000}}'; } > "$TD/compacted.jsonl"
 
 o=$(run TPC-a "$TD/small.jsonl"); check "small context: plain clock line, no nudge" "$o" "out.startswith('[clock]')"
 o=$(run TPC-a "$TD/quarter.jsonl"); check "250k: no nudge" "$o" "out.startswith('[clock]')"
@@ -33,6 +34,7 @@ o=$(run TPC-b "$TD/big.jsonl");   check "past 450k: fires again" "$o" "$isjson a
 check "450k is the HARD tier: asks for the handoff" "$o" "'HANDOFF-' in json.loads(out)['hookSpecificOutput']['additionalContext']"
 o=$(run TPC-c "$TD/big.jsonl");   check "fresh session already past 450k: one nudge" "$o" "$isjson"
 o=$(run TPC-c "$TD/big.jsonl");   check "...and only one" "$o" "out.startswith('[clock]')"
+o=$(run TPC-e "$TD/compacted.jsonl"); check "first prompt after compaction: sized from postTokens, no nudge" "$o" "out.startswith('[clock]')"
 o=$(run TPC-d "$TD/missing.jsonl"); check "missing transcript: plain clock, no error" "$o" "out.startswith('[clock]')"
 
 echo; echo "pass=$pass fail=$fail"; [ "$fail" -eq 0 ]

@@ -89,6 +89,8 @@ null, is a valid answer; do not pad.
   this line into a brief — without xdist `-n` is an argument error, and serial is the only option. Each Bash call finishes within 10 minutes
   (timeout 600000, one test dir per call).
 - Never raise a held count or loosen a check.
+- Memory probes stop at about 300 MB RSS: show growth at two or three small sizes and extrapolate. On a shared
+  host, three hunters plus one probe pushing a server toward 600 MB OOM-killed the orchestrating session.
 - You are a LEAF agent: do not spawn subagents, no forks. Do NOT use `run_in_background`, do NOT
   start a Monitor, do NOT use foreground `sleep`; make blocking calls in small batches.
 - Budget: roughly 2 hours of work; then report with what you have.

@@ -14,6 +14,7 @@ one fails here.
 | **SearXNG + yandex** | anything needing **honoured quotes or `site:`** |
 | **`curl`** | Reddit, Discourse forums, Stack Exchange API, any site with a JSON endpoint |
 | **`gh` / `glab`** | GitHub and GitLab — real APIs beat searching for them |
+| **`repo1.maven.org/maven2/<group/path>/<artifact>/maven-metadata.xml`** | Maven artifact existence and latest version. **Not** `search.maven.org/solrsearch`: its index is stale (it has reported a published artifact NOT FOUND, and year-old versions for others) |
 | **Chrome** | last resort: anti-bot walls and anything needing a login |
 
 **WebSearch's synthesized prose blends sources of different vintages and states the blend

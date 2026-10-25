@@ -95,30 +95,43 @@ def _hooks_to_mirror(host_hooks, hub):
     """Decide what every host's settings.json `hooks` block should become.
 
     Returns (hooks_or_None, orphans, drifted). `None` means DO NOT TOUCH hooks on any host:
-    some host registers a command the hub does not, and mirroring would delete it. Union sync
-    never drops content silently, so that case reports and defers to the operator.
+    some host registers a command the hub does not, or registers one under an event/matcher
+    the hub does not, and mirroring would delete it. Union sync never drops content silently,
+    so that case reports and defers to the operator. A peer that moved a hook to another event
+    (PostCompact -> SessionStart/compact) is a deliberate change the hub has not seen yet, and
+    keying on the command alone once reverted it as "drift".
     """
     if hub is None:
         return None, [], []
     hooks = host_hooks.get(hub) or {}
-    hub_cmds = _hook_cmds(hooks)
-    orphans = sorted({c for hk in host_hooks.values() for c in _hook_cmds(hk)
-                      if c not in hub_cmds})
+    hub_regs = _hook_regs(hooks)
+    orphans = sorted({r for hk in host_hooks.values() for r in _hook_regs(hk)
+                      if r not in hub_regs})
     if orphans:
         return None, orphans, []
     return hooks, [], [h for h, hk in host_hooks.items() if hk != hooks]
 
 
 def _hook_cmds(hooks):
-    """The set of hook commands a settings.json `hooks` block actually registers.
-    Identity is the command, not the matcher — the same script under two matchers is one
-    hook registered two ways, which is drift to correct, not two hooks to keep."""
+    """The set of hook commands a settings.json `hooks` block actually registers (for the count;
+    mirroring decisions key on `_hook_regs`)."""
     out = set()
     for entries in (hooks or {}).values():
         for e in entries or []:
             for hk in e.get("hooks") or []:
                 if hk.get("command"):
                     out.add(hk["command"])
+    return out
+
+
+def _hook_regs(hooks):
+    """Each (event, matcher, command) a `hooks` block registers."""
+    out = set()
+    for event, entries in (hooks or {}).items():
+        for e in entries or []:
+            for hk in e.get("hooks") or []:
+                if hk.get("command"):
+                    out.add((event, e.get("matcher") or "", hk["command"]))
     return out
 
 
@@ -673,8 +686,8 @@ def cmd_jsonmerge(live, skipped, args, dry):
     hooks, orphans, drifted = _hooks_to_mirror(host_hooks, hub)
     if orphans:
         log("⚠ hooks NOT mirrored — registered on a peer but absent from the hub:")
-        for c in orphans:
-            log(f"    {c}")
+        for event, matcher, c in orphans:
+            log(f"    {event} [{matcher or '*'}] {c}")
         log("    add it to the hub's settings.json (or remove it there) and re-run jsonmerge")
     else:
         drifted = [short(h) for h in drifted]

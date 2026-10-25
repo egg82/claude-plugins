@@ -1,6 +1,6 @@
 {
   "name": "continuity",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Survive compaction: the date and time on every prompt, a context-size nudge to write a handoff, a snapshot before compaction and read back after.",
   "author": {
     "name": "egg82",

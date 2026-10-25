@@ -90,6 +90,10 @@ kubectl get storageclass
   kubectl run -it --rm debug --image=nicolaka/netshoot --restart=Never -- bash
   # then: nslookup <svc>.<ns>.svc.cluster.local ; curl <svc>.<ns>:<port>
   ```
+  For a **scripted** probe, don't use `run -i --rm`: the attach races the container, and output printed
+  before it attaches is silently lost ("falling back to streaming logs" sometimes, nothing at other times),
+  so a missing line reads as a result. Run it detached, `kubectl wait --for=jsonpath='{.status.phase}'=Succeeded`,
+  then `kubectl logs`.
 
 ## Node health
 

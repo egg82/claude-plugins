@@ -1,6 +1,6 @@
 {
   "name": "config-care",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Keep a Claude Code setup lean: a drift report at session start (plus an optional monthly sweep), always-on load pruning, and audits of skills that have grown long.",
   "author": {
     "name": "egg82",

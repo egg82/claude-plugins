@@ -140,6 +140,67 @@ echo body > "$fh/.claude/skills/demo/synced/notes.md"
 run_case 2 "a dir named synced inside a user skill still reports" "$fh" \
   "$(printf '{"transcript_path":"%s/transcript.jsonl","session_id":"s15"}' "$fh")"
 
+# Adds a PEER session's transcript — another session on the machine, in another project dir — at
+# the layout the hook globs: ~/.claude/projects/<proj>/<id>.jsonl, or <id>/subagents/agent-*.jsonl.
+mkpeer () {
+  fh="$1"; rel="$2"; peer_path="$3"; ts="$4"
+  out="$fh/.claude/projects/-other-proj/$rel"; mkdir -p "$(dirname "$out")"
+  python3 - "$out" "$fh" "$peer_path" "$ts" <<'PY'
+import json, sys
+out, fh, p, ts = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+recs = [{"timestamp": ts, "message": {"content": [
+    {"type": "tool_use", "name": "Edit", "input": {"file_path": fh + p}}]}}]
+open(out, "w").write("\n".join(json.dumps(r) for r in recs) + "\n")
+PY
+  test -f "$out" || { echo "  FIXTURE BROKEN: no peer transcript written"; exit 9; }
+}
+
+echo "CONCURRENT SESSIONS — a peer session's Edit is a sanctioned write:"
+fh=$(mkfixture "")
+mkpeer "$fh" "peer1.jsonl" "/.claude/memory/by-peer.md" "2020-01-02T00:00:00.000Z"
+echo body > "$fh/.claude/memory/by-peer.md"
+run_case 0 "a file written by ANOTHER session is explained" "$fh" \
+  "$(printf '{"transcript_path":"%s/transcript.jsonl","session_id":"s20"}' "$fh")"
+
+fh=$(mkfixture "")
+mkpeer "$fh" "peer1/subagents/agent-x.jsonl" "/.claude/memory/by-peer.md" "2020-01-02T00:00:00.000Z"
+echo body > "$fh/.claude/memory/by-peer.md"
+run_case 0 "a file written by another session's SUBAGENT is explained" "$fh" \
+  "$(printf '{"transcript_path":"%s/transcript.jsonl","session_id":"s21"}' "$fh")"
+
+# A peer's Edit from before this session began says nothing about the change seen now.
+fh=$(mkfixture "")
+mkpeer "$fh" "peer1.jsonl" "/.claude/memory/by-peer.md" "2019-06-01T00:00:00.000Z"
+echo body > "$fh/.claude/memory/by-peer.md"
+run_case 2 "a peer Edit BEFORE the session floor does not explain it" "$fh" \
+  "$(printf '{"transcript_path":"%s/transcript.jsonl","session_id":"s22"}' "$fh")"
+
+fh=$(mkfixture "")
+mkpeer "$fh" "peer1.jsonl" "/.claude/memory/by-peer.md" "2020-01-02T00:00:00.000Z"
+echo body > "$fh/.claude/memory/by-peer.md"
+echo body > "$fh/.claude/memory/by-bash.md"
+run_case 2 "a real Bash write still reports when a peer explains another file" "$fh" \
+  "$(printf '{"transcript_path":"%s/transcript.jsonl","session_id":"s23"}' "$fh")"
+
+echo "PROJECT SCOPE — only this session's own project memory is watched:"
+# The session's transcript lives in its project dir; that dir's memory/ is its own project memory.
+mkproj () {
+  fh=$(mktemp -d); mkdir -p "$fh/.claude/memory" "$fh/.claude/skills" \
+    "$fh/.claude/projects/-mine/memory" "$fh/.claude/projects/-elsewhere/memory"
+  printf '%s\n' '{"timestamp":"2020-01-01T00:00:00.000Z","message":{"content":[]}}' \
+    > "$fh/.claude/projects/-mine/s.jsonl"
+  echo "$fh"
+}
+fh=$(mkproj)
+echo body > "$fh/.claude/projects/-elsewhere/memory/theirs.md"
+run_case 0 "another project's memory changing is not reported" "$fh" \
+  "$(printf '{"transcript_path":"%s/.claude/projects/-mine/s.jsonl","session_id":"s30"}' "$fh")"
+
+fh=$(mkproj)
+echo body > "$fh/.claude/projects/-mine/memory/ours.md"
+run_case 2 "this session's own project memory still reports" "$fh" \
+  "$(printf '{"transcript_path":"%s/.claude/projects/-mine/s.jsonl","session_id":"s31"}' "$fh")"
+
 echo "CONTROL — a nonexistent hook must fail the must-report cases:"
 fh=$(mkfixture "")
 echo body > "$fh/.claude/memory/written-by-bash.md"

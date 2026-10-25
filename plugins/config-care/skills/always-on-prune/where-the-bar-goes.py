@@ -21,16 +21,29 @@ DAYS = _a.days
 CUTOFF = time.time() - DAYS * 86400
 # Per-request filter: a file touched in the window can hold days of older requests.
 CUTOFF_ISO = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(CUTOFF))
-seen = set()  # one response is logged as several lines carrying the same usage; count it once
+seen = set()  # ids counted from earlier files (a resumed session can repeat them)
 
 
-def fresh(d):
-    """The message of a usage line inside the window not yet counted, else None."""
-    msg = d.get("message") or {}
-    if d.get("timestamp", "") < CUTOFF_ISO or msg.get("id") in seen:
-        return None
-    seen.add(msg.get("id"))
-    return msg
+def responses(f):
+    """Each in-window response in file f once, not yet counted elsewhere. A response is logged as
+    several lines and the early ones carry partial output_tokens, so keep the line with the most."""
+    best = {}
+    for line in open(f, errors="replace"):
+        if '"usage"' not in line:
+            continue
+        try:
+            d = json.loads(line)
+        except Exception:
+            continue
+        msg = d.get("message") or {}
+        mid = msg.get("id")
+        if d.get("timestamp", "") < CUTOFF_ISO or mid in seen or not isinstance(msg.get("usage"), dict):
+            continue
+        prev = best.get(mid)
+        if prev is None or (msg["usage"].get("output_tokens") or 0) >= (prev["usage"].get("output_tokens") or 0):
+            best[mid] = msg
+    seen.update(best)
+    return best.values()
 # bucket() takes the FIRST substring match, so specific ids precede their family: the `opus`
 # alias resolves to 5.5 while most history is Opus 5, and the two are priced differently.
 # `opus` alone is Opus 5 / 4.x, and `haiku` alone is Haiku 4.5. Sonnet 5 and 5.5 share a rate;
@@ -59,15 +72,7 @@ for f in glob.glob(os.path.expanduser("~/.claude/projects/*/*.jsonl")):
     except OSError:
         continue
     tot = 0.0; peak = 0; n = 0
-    for line in open(f, errors="replace"):
-        if '"usage"' not in line:
-            continue
-        try:
-            msg = fresh(json.loads(line))
-        except Exception:
-            continue
-        if msg is None:
-            continue
+    for msg in responses(f):
         u = msg.get("usage")
         b = bucket(msg.get("model"))
         if not isinstance(u, dict) or not b:
@@ -106,15 +111,7 @@ for f in glob.glob(os.path.expanduser("~/.claude/projects/*/*/subagents/agent-*.
     except OSError:
         continue
     aid = os.path.basename(f)
-    for line in open(f, errors="replace"):
-        if '"usage"' not in line:
-            continue
-        try:
-            msg = fresh(json.loads(line))
-        except Exception:
-            continue
-        if msg is None:
-            continue
+    for msg in responses(f):
         u = msg.get("usage"); b = bucket(msg.get("model"))
         if not isinstance(u, dict) or not b:
             continue

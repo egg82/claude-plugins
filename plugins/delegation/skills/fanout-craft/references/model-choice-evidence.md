@@ -88,6 +88,9 @@ only to writes and output.
   on matched briefs the gap is ≤2.1×. The expensive runs were open-ended design-and-build briefs (43% of
   opus spend carried "design judgment" reasons; top runs 800+ requests) — the shape §"Builders hit the
   same wall" addresses, which no model choice fixes.
+- **The pool appears to charge API-equivalent dollars at the same rate for both models** (a fit on one
+  Max 20x account from rounded /usage readings: about $25 per weekly 1%), so these $ ratios are pool
+  ratios too.
 - **Not covered:** no task here ran past ~25 requests, so behaviour at 150+ requests is unmeasured.
 - **Transcript trap:** a response is logged as several records and early ones carry partial
   `output_tokens`; keep the max per `message.id`, not the first. Subagent transcripts from one

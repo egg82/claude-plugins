@@ -1,6 +1,6 @@
 {
   "name": "k8s-ops",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Kubernetes runbooks from a homelab: triage, sizing, secrets, storage, ingress/TLS, Talos, Flux, CloudNativePG, cert renewal, Grafana dashboards.",
   "author": {
     "name": "egg82",

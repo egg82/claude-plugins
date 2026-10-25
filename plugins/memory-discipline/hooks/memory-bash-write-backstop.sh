@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 3  # bump on any behaviour change; the session hook reports skew
+# hook-version: 4  # bump on any behaviour change; the session hook reports skew
 # Stop: report memory/skill files that changed this session WITHOUT a Write/Edit that explains it.
 #
 # WHY THIS EXISTS, and why it is a second mechanism rather than a wider version of the first:
@@ -15,11 +15,12 @@
 # notice still leaves time to re-run `memory-write-gate.sh` against the file before the session ends.
 # Blocking was never available; the alternative was not noticing.
 #
-# FALSE POSITIVES ARE POSSIBLE AND DELIBERATELY TOLERATED, because this one cannot cost an action:
-# a concurrent session editing the same tree shows up here as an unexplained change. That is why the
-# wording says "not explained by a Write/Edit in THIS session" rather than accusing. A gate with
-# false positives gets switched off — but that reasoning applies to gates that BLOCK. This one adds
-# a line to a report.
+# CONCURRENT SESSIONS ARE NOT A FALSE POSITIVE TO TOLERATE EITHER. Project memories and skills are
+# shared by every session on the machine, so a peer session's Edit changes a file this session never
+# touched. Measured over four days of parallel sessions in different dirs: 138 of 148 flagged files
+# were written by a Write/Edit in ANOTHER session's transcript. So once this session's own transcript
+# leaves candidates, every other transcript touched since the session floor is checked for a
+# Write/Edit of the same file at or after that floor — the PreToolUse gate ran there too.
 #
 # SUBAGENT WRITES ARE NOT A FALSE POSITIVE TO TOLERATE — they are a real blind spot, and the
 # tolerance above is what nearly let it stand. A child's Write/Edit calls land in ITS transcript,
@@ -135,10 +136,13 @@ except ValueError:
     sys.exit(0)
 
 # --- the trees this governs -----------------------------------------------------------------------
+# Only THIS session's project memory, which sits beside its transcript: another project's memory
+# never loads here, so a change to it is not this session's concern — globbing every project's tree
+# made a session in one dir report the memories of every other dir that ran concurrently.
 home = os.path.expanduser("~")
-trees = [os.path.join(home, ".claude", "memory")] \
-      + glob.glob(os.path.join(home, ".claude", "projects", "*", "memory")) \
-      + [os.path.join(home, ".claude", "skills")]
+trees = [os.path.join(home, ".claude", "memory"),
+         os.path.join(os.path.dirname(tp), "memory"),
+         os.path.join(home, ".claude", "skills")]
 
 unexplained = []
 for tree in trees:
@@ -165,6 +169,61 @@ for tree in trees:
 if not unexplained:
     sys.exit(0)
 
+# --- other sessions' transcripts: a peer's Write/Edit explains the file just as well ---------------
+# Global memory and skills ARE shared by every session, so peers still matter for those. A peer that
+# made the latest change logged it then, so its transcript is at least as new as the oldest candidate
+# — a far tighter cut than the session floor, which for a long-lived session reaches back days and
+# made this read GBs (6.75s of a 10s timeout, measured). A byte-substring prefilter on
+# the home-relative path keeps this cheap (hundreds of MB a day across sessions) and is
+# mount-agnostic: where $HOME is reached through a symlink, the same file is recorded under the link
+# in one session and under its target in another, and realpath only reconciles them after a hit.
+own = {os.path.realpath(tp)} | {os.path.realpath(c) for c in glob.glob(
+    os.path.join(tp[:-6] if tp.endswith(".jsonl") else tp, "subagents", "*.jsonl"))}
+pending = {os.path.realpath(fp): os.path.relpath(fp, home).encode() for fp in unexplained}
+mtimes = []
+for fp in unexplained:
+    try:
+        mtimes.append(os.stat(fp).st_mtime)
+    except OSError:
+        pass
+peer_floor = max(floor, min(mtimes) - 5) if mtimes else floor
+peers = glob.glob(os.path.join(home, ".claude", "projects", "*", "*.jsonl")) \
+      + glob.glob(os.path.join(home, ".claude", "projects", "*", "*", "subagents", "*.jsonl"))
+for peer in peers:
+    if not pending:
+        break
+    try:
+        if os.path.realpath(peer) in own or os.stat(peer).st_mtime < peer_floor:
+            continue
+        with open(peer, "rb") as fh:
+            data = fh.read()
+    except OSError:
+        continue
+    if not any(rel in data for rel in pending.values()):
+        continue
+    for line in data.splitlines():
+        if b'"tool_use"' not in line or not any(rel in line for rel in pending.values()):
+            continue
+        try:
+            rec = json.loads(line)
+        except ValueError:
+            continue
+        if (rec.get("timestamp") or "") < started:
+            continue
+        for c in (rec.get("message") or {}).get("content") or []:
+            if not isinstance(c, dict) or c.get("type") != "tool_use":
+                continue
+            if c.get("name") not in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
+                continue
+            inp = c.get("input") or {}
+            p = inp.get("file_path") or inp.get("path") or inp.get("notebook_path")
+            if p:
+                pending.pop(os.path.realpath(os.path.expanduser(p)), None)
+
+unexplained = [fp for fp in unexplained if os.path.realpath(fp) in pending]
+if not unexplained:
+    sys.exit(0)
+
 try:
     stamp.write_text("")
 except OSError:
@@ -174,11 +233,11 @@ shown = sorted(unexplained)[:8]
 more = len(unexplained) - len(shown)
 lines = "\n".join("  " + p.replace(home, "~") for p in shown)
 sys.stderr.write(
-    "%d memory/skill file(s) changed this session with no Write/Edit in the transcript to explain "
+    "%d memory/skill file(s) changed this session with no Write/Edit in any session's transcript to explain "
     "it, so `memory-write-gate.sh` never checked them:\n%s%s\n\n"
     "If you wrote these from Bash: that gate is PreToolUse on Write|Edit|MultiEdit only, so the "
     "write looked fine and was never validated. Re-run it against each file before finishing, or "
-    "re-apply the change with Edit. If a concurrent session wrote them, ignore this.\n"
+    "re-apply the change with Edit.\n"
     % (len(unexplained), lines, ("\n  ...and %d more" % more) if more > 0 else "")
 )
 sys.exit(2)

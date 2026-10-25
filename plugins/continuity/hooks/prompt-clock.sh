@@ -107,6 +107,12 @@ ctx = 0
 try:
     with open(d.get("transcript_path") or "", encoding="utf-8", errors="ignore") as t:
         for line in t:
+            if '"compact_boundary"' in line:  # usage before it is the old context, not this one
+                try:
+                    ctx = int((json.loads(line).get("compactMetadata") or {}).get("postTokens") or 0)
+                except ValueError:
+                    pass
+                continue
             if '"usage"' not in line or '"assistant"' not in line:
                 continue
             try:
@@ -145,7 +151,10 @@ if tier > told:
                  "and continue in a fresh session." % k)
         told_model = ("\n[context] ~%s tokens, past the %dk mark (hard). At the next natural stopping point "
             "write the open state to ~/.claude/HANDOFF-<topic>.md and do not start new large work in this "
-            "one. If this harness can start a tracked session and work remains, start the fresh session "
+            "one. A handoff holds only what dies with this session: branches, worktrees, running or paused "
+            "agents, half-done steps, agreements with peer sessions. The queue stays in the repo's own queue "
+            "file (docs/open-work.md, NEXT.md...): update that and point to it, never copy it; carry a queue "
+            "in the handoff only when the repo has none, and say so. If this harness can start a tracked session and work remains, start the fresh session "
             "yourself in a new labelled tab, briefed with the handoff, confirm it reached "
             "`working`, and tell the operator its name. Otherwise recommend a fresh session." % (k, mark))
     print(json.dumps({

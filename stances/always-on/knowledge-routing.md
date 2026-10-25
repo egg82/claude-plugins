@@ -12,6 +12,7 @@ Before writing a fact down, ask **what would make it wrong** — that decides wh
 | you deliberately revise the method | the skill's `SKILL.md` |
 | the code beside it changes | a doc in that directory |
 | the world moves underneath you | a keyed data file beside the runs (`known-benign.md`, `decisions.jsonl`) |
+| this session ends (branches, worktrees, paused agents, peer agreements) | `~/.claude/HANDOFF-<topic>.md`; the queue stays in the repo's own queue file, pointed to, never copied |
 | never — it's how you want work done | global memory (`~/.claude/memory/`) — the **last** resort |
 
 - **A skill must survive being handed to someone else.** MAC addresses, counts, dated "validated

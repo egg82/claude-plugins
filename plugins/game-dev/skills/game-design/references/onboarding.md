@@ -64,11 +64,18 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
   only fleeting transfer (research, snippet).
 - Idle games: fifteen minutes can show a year's worth of the core loop, so the opening must also show what comes
   later (developer, snippet).
+- **A note that explains a mechanic arrives with the mechanic's visible evidence.** A "this is a real-time wait"
+  card shown minutes before the timed action whose countdown it describes, read as "why wait when there's
+  stuff to do?": the player has no reason to believe a note until the screen shows something that matches it. Shown
+  at the moment the countdown appears, the note is a one-line tutorial for that mechanic and hard to miss
+  (developer, one unpublished playtest).
 
 ## Design checks
 
 - For each mechanic: discoverable by trying? If yes, no lesson.
 - Is anything taught before the player needs it, or needed before it is taught?
+- Does every note about a mechanic appear in the same moment as the thing on screen that proves it (the timer, the
+  new control, the changed number)?
 - Does any single step introduce more than one new idea?
 - After a skip, can the player still reach the help (Andersen's "availability of help" dimension)?
 - Is the step where players skip or stall recorded? That is where Valve's "too many concepts" failure shows.
