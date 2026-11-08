@@ -1,6 +1,6 @@
 ---
 name: fanout-craft
-description: "How to delegate to subagents or peer sessions so it stays affordable and nothing gets lost — the brief, model per agent, breadth over depth, durable findings, collecting results, reading a run's cost. Use BEFORE spawning subagents for research, sweeps or parallel investigation; before setting up a controller session over other sessions; and when a fan-out returned less than it should. NOT whether you may fan out."
+description: "How to delegate to subagents or peer sessions so it stays affordable and nothing gets lost — the brief, model per agent, breadth over depth, durable findings, collecting results, reading a run's cost. Use BEFORE spawning subagents for research, sweeps or parallel investigation; before setting up a controller session over other sessions; and when a fan-out returned less than it should; and before heavy local work, a CI pipeline or an API burst while other sessions share the host. NOT whether you may fan out."
 ---
 
 # Fan-out craft
@@ -40,6 +40,7 @@ works", also give it a budget and a handoff file to write when the budget runs o
 | a brief rule sounds arguable | `references/brief-incidents.md` |
 | starting or driving a peer session (§4b) | `references/peer-sessions.md` |
 | coordinating several peer sessions | `references/orchestrator-protocol.md` |
+| heavy local work, a pipeline or an API burst while other sessions run | `references/shared-resources.md` |
 
 ## 1. Choose the model per agent
 
@@ -136,7 +137,7 @@ detail and the incident are in the `references/` file named:
   do not cross into a subagent (`brief-hazards.md`).
 - **Waiting:** no `run_in_background`, no `Monitor`, no foreground `sleep`; blocking calls in small
   batches, and `timeout: 600000` with calls split under 10 minutes for suites and builds — or the child
-  returns "waiting for…" and nothing else (`brief-hazards.md`).
+  returns "waiting for…" and nothing else (`brief-hazards.md`). A hook can refuse `Monitor` in a subagent. A background shell is allowed (a run past ten minutes is backgrounded anyway, and its completion resumes the child), so the brief says: on a backgrounded run, end the turn, never poll.
 - **Its own namespace:** a scratch subdirectory per agent, not just a unique final output path
   (`brief-readers.md`).
 - **A findings path, written as it goes** — even, especially, for a read-only agent (`brief-readers.md`;
@@ -269,6 +270,11 @@ session — that launders the user's decision, and the correct move is to surfac
 
 **An agent showing `completed` is not proof it delivered.** Read what came back before treating a topic
 as covered; a stalled or truncated agent reports the same status as a finished one.
+
+**"Waiting on its own background work" is not disobedience.** The harness moves any foreground call past
+10 minutes into the background, so a child briefed against backgrounding lands there anyway: usually a
+suite, or a wait on a queued CI job. Orchestrators have read it as an ignored rule and proposed a gate. Ask
+what the call was waiting on and fix the brief's wait (`references/brief-hazards.md`), not the child.
 
 **A writer's code change gets a conformance check before you merge it:** the review checklist in the `agentic-engineering` skill (honest ledgers, structure separate from behaviour, tests proven able to fail, design narrowed). The writer's tests carry correctness; do not re-review it for taste.
 

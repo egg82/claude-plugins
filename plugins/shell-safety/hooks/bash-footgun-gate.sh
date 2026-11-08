@@ -127,11 +127,23 @@ _pg = re.sub(r"`[^`]*`", " ", raw_cmd)
 _pg = re.sub(r"'[^']*'|\"[^\"]*\"", lambda m: " " * len(m.group(0)), _pg)
 # `(?:!\s*)?`: a negated test (`until ... && ! pgrep -f x`) is still command position, and is the
 # shape a wait loop takes; it slipped past without this and spun forever on its own wrapper.
-if re.search(r"(?m)(?:^|[;&|])\s*(?:!\s*)?p(?:grep|kill)\b[^|;&]*\s-[a-zA-Z]*f\b", _pg):
+# The keyword group: a test after while/until/if (`while pgrep -f x; do`) or a body after do/then
+# is command position too; a wait loop of that shape never exited.
+if re.search(r"(?m)(?:^|[;&|])\s*(?:(?:while|until|if|elif|then|do|else)\s+)?(?:!\s*)?p(?:grep|kill)\b[^|;&]*\s-[a-zA-Z]*f\b", _pg):
     findings.append(
         "pgrep -f / pkill -f matches this command's OWN harness wrapper (bash -c 'source ... && eval "
         "...'), so it can report a dead process alive or kill the running command. Use "
         "`ps -eo pid,args | grep -E '<real invocation>' | grep -v grep`, then kill resolved PIDs."
+    )
+
+# RULE-ID: holding-dir-whole-sweep
+# A dated holding dir (`.holding-YYYYMMDD`) is shared by every session that moved things aside that day.
+# One session swept the whole dir to clear its own two items and deleted other projects' holds
+# (a listing ran in the same command, unread). Sweep the items you put there, by name.
+if re.search(r"(?m)(?:^|[;&|])\s*rm\s+(?:-\S+\s+)*-[a-zA-Z]*[rR][a-zA-Z]*\s+(?:-\S+\s+)*['\"]?\S*\.holding-\d{8}/?['\"]?(?=\s|$|[;&|])", raw_cmd):
+    findings.append(
+        "rm -r on a whole dated holding dir: other sessions park their own items there the same day. "
+        "List it, read the listing, then remove only the items you put there, by name."
     )
 
 # RULE-ID: kubectl-exec-stdin
@@ -748,6 +760,64 @@ if _unguarded_push(cmd, False):
         "`git commit … && git push`, or put `set -e` at the top."
     )
 
+# RULE-ID: test-then-commit-unguarded
+# A test run and a LATER `git commit`/`git push` in one command, where the commit does not wait on
+#     the tests: the run is piped (its status becomes the pipe's last stage) or a `;`/newline sits
+#     between them. Sibling of formatter-then-and, which needs a literal `&&` right after the
+#     formatter and so missed `pytest -q | tail -2; cd .. && git commit …`: fifteen failing tests
+#     were committed on a branch while the transcript showed "15 failed" two lines above the commit.
+#     Allowed when the status is read in between (`$?`, `PIPESTATUS`), or `pipefail` is set and the
+#     test run is joined to the commit by `&&` alone.
+_TEST_RUN = re.compile(r"\b(?:pytest|py\.test|tox|nox|jest|vitest|cargo\s+test|go\s+test"
+                       r"|(?:npm|pnpm|yarn)\s+(?:run\s+)?test|make\s+(?:test|check)|-m\s+pytest)\b")
+_GIT_WRITE = re.compile(r"\bgit\s+(?:-C\s+\S+\s+)?(?:commit|push)\b")
+
+
+def _quoted_at(s, pos):
+    """Whether `pos` falls inside a quoted span: a test runner named in a commit message is a mention."""
+    q = ""
+    for c in s[:pos]:
+        if q:
+            q = "" if c == q else q
+        elif c in "\"'":
+            q = c
+    return bool(q)
+
+
+_HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1[^\n]*\n.*?\n\s*\2\s*(?=\n|$)", re.S)
+
+
+def _test_then_commit(s):
+    # A heredoc body is data (a test file being written, a script fed to python), not commands.
+    s = _HEREDOC.sub(lambda m: "<<" + m.group(2) + "\n" + "\n" * m.group(0).count("\n"), s)
+    t = next((m for m in _TEST_RUN.finditer(s) if not _quoted_at(s, m.start())), None)
+    if not t:
+        return False
+    g = _GIT_WRITE.search(s, t.end())
+    if not g:
+        return False
+    between = s[t.end():g.start()]
+    if re.search(r"\$\?|\$\{?PIPESTATUS\b", between):
+        return False
+    stmt_end = re.search(r";|\n|&&|\|\|", between)
+    piped = re.search(r"(?<!\|)\|(?!\|)", between[:stmt_end.start()] if stmt_end else between)
+    if piped and not re.search(r"\bpipefail\b", s):
+        return True
+    if re.match(r"\s*\|\|\s*(?:\{[^}]*?)?\b(?:exit|return)\b", between[stmt_end.start():] if stmt_end else ""):
+        return False                # `pytest … || exit 1` / `|| { echo …; exit 1; }` stops the commit
+    if re.search(r"\bset\s+-[A-Za-z]*e|\berrexit\b", s[:t.start()]):
+        return False                # errexit stops on an unpiped failing test run
+    return bool(re.search(r"[;\n]", between))
+
+
+if _test_then_commit(cmd):
+    findings.append(
+        "A test run and a later `git commit`/`git push` in one command, where the commit does not "
+        "wait on the tests (the run is piped, or a `;`/newline separates them). Fifteen failing tests "
+        "were committed this way while \"15 failed\" printed above the commit. Run the tests on their "
+        "own and read `rc=$?`, then commit in a separate command."
+    )
+
 # RULE-ID: bash-file-underscore-arg
 # 15. A bare `_` passed as the first argument to a script FILE. That placeholder belongs to
 #     `bash -c 'body' _ arg1`, where `_` becomes `$0` so `arg1` lands in `$1`. Run the same body as a
@@ -1041,7 +1111,7 @@ if (_vault_sub or _vault_get) and not re.search(r"-field=|(?<![0-9&])>(?!&)", cm
 # any `-b "$SINCE"` are left alone, because a gate with false positives gets switched off.
 _gb = re.sub(r"`[^`]*`", " ", raw_cmd)
 _gbm = re.search(
-    r"(?m)(?:^|[;&|])\s*glab\s+(?:ci|pipeline)\s+list\b[^|;&]*?\s-b\s+['\"]?([^\s'\"]+)", _gb)
+    r"(?m)(?:^|[;&|(])\s*glab\s+(?:ci|pipeline)\s+list\b[^|;&]*?\s-b\s+['\"]?([^\s'\"]+)", _gb)
 if _gbm and not re.match(r"^(?:\d{4}-\d{2}|\$|-)", _gbm.group(1)):
     findings.append(
         "`glab ci list -b %s` — `-b` is `--updated-before` (an ISO 8601 DATE), not a branch flag. "

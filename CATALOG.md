@@ -59,7 +59,7 @@ Web UIs that look alive without lying, rendered and looked at before they're cal
 Game design method with evidence labels, and choosing sound you can't hear.
 
 - `audio-curation` (skill) — pick, cut, level and place sound effects and music when you cannot hear them, with a listening page for a human to judge. Needs: a human with ears; SFX or music packs. Signals: you build a game or app with sound.
-- `game-design` (skill) — evidence-labelled method for onboarding, feedback, pacing, playtests, legibility and game screens. Needs: nothing. Signals: you build a game or gamified app.
+- `game-design` (skill) — evidence-labelled method for fun, feel and look, onboarding, feedback, economies, difficulty, randomness, multiplayer, playtests, legibility, game screens and genre conventions (idle games in depth). Needs: nothing. Signals: you build a game or gamified app.
 
 ### shell-safety
 
@@ -188,6 +188,8 @@ change the quoted details to yours.
 - `headless-browser-in-a-container` — render HTML you produce and look at it; no browser on the host is not a stopping point. Needs: `headless-render` for the method. Signals: Claude produces HTML you view; you work on hosts without a browser.
 - `log-what-happened` — unattended jobs log start, finish, counts and failures as one-line key=value; pick stdout, database or file by who reads it back. Needs: nothing. Adapt: written around Loki and Alloy. Signals: you build cron jobs, workers or services.
 - `herdr-peer-sessions` — new sessions you should track are herdr agents, not `claude --bg` workers. Needs: the herdr terminal harness (`HERDR_ENV=1`). Signals: you run Claude Code inside herdr.
+- `share-the-host` — before heavy work (a test suite, a big probe, a second writer agent, a CI pipeline, an API burst), check what other sessions are running and the host's load. Needs: nothing; `fanout-craft` has the method. Signals: several Claude sessions on one machine or one set of CI runners.
+- `home-dir-layout` — never create files or directories loose in `~`; scratch, worktrees and holding areas each get a fixed place. Needs: nothing. Adapt: the paths are one convention; pick yours. Signals: your home directory fills with sessions' leftovers.
 
 ### on-demand
 
@@ -237,7 +239,7 @@ rather than a dependency.
 | `config-hygiene` | `hook:hygiene-sessionstart`, `skill:always-on-prune`, `skill:skill-golf`, `skill:verification-gate`, `stance:knowledge-routing` | `bash-footgun-gate`, `hygiene-sessionstart` |
 | `confluence-kb-docs` | `skill:doc-cold-read`, `skill:repo-readme`, `skill:writing-craft` | - |
 | `doc-cold-read` | `skill:cc-tool-vet`, `skill:confluence-kb-docs`, `skill:repo-readme`, `skill:writing-craft`, `stance:distill-dont-dump` | - |
-| `fanout-craft` | `hook:spawn-model-gate`, `skill:agentic-engineering`, `skill:always-on-prune`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:repo-orient`, `skill:repo-vet`, `skill:shell-footguns`, `stance:skill-fanout-is-authorized` | `agent-depth-gate`, `spawn-model-gate`, `subagent-digest` |
+| `fanout-craft` | `hook:spawn-model-gate`, `skill:agentic-engineering`, `skill:always-on-prune`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:repo-orient`, `skill:repo-vet`, `skill:shell-footguns`, `stance:share-the-host`, `stance:skill-fanout-is-authorized` | `agent-depth-gate`, `spawn-model-gate`, `subagent-digest` |
 | `flux-gitops` | `skill:cnpg-postgres-ops`, `skill:k8s-secrets`, `skill:k8s-triage`, `skill:talos-ops` | - |
 | `game-design` | - | - |
 | `grafana-dashboards` | `skill:bug-hunt` | - |
@@ -258,7 +260,7 @@ rather than a dependency.
 | `repo-vet` | `skill:bug-hunt`, `skill:cc-tool-vet`, `skill:config-hygiene`, `skill:headless-render`, `skill:repo-orient`, `skill:selfhosted-options`, `skill:shell-footguns`, `stance:ground-claims-with-a-cold-agent` | - |
 | `search-craft` | `hook:search-craft-gate`, `skill:fanout-craft`, `skill:repo-vet`, `skill:selfhosted-options`, `skill:skill-golf`, `stance:search-read-the-failure` | `search-craft-gate` |
 | `selfhosted-options` | - | - |
-| `shell-footguns` | `hook:bash-footgun-gate`, `skill:always-on-prune`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:verification-gate`, `stance:route-lessons-yourself`, `stance:shell-gotchas`, `stance:verify-dont-anchor` | `bash-footgun-gate`, `detached-work-gate`, `memory-write-gate`, `script-lint` |
+| `shell-footguns` | `hook:bash-footgun-gate`, `skill:always-on-prune`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:verification-gate`, `stance:route-lessons-yourself`, `stance:shell-gotchas`, `stance:verify-dont-anchor` | `bash-footgun-gate`, `detached-work-gate`, `memory-write-gate`, `script-lint`, `secret-redact` |
 | `skill-golf` | `skill:always-on-prune`, `skill:cc-tool-vet` | - |
 | `talos-ops` | `skill:cluster-cert-renew`, `skill:k8s-resource-sizing`, `skill:k8s-triage` | - |
 | `ui-craft` | `skill:bug-hunt`, `skill:game-design`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:writing-craft` | - |
@@ -283,7 +285,7 @@ rather than a dependency.
 | `route-lesson-gate` | `stance:route-lessons-yourself` |
 | `script-lint` | `skill:shell-footguns`, `stance:shell-gotchas` |
 | `search-craft-gate` | `skill:search-craft` |
-| `secret-redact` | `hook:bash-footgun-gate`, `stance:print-names-not-values` |
+| `secret-redact` | `hook:bash-footgun-gate`, `skill:shell-footguns`, `stance:print-names-not-values` |
 | `shared-checkout-backstop` | - |
 | `spawn-model-gate` | `skill:fanout-craft`, `stance:skill-fanout-is-authorized` |
 | `subagent-digest` | `skill:fanout-craft` |
@@ -293,7 +295,7 @@ rather than a dependency.
 | Stance | Mentioned by |
 |---|---|
 | `assert-scripted-edits` | `skill:verification-gate`, `stance:preserve-before-destroying`, `stance:verify-dont-anchor` |
-| `assume-the-checkout-is-shared` | `hook:shared-checkout-backstop`, `skill:verification-gate` |
+| `assume-the-checkout-is-shared` | `hook:shared-checkout-backstop`, `skill:verification-gate`, `stance:home-dir-layout` |
 | `calibrate-to-the-user` | - |
 | `code-design-stances` | - |
 | `config-writes-replace` | `stance:preserve-before-destroying` |
@@ -306,6 +308,7 @@ rather than a dependency.
 | `headless-browser-in-a-container` | `skill:config-hygiene` |
 | `herdr-peer-sessions` | - |
 | `hesitation-means-check-the-framing` | - |
+| `home-dir-layout` | - |
 | `issue-writing-style` | `skill:bug-hunt` |
 | `knowledge-routing` | `skill:config-hygiene`, `skill:doc-cold-read`, `skill:fanout-craft`, `skill:shell-footguns`, `skill:skill-golf`, `stance:memory-write-discipline`, `stance:route-lessons-yourself`, `stance:user-forcing-function-style` |
 | `log-what-happened` | - |
@@ -313,16 +316,17 @@ rather than a dependency.
 | `memory-write-discipline` | `hook:memory-write-gate` |
 | `no-fabricated-certainty` | `hook:bash-footgun-gate`, `skill:api-contract-first`, `skill:shell-footguns`, `skill:verification-gate`, `stance:calibrate-to-the-user`, `stance:verify-dont-anchor` |
 | `prefer-subtraction` | `hook:shared-checkout-backstop`, `skill:config-hygiene`, `skill:shell-footguns`, `stance:code-design-stances`, `stance:cut-llm-cruft`, `stance:distill-dont-dump`, `stance:match-existing-house-style`, `stance:memory-write-discipline`, `stance:no-fabricated-certainty`, `stance:skill-authoring-craft`, `stance:user-forcing-function-style` |
-| `preserve-before-destroying` | `skill:verification-gate`, `stance:assume-the-checkout-is-shared`, `stance:config-writes-replace`, `stance:print-names-not-values` |
+| `preserve-before-destroying` | `skill:verification-gate`, `stance:assume-the-checkout-is-shared`, `stance:config-writes-replace`, `stance:home-dir-layout`, `stance:print-names-not-values` |
 | `print-names-not-values` | `hook:bash-footgun-gate`, `hook:secret-redact`, `skill:shell-footguns`, `skill:verification-gate`, `stance:log-what-happened` |
 | `pushback-not-hedging` | `skill:config-hygiene`, `stance:hesitation-means-check-the-framing`, `stance:user-discuss-dont-thrash` |
 | `repo-llm-stance` | `skill:hunt-sweep` |
 | `route-lessons-yourself` | `hook:held-ledger-raise-gate`, `hook:route-lesson-gate`, `skill:claude-config-import` |
 | `search-read-the-failure` | `hook:search-craft-gate`, `skill:search-craft` |
+| `share-the-host` | - |
 | `shell-gotchas` | `skill:fanout-craft`, `skill:shell-footguns` |
-| `size-test-workloads-to-node` | - |
+| `size-test-workloads-to-node` | `skill:fanout-craft`, `stance:share-the-host` |
 | `skill-authoring-craft` | `stance:subagent-paths-prime-results` |
-| `skill-fanout-is-authorized` | `stance:finish-it-dont-hand-back-a-plan`, `stance:herdr-peer-sessions`, `stance:spend-the-weekly-pool` |
+| `skill-fanout-is-authorized` | `stance:finish-it-dont-hand-back-a-plan`, `stance:herdr-peer-sessions`, `stance:share-the-host`, `stance:spend-the-weekly-pool` |
 | `spend-the-weekly-pool` | - |
 | `stateless-calls-cant-keep-a-rate` | - |
 | `subagent-paths-prime-results` | `stance:ground-claims-with-a-cold-agent`, `stance:skill-authoring-craft` |

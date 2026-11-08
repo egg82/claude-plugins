@@ -97,6 +97,14 @@ judgement a command string cannot supply: **do not write an edit anchor from any
 reformatted for display.** `sed -n '10,20p' file | sed 's/^/  /'` is fine to look at and unsafe to
 anchor from, and no regex can tell those two intentions apart.
 
+**Never edit a script in place while a running bash is executing it.** Bash reads the script from its
+open file by byte offset as it goes, so inserting or deleting text shifts everything after the point it
+has reached. When the current loop or function returns, bash resumes at its old offset in the *new*
+bytes, and runs a fragment of some other line. Caught once on a long-running merge chain: an Edit added
+two lines mid-loop while the chain waited on CI, and was reverted before the loop returned. To change a
+script that may be running, write the new version beside it and `mv` it over the old one. The running
+bash keeps the old inode open, and the next run picks up the new file.
+
 ## Resolving merge conflicts with a regex
 
 **Anchor the markers to whole lines** (`re.M`, `^=======\n`, `^<<<<<<< `, `^>>>>>>> `). An unanchored

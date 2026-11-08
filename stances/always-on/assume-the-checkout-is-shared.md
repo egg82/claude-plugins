@@ -10,6 +10,8 @@ namespace are shared mutable state and change under you silently. `~/.claude` is
 
 - **Commit with `git commit --only <paths> -m ...`**, never `git add` + `git commit`: the pair commits
   everything *staged*, and a peer's staged feature once shipped under an unrelated commit message.
+  A **new** file must be `git add`ed first (`--only` rejects an untracked path as "pathspec did not match"), and
+  check the commit landed before pushing: a failed one once opened an empty MR.
   `--only` is per FILE, not per hunk — check `git diff --stat <file>` against the size of your change
   *before* committing, and check `git show --stat` after. Once pushed, leave a mis-attributed commit
   and say so; rewriting it is the destructive move.

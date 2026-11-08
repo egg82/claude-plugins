@@ -105,6 +105,14 @@ nodes that looked half-empty can read close to fully requested. Two follow-ups a
 
 ## Measurement traps (each produced a confident wrong number)
 
+- **Working set includes page cache — size raises from RSS.** A container whose working set hugs its
+  limit is usually holding reclaimable file cache: a media server at 4.2Gi working set had 777Mi RSS,
+  a Postgres at ~230Mi had ~50Mi RSS plus `shared_buffers`. Applying p95 × 1.2 to working set would
+  have reserved ~5Gi of cache in one pass. Raise from `container_memory_rss` (+ shared_buffers for
+  Postgres); lowering from working set is the conservative side and is fine.
+- **Descheduler `LowNodeUtilization` needs a node under on EVERY listed resource.** Listing cpu
+  when only memory is tight leaves a half-empty node never "underutilized". List memory only (both
+  `thresholds` and `targetThresholds` must name the same resources; verified in v0.37 source).
 - **Short jobs are undersampled.** A 30 s scrape misses a peak shorter than a few samples, so the
   measured max is a floor, not the peak. **Never lower a Job's memory from scraped data.** Raise from
   OOM history, or read `memory.peak` from the cgroup during one real run.

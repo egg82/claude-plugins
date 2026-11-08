@@ -1,7 +1,7 @@
 # Game screens, HUD and touch
 
-Layout and controls of a game screen, not a data page (that is `ui-craft`). Sources: `evidence/game-ui.jsonl`. No
-developer postmortem on how an idle game's screen grows was found.
+Layout and controls of a game screen, not a data page (that is `ui-craft`). Sources: `evidence/game-ui.jsonl` and `evidence/legibility.jsonl`. No
+developer postmortem on how a growing game screen was designed was found.
 
 ## Place each element on two axes, and treat a plain HUD as an honest fallback
 
@@ -19,17 +19,19 @@ the fiction on its words and art. The evidence is from shooters, not management 
 
 ## "Can they use it" and "do they want to" are separate failures
 
-Usability is "removing or at least alleviating all the frustrations and confusion the player could experience while
-playing the game, if they are not intended by design"; the second pillar is engage-ability (gameflow in her blog).
-Usability "is not about distorting the intended experience" (practitioner, Hodent's blog). "I didn't know what to tap"
+Hodent splits game UX into two pillars, usability and a second one she names gameflow ("engage-ability" is her later
+wording: blog index, book chapter titles), and rejects the misconception that UX distorts design intent (practitioner,
+celiahodent.com, read). Her definition: usability is "removing or at least alleviating all the frustrations and
+confusion the player could experience while playing the game", if they are not intended by design (practitioner,
+celiahodent.com, read). "I didn't know what to tap"
 and "I knew and didn't care" need different fixes: diagnose which before changing the screen.
 
 ## Show the state and its consequence together, before commitment, in small numbers
 
-Into the Breach is credited with showing every enemy intent and previewing outcomes before the player commits, with
-health and damage rarely above single digits, so one screenshot holds the whole state (opinion, reviewers; postmortem
-seen as a listing only). Verified line: "a push to be more deterministic in the moment-to-moment gameplay"
-(practitioner, PC Gamer quoting Matthew Davis).
+Into the Breach's makers made telegraphed enemy attacks "a core mechanic" so failure is clear (developer, Justin Ma;
+`legibility.md`), and "a push to be more deterministic in the moment-to-moment gameplay" (practitioner, PC Gamer
+quoting Matthew Davis). Outcome previews before commitment, and health and damage rarely above single digits so one
+screenshot holds the whole state, are reviewers' descriptions (opinion; the postmortem is behind the GDC Vault).
 
 Rule: a number the player must compute from two others is a UI defect. Precompute it and print it beside the thing it
 affects.
@@ -38,7 +40,7 @@ affects.
 
 - A Dark Room opens on a title, two lines and one button, and adds elements slowly so the interface's growth mirrors
   the world's; critics flag that minimalism with no direction loses some players (opinion, no developer account).
-- Idle developers report hiding sections until a threshold, pruning side panels nobody used, players asking to see the
+- One idle developer's write-up reports hiding sections until a threshold, pruning side panels nobody used, players asking to see the
   next unlock so they can plan, and confusion when a displayed unlock requirement didn't match when content really
   appeared (practitioner, devlogs, snippet).
 - An idle-game taxonomy lists UI among its features but reports no interface findings in the abstract (research,
@@ -50,7 +52,7 @@ panels.
 ## Touch is a different device, not a small mouse
 
 - Grip: 49% one-handed, 36% cradled, 15% two-handed, changing with the task, sometimes every few seconds (research,
-  Hoober 2013, 1,333 observations). His later correction: the thumb-reach drawings are "a bit of a lie because I
+  Hoober 2013, among the 780 of 1,333 observed users who touched the screen). His later correction: the thumb-reach drawings are "a bit of a lie because I
   over-assumed. People touch the center of the screen. More, more quickly, more accurately, and by preference. Not the
   corners or edges." and "Please, please everyone ignore those drawings." (verbatim). Centre targets can be "as small as
   7 millimeters" against "about 12 millimeters" in corners, sized to hold 95% of observed taps; keep dangerous actions
@@ -67,9 +69,11 @@ panels.
   hover-only content behind a hover-capability media query (practitioner, snippet). WCAG 1.4.13 is written for pointer
   and keyboard focus and never mentions touch (guideline). Rule: anything that matters is reachable with no hover;
   hover may only repeat it.
-- Mobile browsers: `100vh` is the large viewport and overflows while the address bar shows; `dvh` tracks the live
-  viewport, `svh` the smallest; a bottom-pinned bar needs `viewport-fit=cover` and `env(safe-area-inset-bottom)`.
-  Sources disagree on `dvh` vs `svh` for bottom bars, and `dvh` can shift layout (practitioner, snippet).
+- Mobile browsers: `vh`/`lvh` assume the browser's toolbars retracted, so content can hide behind them when they show;
+  `svh` assumes them expanded; `dvh` tracks the live state and is "not stable even while the viewport itself is
+  unchanged", and browsers need not animate it (guideline, W3C CSS Values 4, partly read). Inference: `dvh` can shift
+  layout as toolbars move; `svh` vs `dvh` for a bottom bar is a design call, not a spec dispute. A bottom-pinned bar also needs
+  `viewport-fit=cover` and `env(safe-area-inset-bottom)` (practitioner, snippet; that spec not checked).
 - A VoiceOver user found a long-running browser idle game's mouseover text and assign links unusable (verbatim,
   AppleVis, snippet).
 
@@ -77,8 +81,8 @@ panels.
 
 Readable default font size; high contrast between text and background; no essential information by colour alone or
 sound alone; text advanced at the player's pace; start without multiple menu levels; all UI reachable with the
-gameplay's input method; save all settings; avoid flicker. Most complained about: remapping, text size, colour
-blindness, subtitles. The source gives no pixel sizes or ratios, so none are added here (guideline, Game Accessibility
+gameplay's input method; save all settings; avoid flicker. Most complained about (not necessarily most needed):
+remapping, text size, colour blindness, subtitles. The source gives no pixel sizes or ratios, so none are added here (guideline, Game Accessibility
 Guidelines, basic tier).
 
 ## What the evidence cannot say

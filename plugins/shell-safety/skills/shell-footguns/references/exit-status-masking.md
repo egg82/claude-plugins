@@ -182,6 +182,16 @@ the start of a statement, with optional `VAR=x` prefixes and git global options 
 `$?` read between the two, or `set -e`/`set -o errexit` beforehand. `case … esac` branches are
 alternatives, not a sequence. Fix: `git commit … && git push`.
 
+`[gate:test-then-commit-unguarded]` **A test run and a later `git commit`/`git push` in one command,
+where the commit doesn't wait on the tests.** `pytest -q | tail -2; cd .. && git commit …` committed
+fifteen failing tests, with "15 failed" printed two lines above the commit. formatter-then-and missed it
+because a `;`, not `&&`, followed the formatter. Blocked when the run is piped (its status is the last
+stage's; `set -e` doesn't change that) or a `;`/newline separates it from the commit. Quiet when the
+commit waits: `pytest && git commit`, `$?`/`PIPESTATUS` read in between, `pytest … || exit` (or
+`|| { …; exit 1; }`), `set -e` with an unpiped run, or `pipefail` with `&&`. A runner named in a quoted
+string (a commit message) or a heredoc body (a test file being written) doesn't count. Fix: run the
+tests alone and read `rc=$?`, then commit in the next command.
+
 The rule has been narrowed twice, each time after replaying it over ~2,165 real commands that
 contain a mutator. Blocking any mutator followed by anything hit 723, nearly all
 `git commit …; git log -1`, whose output already shows the failure. Blocking a mutator followed by

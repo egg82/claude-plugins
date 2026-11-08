@@ -40,12 +40,17 @@ FLEET = [
     "<host-b>",
 ]
 
+# Hosts that get everything but systemd-creds (no passwordless sudo, or an agent-driven box
+# you would rather not hold secrets). Empty by default.
+NO_CREDS = set()
+
 # Top-level $HOME dirs never auto-discovered as toolkits even if a skill references
 # them (system/cache/personal dirs). Dotdirs are skipped wholesale.
 DENY_TOP = {
     ".claude", ".ssh", ".config", ".cache", ".local", ".gnupg", ".aws", ".kube",
     ".npm", ".cargo", ".rustup", ".terraform.d", ".vscode", ".mozilla", "go",
     "Downloads", "Documents", "Desktop", "Pictures", "Music", "Videos", "tmp",
+    "scratch", "worktrees",  # per-host working files and git worktrees, never a toolkit
 }
 
 # Skill decision-ledgers: keyed maps of conclusions a skill reached that changed nothing
@@ -798,7 +803,7 @@ def cmd_aliases(live, skipped, args, dry):
 
 def cmd_creds(live, skipped, args, dry):
     script = str(Path(__file__).resolve().parent / "creds-sync.sh")
-    argv = ["bash", script] + ([] if dry else ["--apply"]) + list(live)
+    argv = ["bash", script] + ([] if dry else ["--apply"]) + [h for h in live if h not in NO_CREDS]
     log("creds-sync.sh" + (" (dry-run)" if dry else " --apply"))
     subprocess.run(argv, check=False)
 

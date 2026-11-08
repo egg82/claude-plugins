@@ -270,6 +270,23 @@ t 0 "grep carries the status wanted"           'if kubectl get po | grep -c Runn
 t 0 "formatter in the body, not the condition" 'while read -r l; do echo "$l" | sed s/a/b/; done < f'
 t 0 "no pipeline in the condition at all"      'if git merge fix/x; then echo CLEAN; fi'
 
+echo "test-then-commit-unguarded MUST BLOCK:"
+t 2 "the real case: piped pytest, ; then commit"  'python -m pytest -q tests 2>&1 | tail -2; cd .. && git status --short && git commit -q --only a.py -m "x"'
+t 2 "unpiped, but ; ignores the result"           'pytest -q; git commit -am wip'
+t 2 "newline between tests and push"              $'npm test\ngit push origin HEAD'
+t 2 "piped then && is still the pipe status"       'cargo test | tail -5 && git commit -am ok'
+echo "test-then-commit-unguarded MUST ALLOW:"
+t 0 "tests && commit, no pipe"                      'pytest -q && git commit -am ok'
+t 0 "status read before the commit"                 'pytest -q > out.txt 2>&1; rc=$?; [ "$rc" -eq 0 ] && git commit -am ok'
+t 0 "pipefail with && chaining"                     'set -o pipefail; pytest -q | tail -3 && git commit -am ok'
+t 0 "pytest named only in the commit message"       'git commit -q -m "tests: pytest now runs single-process" && git push -q origin HEAD'
+t 0 "tests with no commit at all"                   'pytest -q | tail -3; echo done'
+t 0 "|| { ...; exit 1; } guards the commit"         'pytest -q > /dev/null 2>&1 || { echo "TESTS FAILED"; exit 1; }; git commit -am ok'
+t 0 "set -e with an unpiped test run"               'set -e; pytest -q; git commit -am ok'
+t 2 "set -e does not rescue a piped run"            'set -e; pytest -q | tail -2; git commit -am ok'
+t 0 "pytest only inside a heredoc body"             $'cat >> tests/t.py <<\'E\'\n@pytest.mark.parametrize("x", [1])\ndef test_x(x): pass\nE\ngit commit -q --only tests/t.py -m t'
+t 2 "heredoc, then a real piped run"                $'cat >> tests/t.py <<\'E\'\ndef test_x(): pass\nE\npytest -q | tail -1; git commit -am t'
+
 echo "NEW RULE — formatter pipeline then && / || MUST BLOCK: [gate:formatter-then-and]"
 t 2 "the real case: a rejected push read as pushed" 'git push -q origin HEAD:main | tail -3 && echo "pushed to main"'
 t 2 "|| never fires either"                    'make build | tail -5 || echo "build FAILED"'
@@ -439,7 +456,16 @@ echo
 echo "pgrep-f-self-match MUST BLOCK:"
 t 2 "self-kill at line start in a heredoc body"  $'cat > /tmp/x.sh <<\'SH\'\npkill -f scratchpad/poll.sh\nSH\nbash /tmp/x.sh'
 t 2 "bare one-liner"                             'pkill -f poll.sh'
+t 2 "after while (a wait loop that never exits)" 'while pgrep -f "pytest tests/x"; do sleep 30; done'
+t 2 "after if"                                   'if pgrep -f job.sh >/dev/null; then echo up; fi'
+t 2 "after do"                                   'for i in 1 2; do pkill -f job.sh; done'
 echo "pgrep-f-self-match MUST ALLOW:"
+t 0 "keyword-like word mid-sentence"             "echo 'do not use pgrep -f here'"
+echo "holding-dir-whole-sweep MUST BLOCK / ALLOW:"
+t 2 "whole dated holding dir"                    'ls ~/scratch/.holding-20260101; rm -rf ~/scratch/.holding-20260101'
+t 2 "trailing slash, split flags"                'rm -r -f ~/scratch/.holding-20260101/'
+t 0 "one item inside it, by name"                'rm -rf ~/scratch/.holding-20260101/old-assets'
+t 0 "listing only"                               'ls ~/scratch/.holding-20260101'
 t 0 "the form quoted in backticks (its own docs)" $'cat > doc.md <<\'MD\'\n- `pkill -f monitor.sh` killed it (exit 144).\nMD'
 t 0 "mid-sentence prose"                          "echo 'note pkill -f matches the wrapper'"
 t 0 "ps|grep instead"                             "ps -eo pid,args | grep -E '[p]oll.sh'"
@@ -527,7 +553,12 @@ t 2 "branch name after -b"              'glab ci list -b my-feature'
 t 2 "quoted branch name"                'glab ci list -b "my-feature" | head -5'
 t 2 "the pipeline alias"                'glab pipeline list -b main'
 t 2 "with other flags around it"        'glab ci list --status=failed -b my-feature -p 1'
+# Where a poll loop puts it: inside a command substitution. The anchor once missed `$(`, and a
+# watcher ran 5 minutes on a JSONDecodeError per iteration.
+t 2 "inside a command substitution"     's=$(glab ci list -b main -F json 2>/dev/null | python3 -c "import json,sys")'
+t 2 "inside a poll loop"                $'for i in $(seq 1 50); do\n  s=$(glab ci list -b main -F json)\n  sleep 20\ndone'
 echo "glab-ci-list-b-is-a-date MUST ALLOW:"
+t 0 "the ref flag in a substitution"    's=$(glab ci list -r main -F json)'
 # A REAL --updated-before. Blocking this would make the flag unusable, which is how a gate
 # earns a reputation for false positives and gets switched off.
 t 0 "an ISO 8601 date, which is valid"  'glab ci list -b 2026-01-01T00:00:00Z'

@@ -1,18 +1,20 @@
 ---
 name: spend-the-weekly-pool
-description: The user's Max subscription is flat-rate; aim to use ~100% of the weekly pool by the reset rather than conserving it.
+description: The user's subscription is flat-rate; aim to use ~100% of the weekly pool by the reset rather than conserving it.
 metadata:
   type: feedback
   check: "n/a — a standing preference about spending, with no live system to probe"
 ---
 
-The user pays a flat Max subscription, so unused weekly budget is simply lost. Ideally usage reaches 100% every week, right at the reset time. Budget is a schedule, not a cost to minimise.
+The user pays a flat-rate subscription, so unused weekly budget is simply lost. Ideally usage reaches 100% every week, right at the reset time. Budget is a schedule, not a cost to minimise.
 
 **How to apply:** when they give the usage level and the reset time, plan toward finishing near 100% at the
 reset: start the next worthwhile job rather than holding it "to be safe", and front-load big fan-outs early
 in a week. Hold back only when the remaining pool is genuinely smaller than the next job, and show the
-arithmetic (one whole build day cost about 10% of a week). **The cap is a wall:** past the 20x Max pool there is only
-paying per token, which they avoid, so hitting 100% before the reset stops everything. **If the plan also includes
+arithmetic (one whole build day cost about 10% of a week). **The cap is a wall:** past the weekly pool there is only
+paying per token, which they avoid, so hitting 100% before the reset stops everything. **If the plan also has a 5-hour usage window** (not every
+plan or account has dropped it), that is a second, shorter wall: size a big fan-out to fit the window it starts in,
+or it stalls mid-run until the window resets. **If the plan also includes
 monthly Claude API credits**, keep them apart from the pool: Claude Code sessions and subagents never draw on them;
 only code that calls the API itself does (in-product Claude features, SDK scripts, API batches). Up to that amount
 those calls are not out-of-pocket, which changes the calculus for them alone. Spend credits the same way, as a

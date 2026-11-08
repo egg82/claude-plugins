@@ -105,6 +105,17 @@ One selection-specific signal repo-vet doesn't cover: **membership in curated di
 
 Deliver in conversation. Lead with the verdict and defend it; the user wants a call, not a survey.
 
+**Choosing an app is a long-term decision, so judge the long-term fit, not whether it runs today.**
+Sort each candidate's problems into **architecture**, which persists (no server-side scheduler, no
+HTTP API by design, a core purpose that isn't the user's job), and **bugs**, which pass (an open defect
+with a fix in flight, a missing env default). A short-term bug must not decide a long-term pick. Frame
+the call as: *go with X, do some work today to solve its issues (a patch, glue, a filed bug report, or
+waiting on a fix), and get the better long-term solution; or go with Y and get an okay long-term
+solution running today.* Name the work each path needs today, and pick one. "Running today" is a
+legitimate axis only when something makes it urgent; say what that is.
+The case that taught this: `verdicts.md` § personal-finance-eval, where an open duplicate bug first
+decided against the better-architected app.
+
 Structure loosely as:
 
 - **The recommendation**, stated plainly, with the strongest reason first.

@@ -41,6 +41,10 @@ announce themselves, so the defence is checking the result rather than the exit 
   probe.**
 - **A gate blocked you?** Its tag is `[gate:<name>]`; `grep -rn '<name>' references/` finds the entry
   and the reason.
+- **`secret-redact` rewrites results that only look like credentials** (`label: 5/5`, `status=200 time=1.2s`, a
+  hostname after an IP, a Python traceback line): the line comes back as `<REDACTED vault-field ...>` and the number
+  is lost. Print summaries as words and spaces (`list-cap old 5 of 5`, `leaks 2 runs 6`) or write them to a file and
+  read that, rather than rerunning the same print.
 
 ## The catalog — open the file for the situation you are in
 

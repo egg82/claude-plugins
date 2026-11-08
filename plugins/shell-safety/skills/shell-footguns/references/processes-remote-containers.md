@@ -224,6 +224,13 @@ So detaching is two steps, always: launch it detached, **then** arm a harness-tr
 *separate* call from the launch: the `nohup` exec itself should return immediately and must not be the
 thing you background.
 
+**`cd dir && nohup job &` sends the `cd` to the background as well.** `&` applies to the whole `&&` list, so the
+`cd` runs in the backgrounded subshell, and the next line runs in the directory you started in. In one
+session an `echo … >> notes.txt` placed after such a launch went into the repo checkout instead of the
+scratch directory, three times, and left an untracked file there. Give the job its directory itself
+(`nohup bash /abs/path/job.sh &`, or `(cd dir && nohup job) &`), and write later lines with absolute paths.
+This is not gated: `cd x && server &` followed by commands meant for the original directory is legitimate.
+
 ## Secrets and gated file writes
 
 **curl writes basic-auth credentials into the URLs it prints.** `[gate:curl-writeout-prints-credentials]`
@@ -263,6 +270,12 @@ keys all sat inside the 30-line cut. So: **write the gate from the literal comma
 incident's summary**, and make that exact string a must-block case. A summary says "a secret was
 printed"; only the command string says which escape hatch let it happen.
 
+**`vault kv put KEY=@file` (and `bao`) stores the file byte for byte, trailing newline included.** A key made with
+`python -c 'print(...)' > f` or `echo` lands as `value\n`; the write succeeds, a read-back that strips both sides
+compares equal, and the consumer gets the newline in its env var (a pre-shared key and a password both went in that
+way; caught only because a raw `len(v)` and `v.endswith('\n')` check disagreed with the file). Write secrets with
+`printf '%s'`, or `tr -d '\n' < f > f.clean` before the put, and verify the stored value raw, not stripped.
+
 **A `talosctl` dry-run diff prints the CA keys beside your hunk.** `[gate:talosctl-dryrun-context-secrets]`
 Its unchanged context lines are machine config, which holds the cluster CAs; an etcd patch put
 `cluster.etcd.ca.key` on a terminal, and `| grep -v WARNING` keeps it. Filter to changed lines
@@ -298,3 +311,11 @@ above. It now says it cannot prove the two refer to one file, and names both exi
 over-trigger; it may not lie about why. **To proceed: split the `cp` and the `python3` into two Bash
 calls** — neither then carries the pair. All three shapes (the conjunction, and each half alone) are
 pinned as cases so the verdict is executable rather than only written down.
+
+## Sweeping a holding directory
+
+**`rm -rf` on a whole dated holding directory deletes other sessions' holds.** `[gate:holding-dir-whole-sweep]` A
+dated holding dir (`.holding-YYYYMMDD`) is shared: every session that moves something aside that day parks it
+there. One session cleared its own two items by removing the whole dir, with an `ls` in the same command that it
+never read, and took other projects' holds with it. List the dir, read the listing, then remove the items you put
+there by name. An item path inside the dir is allowed; the dir itself is blocked.

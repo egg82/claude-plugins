@@ -13,23 +13,30 @@ did nothing measurable in the two simpler ones. Instructions at the moment of ne
 on-demand help helped Foldit, did nothing in one game and hurt in another. Authors: players of experimentable games
 "seem to learn more from experimentation than from reading text" (research, Andersen et al., CHI 2012).
 
-- Simple mechanics get no teaching. The one hard mechanic gets an isolated place to practise it: an active tutorial
-  fails without one (practitioner, Game Developer, "Different types of tutorials").
+- Rule (inference from Andersen): simple mechanics get no teaching. The one hard mechanic gets an isolated
+  place to practise it: an active tutorial may be ineffective without one (practitioner, Game Developer,
+  "Different types of tutorials").
 - No single teaching method fits every game (same source).
 
 ## Let the order of encounters teach
 
 **No-tutorial teaching is an ordering discipline: a safe first exposure, then a test, then a twist.**
-- Nintendo built later worlds first, found beginners struggled, and moved "easier features to the beginning of the
-  level"; 1-1 was engineered so the player cannot miss the first mushroom (the first pipe bounces it back), simulated
-  on paper with fallback paths. Iwata notes players did not read the manual (developer, Iwata Asks, NSMB Wii).
-  The popular claim that Miyamoto said the forced mushroom shows how it differs from a Goomba is not on that page
-  (unverified).
+- Nintendo built later worlds first, found beginners struggled, and moved "easier features to the beginning of
+  the level"; 1-1 was engineered so the player cannot miss the first mushroom (the first pipe bounces it back),
+  simulated on paper with fallback paths. Iwata notes players did not read the manual (developer, Iwata Asks,
+  NSMB Wii). The popular claim that Miyamoto said the forced mushroom shows how it differs from a Goomba is not
+  on that page (unverified).
 - Valve called Portal "effectively an extended player training exercise". Method, "checklisting": split a mechanic
   into the components a player must grasp, give "a very clean room to safely experiment with it", and only then "take
   a previously learned rule and turn it on its head" (developer, Valve commentary; Game Informer).
-- The Witness, Celeste, Hollow Knight: critics describe teach-check-invert and one twist per chapter, but no designer
-  statement was found (opinion, snippet). Don't cite them as evidence.
+- The Witness: Blow describes "a layer of ramping difficulty across all these puzzles", with later puzzles building on
+  elements learned earlier, but not teach-check-invert (developer, Game Developer "Bearing Witness", via summary).
+  Celeste: a critic describes gradual introduction of climbing and dashing and one twist per chapter; Hollow Knight:
+  critics assert learning through level design (opinion). Celeste's GDC 2017 abstract mentions teaching implicitly
+  through level design, and no Team Cherry statement on Hollow Knight's teaching was found (developer, abstract only).
+  Don't cite them as evidence for the three-step pattern.
+- Baba Is You groups levels by the rule-word they introduce and keeps hard optional levels off the early path
+  (developer, Hempuli; `genres/overview.md`).
 
 ## The failures playtests keep finding
 
@@ -38,15 +45,18 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
   stairs without noticing what was creating the portals", and stalled on a puzzle that "introduced too many new
   concepts at once". "Without some serious prompting, players will rarely look up." Fix by observe-and-patch: make the
   missed element more noticeable or change the approach (developer, Portal commentary).
-- Players complain when a teaching level arrives after the need for it, or a solution needs an interaction not yet
-  shown (verbatim, Baba Is You Steam reviews, snippet). Order errors are the visible complaint, not missing text.
+- Players complain when a teaching level arrives after the need for it, or a solution needs an interaction
+  not yet shown (verbatim, Baba Is You Steam discussion threads, snippet). Order errors are the visible
+  complaint, not missing text.
 
 ## Players do not read
 
 **Text-heavy instruction gets skipped; the numbers behind this are informal.**
-- Over 80% of players clicked straight through a demo's instruction screen at events (practitioner, snippet).
+- Of "a couple of hundred" players at live events, "the vast majority (>80%)" clicked straight through the demo's
+  instruction screen, and many skipped in-game prompts too (developer, Steamhounds team on GameDev.net, full read
+  via Wayback; informal count).
 - A mobile developer's logs: instructions barely read; drop-out came from waiting before touching controls
-  (practitioner, snippet).
+  (snippet, Automaton; article body not read, claim unverified).
 - One postmortem: tutorial completion 55% to 85% and early churn down 20% after splitting it into chunks, each with a
   goal and an immediate reward, plus tooltips fired by action or inaction. No sample size, no control, unnamed game:
   an anecdote, not a rate (practitioner).
@@ -54,21 +64,33 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
 ## Just in time, with support that fades
 
 **Teach at the moment of first need, and thin the support as the player shows they have it.**
-- Braid shows its rewind help after the first death, "when it is first necessary"; Hearts of Iron III teaches
-  everything first. Each suits a different audience (practitioner, Game Developer survey).
+- Braid shows its rewind help only after the first death, the moment it is first needed; Hearts of Iron III teaches
+  the player everything before they can play. Each suits a different audience (practitioner, Game Developer article).
 - Expertise reversal: guidance that helps novices becomes redundant, and can hurt, for people who already know the
-  material; unguided search overloads novices. Remedy: fade the support as expertise grows. Replicated across many
-  materials, mostly in well-defined technical domains; no game study found (research, Kalyuga 2007 review). Both
-  pure discovery and fixed full guidance have documented costs; the middle is guidance that shrinks.
+  material. Remedy: fade the support as expertise grows. Replicated across many materials, mostly in well-defined
+  technical domains; no game study found (research, Kalyuga 2007 review). Unguided search loading novices' working
+  memory is from a Wikipedia summary of the effect (research, snippet). Both pure discovery and fixed full guidance
+  have documented costs; the middle is guidance that shrinks.
 - Chunking lessons is a reasonable default, not a proven win: one software-tutorial study found no gain, another
-  only fleeting transfer (research, snippet).
-- Idle games: fifteen minutes can show a year's worth of the core loop, so the opening must also show what comes
-  later (developer, snippet).
-- **A note that explains a mechanic arrives with the mechanic's visible evidence.** A "this is a real-time wait"
-  card shown minutes before the timed action whose countdown it describes, read as "why wait when there's
-  stuff to do?": the player has no reason to believe a note until the screen shows something that matches it. Shown
-  at the moment the countdown appears, the note is a one-line tutorial for that mechanic and hard to miss
-  (developer, one unpublished playtest).
+  only fleeting transfer (unverified).
+- **A note that explains a mechanic arrives with the mechanic's visible evidence.** A "this is a real-time wait" card
+  shown minutes before the timed action whose countdown it describes reads as pointless:
+  the player has no reason to believe a note until the screen shows something that matches it. Shown at the moment the
+  countdown appears, the note is a one-line tutorial for that mechanic and hard to miss (inference, an illustrative case, not measured).
+
+## Show the core automation concept in the first level
+
+- Factorio's old tutorial took about 30-45 minutes to reach automation and constrained actions so players learned the
+  tutorial instead of the concept. The redesign lists "Showing and teaching core concepts like Assembling machines and
+  electricity in the first level" and "Teaching by experimentation instead of jumping through arbitrary tasks"; the
+  developers said the hand-mining opening made it look like another block-building sandbox clone (developer, FFF #241, full). A later
+  post says the redesigned intro was dropped for not matching the game's vision; only its snippet was read, so the
+  reason is unverified (developer, FFF #342, snippet). Agrees with Andersen et al. above on teaching per mechanic.
+- The one mechanism with a developer statement for pointing a beginner at something new is the red dot: Atom Idle
+  added it "because beginners would notice it", and Just Another Idle moved toasts into a panel opened by a button
+  that shows a dot (developer, devlog, snippet).
+- Nothing was found on teaching that a new item can join existing automation (null: Pecorella's Math of Idle Games III
+  and the paywalled GDC talks are silent on it).
 
 ## Design checks
 

@@ -25,6 +25,11 @@ with all three prohibitions still returned "waiting on background work", each be
 say: *"pass `timeout: 600000` on long commands, and split work so each call finishes inside 10 minutes
 (e.g. one test directory per call)."*
 
+**A wait on a shared queue cannot be split.** A CI job behind a one-at-a-time runner (`resource_group`) has
+no upper bound, so a child polling it crosses 10 minutes however small its calls are. If the parent waits on
+that pipeline anyway (a merge queue), the brief says: *"if the job is still queued after one call, report
+the pipeline id as queued and stop."*
+
 ## Credentials in argv
 
 **Tell a child never to run `ps` while credentialed commands are in flight.** A child that runs `ps aux`

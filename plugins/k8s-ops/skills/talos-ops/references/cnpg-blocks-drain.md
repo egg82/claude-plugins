@@ -8,6 +8,14 @@ expires. Find them at drain time rather than from a list —
 — because the set changes (a deleted one reschedules onto a not-yet-drained node, so it
 moves once per remaining node in a rolling reboot).
 
+**Instance count is the wrong test — "no ready peer on another node" is the right one.** A
+2-instance cluster with both instances on the drained node blocks exactly like a 1-instance one:
+the drain evicts the replica first, the replica has nowhere to land (the nodes are near full on memory
+requests), and the primary then has no ready peer to switch over to, so its PDB holds for the
+full timeout. Select primaries on the node with no Ready instance of their cluster elsewhere, and
+delete them **after** the cordon — deleted before it, the pod can reschedule straight back onto the
+same node.
+
 **Why:** the failure is silent and expensive — the drain burns its whole timeout, the
 upgrade never runs, and the node is left **cordoned**. That cordon then cascades: its
 Rook OSD goes Pending (OSDs are node-pinned), and any RBD volume still mapped on the

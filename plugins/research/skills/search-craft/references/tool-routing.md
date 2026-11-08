@@ -55,7 +55,7 @@ default engines, so a wrong bang returns plausible results from the wrong place.
 | `!man` | mankier | man pages — **single command name only**, two words → 0 |
 | `!mdn` `!msl` | MDN, Microsoft Learn | web platform / Azure docs |
 | `!npm` `!crates` `!dh` | npm, crates.io, Docker Hub | package + image metadata |
-| `!arx` `!se` `!oa` | arXiv, Semantic Scholar, OpenAlex | papers — `!se` gives PDF links |
+| `!arx` `!pub` `!se` `!oa` | arXiv, PubMed, Semantic Scholar, OpenAlex | papers — `!se` gives PDF links |
 | `!nvd` | NVD | **exact CVE ID only**; keyword queries return 0 |
 | `!wp` | Wikipedia | answer lands in `infoboxes`, **not** `results` |
 | `!bi` | bing | general fallback — **operators do not work at all** |
@@ -298,6 +298,12 @@ with=$(grep -rl '"skill":"search-craft"' . | sort -u | wc -l)
 any=$(grep -rlE '"name":"WebSearch"' . | sort -u | wc -l)
 echo "loaded in $with of $any searching transcripts"
 ```
+
+## Slideshare decks: read the Wayback copy
+
+Slideshare answers a fetch with a bot-challenge page, and a read that took that as the end stopped a long deck
+partway. `web.archive.org/web/<year>/<slideshare url>` serves the page with its full per-slide text transcript.
+Slides that are only images stay unread either way.
 
 ## `WebFetch` on a PDF: the file is already on disk
 

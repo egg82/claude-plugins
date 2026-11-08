@@ -58,6 +58,7 @@ of you.
 - *An out-of-process probe races the in-process lock it cannot see* — the probe was the contending session.
 - *"The suite passes" is scoped to a working tree, not to the project* — the pipeline list is the instrument.
 - *A benchmark that repeats ONE input cannot see a fault whose cause is the MIX* — a generic plan won only under a mixed workload.
+- *`podman pause` simulates a frozen process, not a vanished host* — the kernel still ACKs; drop packets in the netns.
 
 **[Controls and inference](instrument-failures/controls-and-inference.md)** — controls on the wrong axis, and conclusions the evidence did not license:
 

@@ -219,6 +219,12 @@ requests. Make speed a gate while the suite still runs in seconds:
   re-ask a model whether a stored line still holds.
 - **Variety comes from code** (a seeded lens per call, shuffle-bag pools), not personas or "avoid
   clichés". Pick the model per output kind by a blind batch; the biggest model came last on the shortest outputs.
+- **A quoted example in a prompt or tool description becomes the template.** One example sentence in a tool
+  field's description ("One moment, checking…") opened every line a model generated for days. Describe
+  the shape instead, or rotate examples from code.
+- **Tool schemas are provider-specific inputs.** A JSON-schema keyword one provider accepts can make another reject
+  every call (Gemini 400s on nested `maxItems` alongside a strict response format), and a fallback route hides the
+  outage. Keep bounds in the parser, and count calls per provider and outcome after any schema change.
 
 ## Reviewing an agent's rework
 

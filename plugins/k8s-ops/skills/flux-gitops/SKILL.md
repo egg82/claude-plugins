@@ -114,4 +114,9 @@ Secrets are **SOPS-encrypted in git** (age/PGP) or delivered by a controller (ex
 
 - `flux check` — verify controllers and CRDs are healthy after any upgrade/bootstrap.
 - If image automation is used, `image-reflector-controller` + `image-automation-controller` scan registries and commit tag bumps back to git — those commits are expected.
+- **A merged build that never rolls out:** `kubectl get imagerepository,imagepolicy -A` first. `failed to open gzip tags:
+  EOF` (ImageRepository and ImagePolicy both `False`, the policy stuck on the old tag) is a corrupt tag-cache entry,
+  typically left by a controller container restart mid-write. Its database is an `emptyDir`, so deleting the
+  `image-reflector-controller` pod clears it; then annotate the ImageRepository and ImagePolicy with
+  `reconcile.fluxcd.io/requestedAt` and the policy resolves the new tag. Nothing else alerts on this: it stalls silently.
 - Renovate/Dependabot version-bump PRs churn the repo constantly; that's normal noise, not a fault.

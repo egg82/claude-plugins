@@ -182,3 +182,22 @@ a memoised plan — vary the input across the range the thing will really see.**
 repeats one input measures the harness. And where the reuse is governed by an *adaptive* policy, that
 policy's input is the history, so the history has to be realistic before the measurement means
 anything at all.
+
+### `podman pause` simulates a frozen process, not a vanished host
+
+A brief asked for proof that libpq's `tcp_user_timeout` ends a query in flight on a database member
+whose node had silently dropped off the network, and named `podman pause` as the vanish. A paused
+container's processes are frozen by the cgroup freezer, but its network namespace and the host kernel
+are not. So TCP still acknowledges every segment. With no settings at all, the client waited more than
+6 minutes. With the fix in place it still waited past 40 s, because there was never any unacknowledged
+data for the timeout to bound. Pass or fail would have said nothing about the change.
+
+The agent caught it because it ran the control first, with no settings. The control should have
+returned within the kernel's retransmit window, and it waited too long for a host that had really gone.
+What works is dropping every packet inside the member's own namespace: run the member with
+`--network none`, join the test container to that netns, then `podman unshare nsenter -t <pid> -n
+iptables -A INPUT -j DROP` (and OUTPUT).
+
+**The rule: name which layer the fault lives in, and inject it at that layer.** A freeze, a crash
+(RST), a refused connection and a blackhole are four different faults to a TCP client. Run the
+no-fix control and check its timing matches the fault you meant to inject.

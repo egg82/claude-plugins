@@ -195,6 +195,14 @@ settled result; the mutation-testing literature treats higher-order mutation as 
 invert a condition, delete a
 cleanup line, change `>=` to `>`, make a validator `return 0`, drop a loop.
 
+**"Red" means an assertion failed, not a nonzero exit.** pytest exits 1 for failed tests,
+2 when interrupted (xdist with `-x` reports a first failure this way), 4 on a usage error
+(`-p no:xdist` against a config that passes `-n`), 5 when nothing was collected. A runner
+that counts any nonzero exit as a kill once scored eight of eight on a usage error. Count
+a kill only on exit 1 *and* a `FAILED` line naming a test, and print that line; a mutant
+whose failure is an exception from your own malformed edit (a SQL error, a NameError) is
+broken, not killed.
+
 **Novelty probe (does the gate fire on what doesn't exist yet?)** Write a *new* file
 containing one instance of every class the gate claims to catch. Run the gate. Delete
 it. If the file was invisible, your inputs are enumerated somewhere.
