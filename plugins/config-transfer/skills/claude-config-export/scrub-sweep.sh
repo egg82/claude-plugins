@@ -32,6 +32,11 @@ set -uo pipefail
 DIR="${1:?usage: scrub-sweep.sh <bundle-dir> [env-patterns-file] [allowlist-file]}"
 ENV_PATTERNS="${2:-}"
 ALLOWLIST="${3:-}"
+# A named file that cannot be read is an error, never "no file": a typo in the patterns path would
+# otherwise pass every bundle clean. `-r`, not `-f`, so a process substitution `<(cat a b)` works.
+for f in "$ENV_PATTERNS" "$ALLOWLIST"; do
+  [[ -z "$f" || -r "$f" ]] || { echo "ERROR: cannot read $f — nothing was swept" >&2; exit 2; }
+done
 
 # --- environment-agnostic sensitive patterns (always checked) ---
 BUILTIN=(
@@ -71,7 +76,7 @@ fi
 
 # Assemble the alternation.
 PATTERN=$(printf '%s|' "${BUILTIN[@]}")
-if [[ -n "$ENV_PATTERNS" && -f "$ENV_PATTERNS" ]]; then
+if [[ -n "$ENV_PATTERNS" ]]; then
   while IFS= read -r line; do
     [[ -z "$line" || "$line" == \#* ]] && continue
     PATTERN+="$line|"
@@ -138,7 +143,7 @@ fi
 # this ("keep entries specific") and it happened anyway, so the fix is mechanical: blank out only the
 # allowlisted SPANS, then re-test what is left. A line survives the allowlist only if nothing
 # sensitive remains after its false positives are removed.
-if [[ -n "$ALLOWLIST" && -f "$ALLOWLIST" ]]; then
+if [[ -n "$ALLOWLIST" ]]; then
   AL_CLEAN=$(mktemp); trap 'rm -f "$AL_CLEAN"' EXIT
   grep -vE '^[[:space:]]*($|#)' "$ALLOWLIST" > "$AL_CLEAN"
   if [[ -s "$AL_CLEAN" ]]; then

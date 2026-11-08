@@ -92,6 +92,8 @@ t 1 "a real token on the same line as an allowlisted word still FAILS" "$T/coocc
 t 0 "a line whose only hit IS the allowlisted word still passes"       "$T/only-generic" "$T/al-generic.txt"
 t 1 "an allowlisted word in the PATH does not exempt the file"         "$T/homelab-dir" "$T/al-generic.txt"
 t 1 "a POSIX-class built-in still fires through the allowlist re-test" "$T/posix-class" "$T/al-generic.txt"
+t 2 "an allowlist path that cannot be read stops the sweep"            "$T/only-generic" "$T/no-such-allowlist.txt"
+t 0 "an allowlist given as a process substitution is honoured"         "$T/dirty" <(cat "$T/al-suppress.txt")
 
 echo
 echo "NO-SHIP — a declared-private file must never sit in a bundle:"
