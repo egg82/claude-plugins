@@ -61,11 +61,9 @@ genre's contract (inference).
 
 ## Narrative and choice-driven games
 
-- No empirical study of how players perceive Telltale-style choices was found; the documented cost of choices that
-  don't change the plot is critics saying the choices don't matter (opinion). A humanities analysis argues such choices can still
-  work as a thought experiment on a theme (research, abstract; argument, not player data).
-- Mechanics that reward what the story says doesn't matter pull the two apart (developer, Hocking 2007; see SKILL.md's
-  genre-fit rule).
+Story delivery, pacing, choices, discovery and spoilers: `narrative.md`. A humanities analysis argues that choices which
+don't change the plot can still work as a thought experiment on a theme (research, abstract; argument, not player
+data).
 
 ## Simulation, management and colony games
 

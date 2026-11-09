@@ -17,6 +17,17 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
   place to practise it: an active tutorial may be ineffective without one (practitioner, Game Developer,
   "Different types of tutorials").
 - No single teaching method fits every game (same source).
+- A caveat from a small study: a tutorial raised flow and intent to keep playing for non-experts in one simple mobile
+  game (research, Passalacqua et al. 2020; n=40, about 10 per cell, flow and intent rather than retention). Andersen's
+  "nothing measurable in simpler games" was engagement across 45,000 players; the two measure different things.
+- Just-in-time instructions beat an up-front instruction screen in a *simple* VR wave shooter: more enjoyment (IMI,
+  r=.40), joy (r=.50) and positive feeling, less frustration, but no difference in performance, immersion or how much
+  players felt the tutorial helped (research, Frommel et al. CHI PLAY 2017, n=39, mostly VR novices, same wording in
+  both). The authors: Andersen found this "mainly for complex games, our study showed similar effects for a rather
+  simple game". So timing pays in how it feels even where it doesn't change learning.
+- In VR, tooltips placed on the controllers beat text-only instructions on learning the controls in two of four games,
+  with negligible differences in the other two (research, Kao, Magana and Mousas CHI PLAY 2021; 433 players). Put the
+  instruction on the thing it is about.
 
 ## Let the order of encounters teach
 
@@ -37,6 +48,57 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
   Don't cite them as evidence for the three-step pattern.
 - Baba Is You groups levels by the rule-word they introduce and keeps hard optional levels off the early path
   (developer, Hempuli; `genres/overview.md`).
+
+## A good opening, by one critic's four tests
+
+Josh Strife Hayes, who reviews games' new-player experience for a living, scores openings on four tests and walks six
+games through them (practitioner, "How to Design a Tutorial", 2022, captions read in full):
+1. **Say it, then let them use it at once, safely.** Information "flows directly into the next player action"; told
+   to lock on, the player finds an enemy placed in front of them. A screen of systems the player cannot use yet (Deus
+   Ex: Human Revolution's ninety-second inventory video) is forgotten by the time it matters.
+2. **Stack mechanics**, least to most complex, and the first time two combine, say so: "a brand new player won't know
+   the previous learned actions have synergy". After that, combine without explaining (Dead Space's tram puzzle uses
+   everything taught in its first ten minutes). Mechanics shown once each are "a gallery of what the designer has
+   chosen to put in".
+3. **Teach through the channel the game already speaks in.** Dark Souls teaches with the orange floor messages players
+   later use to talk to each other; Dead Space through the suit's hologram. A meta-voice the rest of the game never
+   uses (Human Revolution's tutorial videos) breaks the flow.
+4. **Make it the opening, not a separate area.** Naming a level "Tutorial" tells players it doesn't matter.
+
+His gaps are as telling: Dark Souls never teaches kindling or reverse hollowing, and "many people have completed the
+game without knowing what these things do"; Morrowind's first real fight comes with no safe practice. Same four
+points as Valve's checklisting and Nintendo's ordering above, from the player's side. His goal: "make them aware of
+what they can do, give them a chance to do it and then combine it until they eventually know everything".
+
+- Plants vs. Zombies (developer, George Fan, GDC 2012, captions read in full):
+  - "A maximum of eight words on the screen at any given moment", which he calls "pretty much impossible to maintain"
+    but "a good thing to shoot for". His evidence is intuition: of four sentences, "I think it's more likely they're
+    going to read zero."
+  - The biggest flaw, found by watching a non-gamer, was not planting sunflowers early. The fix was cost and light,
+    not text: sunflower cost and starting sun both 50, so only the sunflower is lit at the start; players "press the
+    bright shiny object".
+  - A tip appears only to players making the mistake (all peashooters in the right column), so others keep "the
+    chance to feel smart". Don't freeze play for an OK dialog; put passive text at the bottom of the screen. Arrows
+    and flashing get the player to do an action once (first coin, seed packet).
+  - "No need to explain every single concept": past the first minutes, experimenting beats hand-holding. New
+    features arrive spaced out (a new zombie every other level, the store at 3-4).
+
+## Visual cues first; words where testing finds the gap
+
+The celebrated wordless openings use words, or something as blunt. Portal's fix for testers who "stubbornly refused to
+look up" was a ladder and portal surfaces on moving pistons (developer, Valve commentary, above); its portal-gun room
+has big arrows pointing at the gun (practitioner, Strife Hayes). No source found shows Portal shipping a literal "look
+up" sign (null). Dark Souls' glowing orange messages are a glow that carries words. Plants vs. Zombies shows a big arrow
+at the first coin, once (developer, Fan). AAA studios add yellow paint after testers get lost (`progress.md`). An
+indie developer's list of "things that seemed obvious to me but weren't during playtests": players kept jumping right
+into the void until a spinning staircase turned them left; nobody entered a village's houses until one got a giant
+exclamation point; a necessary item on a pedestal went untaken until it floated and glowed (developer, Braga, Inner
+Voices, via GamesRadar 2023).
+
+Rule (inference from those): start with shape, light and glow; watch cold testers; add words, briefly and at the
+moment, wherever a cue was missed or misread. A glow says "here", never "why". A glow only teaches once something has
+tied it to a meaning: Dark Souls' item shine works because the first shine was on the key (practitioner, Strife
+Hayes).
 
 ## The failures playtests keep finding
 
@@ -60,6 +122,11 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
 - One postmortem: tutorial completion 55% to 85% and early churn down 20% after splitting it into chunks, each with a
   goal and an immediate reward, plus tooltips fired by action or inaction. No sample size, no control, unnamed game:
   an anecdote, not a rate (practitioner).
+- In 50,128 Android players of one puzzle game, 58% of those who began the tutorial finished it, and per-level quit
+  rates were similar whether they finished or not (developer, Game Developer, GameAnalytics data). It did not measure
+  reading.
+- No instrumented study of how much tutorial text players read was found (null). "Players don't read" rests on
+  developer anecdotes: plausible, unmeasured, and no excuse for skipping the few words a missed cue needs.
 
 ## Just in time, with support that fades
 
@@ -77,6 +144,40 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
   shown minutes before the timed action whose countdown it describes reads as pointless:
   the player has no reason to believe a note until the screen shows something that matches it. Shown at the moment the
   countdown appears, the note is a one-line tutorial for that mechanic and hard to miss (inference, an illustrative case, not measured).
+
+## A lesson the player must read cannot be missable
+
+- For tutorial windows and dialogue, let the player lengthen the time "up to at least 10x the default" or "disable
+  duration limits entirely so elements can be dismissed or advanced on input" (guideline, Xbox XAG 116). "Instead of a
+  timer, dismiss information on a player action"; distraction makes players miss key information (guideline, Game
+  Accessibility Guidelines). A message that vanishes after 5 seconds is exempt only if the user can learn the same
+  thing another way (guideline, WCAG 2.2.1 Understanding doc).
+- On a phone, attention to the screen breaks into bursts of 4 to 8 seconds, with glances away up to 8 times while
+  waiting on one page load (research, Oulasvirta et al. CHI 2005; walking web-search task, small sample, not games).
+- Players hunt for ways to reopen a tutorial they closed by accident, and critics ask for replay from the pause menu
+  (snippet, a Dwarf Fortress how-to and a Kotaku column). No game was confirmed to keep a log of lessons (null for
+  Hades, Monster Hunter and Persona).
+
+Rules: no auto-dismiss timer on a step the player must read; it advances on input. A lesson that was covered,
+scrolled away or interrupted comes back later instead of recording as seen (inference: a phone player who looks away
+for eight seconds has not read it). Keep taught lessons reachable afterwards (Andersen's "availability of help",
+above).
+
+## Teach a state change when it happens, naming the cause
+
+- Factorio prints a named cause on a stalled machine ("Waiting for space in destination", "No power"), and wrong
+  statuses draw bug reports; Oxygen Not Included players ask for a "duplicant is stuck" alert because only food, bed
+  and toilet problems are announced (snippet, forum threads; both forums refuse scripted reads).
+- An always-present red dot stops being seen: "if it's always there, it might as well not be there at all" (snippet,
+  vendor UX blog, apps not games).
+- A game's own explanations that are "usable but unverifiable" prompt action without building causal understanding
+  (research, Guo 2026 preprint, one game, no player data).
+- No study compares a named-cause message with a bare highlight (null).
+
+Rule (inference): when something the player relies on changes (a supply route closes, a machine stalls), say what
+changed, why, and what replaces it, at that moment and next to the thing. A glow with no words reads as random:
+Factorio's stalled machine says "No power" or "Waiting for space in destination" (above), where a bare pulsing outline
+would say only "look here". This is the moment-of-need rule above, triggered by the game, not the player.
 
 ## Show the core automation concept in the first level
 
@@ -100,6 +201,9 @@ on-demand help helped Foldit, did nothing in one game and hurt in another. Autho
   new control, the changed number)?
 - Does any single step introduce more than one new idea?
 - After a skip, can the player still reach the help (Andersen's "availability of help" dimension)?
+- Does any step the player must read dismiss itself on a timer? Does a lesson that was covered or scrolled away come
+  back?
+- When something the player relies on stops or changes, does the screen say why in words?
 - Is the step where players skip or stall recorded? That is where Valve's "too many concepts" failure shows.
 
 ## What the evidence cannot say

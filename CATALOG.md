@@ -59,7 +59,7 @@ Web UIs that look alive without lying, rendered and looked at before they're cal
 Game design method with evidence labels, and choosing sound you can't hear.
 
 - `audio-curation` (skill) — pick, cut, level and place sound effects and music when you cannot hear them, with a listening page for a human to judge. Needs: a human with ears; SFX or music packs. Signals: you build a game or app with sound.
-- `game-design` (skill) — evidence-labelled method for fun, feel and look, onboarding, feedback, economies, difficulty, randomness, multiplayer, playtests, legibility, game screens and genre conventions (idle games in depth). Needs: nothing. Signals: you build a game or gamified app.
+- `game-design` (skill) — evidence-labelled method for fun, feel and look, onboarding, feedback, economies, difficulty, randomness, multiplayer, playtests, legibility, progress and goal visibility, game screens and settings menus, and genre conventions (idle and story-driven games in depth). Needs: nothing. Signals: you build a game or gamified app.
 
 ### shell-safety
 

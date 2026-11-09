@@ -85,7 +85,51 @@ gameplay's input method; save all settings; avoid flicker. Most complained about
 remapping, text size, colour blindness, subtitles. The source gives no pixel sizes or ratios, so none are added here (guideline, Game Accessibility
 Guidelines, basic tier).
 
+## The settings menu
+
+- TotalBiscuit gave Borderlands 2's options menu its own video in 2012, as a model PC menu (practitioner, "What a PC
+  Options menu is supposed to look like", captions read in full). What he checked: a field-of-view slider with numbers
+  (70-110; 90 "industry standard for PC"); every resolution; HUD size and bounds adjustable, since console HUDs are
+  sized for a television "half the room away"; windowed mode and vsync; a frame cap with several values including
+  unlimited and 120; graphics detected from the hardware with granular overrides; separate music, effects and dialogue
+  levels; mute when minimised; push-to-talk; toggle or hold for aiming; training messages can be turned off; mouse
+  smoothing off by default ("quite frankly terrible"); full key rebinding with a reset. His GTA V port report adds raw
+  mouse input by default and an on-menu video-memory meter, which he caught over-reporting under SLI (practitioner,
+  2015, captions). A missing FOV slider was a hard stop for him, partly for motion sickness (snippet, tweets).
+- PCGamingWiki's guide for reviewing a PC port checks: video settings, flagging a missing field-of-view slider in
+  first- and third-person games; controls, testing mouse acceleration and key customisation; audio, checking
+  subtitles, closed captions and volume sliders (practitioner, PCGamingWiki PC Report guide, read in full).
+- A port developer's own launcher: "Every single option has a description text, and often it also shows visual
+  comparisons"; a choice with no reason to pick less (16x anisotropic filtering) becomes a checkbox; unlimited frame
+  rate is offered at "your own risk" (developer, Durante, Trails of Cold Steel PC).
+- Settings reachable before starting and during play, effects previewed in the menu, one quality preset plus
+  per-element control, master and per-channel volume, a keybind reset, a prompt before leaving unsaved (practitioner,
+  Giguere checklist, Game Developer 2018, experience-based).
+- Two of Pinelle et al.'s ten heuristics are settings: "Allow users to customize video and audio settings, difficulty
+  and game speed" and "Provide intuitive and customizable input mappings". Customisation was a small share of review
+  complaints, 11 of 285 problems (research, CHI 2008, read in full).
+- Remember every setting between sessions (guideline, Game Accessibility Guidelines, basic). Offer accessibility
+  settings as the first screen at first launch, or meet the guidelines by default (guideline, XAG 112, Minecraft
+  Dungeons). Presets that set every recommended option, each still adjustable afterwards (developer, Naughty Dog, The
+  Last of Us Part II).
+- On mobile: defaults that suit most players, detected rather than asked for; "Minimize the number of settings";
+  don't repeat system accessibility settings (guideline, Apple HIG Settings, 2024).
+- Users do change settings: 92% of 101 word-processor users customised something within 28 days (research, Page et
+  al. CHI 1996; self-selected, not games). "Nobody changes defaults" is folklore; bad defaults still cost, since 44%
+  removed default buttons. What stops people is time (63% of 51 users) and difficulty (33%); what starts them is
+  an upgrade that changed things (43%), noticing their own repetition (43%) or annoyance (41%). Users customise to make
+  new versions "be like the old", so a patch that resets settings or keybinds undoes the work they protect (research,
+  Mackay CHI 1991, read in full; Unix staff, not games).
+- Display changes commonly revert after about 15 seconds unless confirmed, and users call the window too short (snippet,
+  desktop OS bug trackers; no game source).
+
+Rules: PC players treat a missing setting as a defect, not a simplification. Detect the defaults, then expose the
+granular control behind them, each with a line saying what it does and what it costs, and a preview where it shows.
+Comfort settings (FOV, motion blur, camera shake, HUD scale) are accessibility, not polish. Mobile and casual games
+take Apple's side: fewer settings, better defaults (inference from the platform split above).
+
 ## What the evidence cannot say
 
-Not found: Game UI Database pattern findings; developer accounts from Frostpunk, Darkest Dungeon, Slay the Spire, Melvor
+Not found: Game UI Database pattern findings; any study of settings-menu design in games (presets vs granular, search,
+live preview); Digital Foundry's praise of specific settings menus (unverified); developer accounts from Frostpunk, Darkest Dungeon, Slay the Spire, Melvor
 Idle or Cookie Clicker on their screens.

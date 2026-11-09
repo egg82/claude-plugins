@@ -1,6 +1,6 @@
 ---
 name: game-design
-description: "Evidence-labelled game design method for any genre and for gamified apps — what makes a game fun, how it feels and looks, teaching, pacing, economies, difficulty, randomness, multiplayer, playtests, legible systems, game screens. Use when designing or reviewing fun, juice, game feel, controls, button feel, visual readability or polish; 'dopamine' or compulsion-loop claims; onboarding or tutorials; rewards, streaks, return visits; currencies, sinks and faucets, inflation, cost or XP curves, balance and dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle and incremental with offline progress and prestige); planning a playtest or modelling progression; making automation or simulations understandable; laying out a HUD or touch controls. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
+description: "Evidence-labelled game design method for any genre and for gamified apps. Use when designing or reviewing fun, juice, game feel, controls, readability or polish; 'dopamine' or compulsion-loop claims; onboarding, tutorials, glows vs words; players not knowing how to progress, hidden unlocks, quest markers, yellow paint; rewards, streaks, return visits; currencies, sinks and faucets, inflation, cost or XP curves, balance and dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle and incremental with prestige, story-driven: pacing, choices, mysteries, spoilers); planning a playtest or modelling progression; making automation or simulations understandable; laying out a HUD, touch controls or a settings menu. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
 ---
 
 # Game design
@@ -37,16 +37,18 @@ an economy or a pacing change gets the whole loop.
 | What makes it fun, MDA, flow, "dopamine", player types (Bartle, Hexad), core and compulsion loops | `references/fun.md` |
 | Control feel, input latency, coyote time, hit-stop, button states, haptics, UI sound, silhouette and colour readability, polish | `references/feel-and-look.md` |
 | Juice, effects, response time, screen shake, flashes, reduced motion, feedback for background progress | `references/feedback.md` |
-| Tutorials, first-session teaching, hints, popups, when to explain a mechanic, skippable lessons | `references/onboarding.md` |
+| Tutorials, first-session teaching, hints, popups, when to explain a mechanic, skippable or missable lessons, glows vs words, teaching a change as it happens | `references/onboarding.md` |
+| "I don't know how to progress": goals, unlock conditions, which bar moves the story, hidden waits, yellow paint and route marking | `references/progress.md` |
 | Rewards, streaks, curiosity gaps, return visits, session and week pacing, "one more turn", decisions without a fail state | `references/motivation.md` |
 | Currencies, faucets and sinks, inflation, multiple currencies, cost and XP curves, balance, dominant strategies, RMT, modelling an economy | `references/economy.md` |
 | Difficulty, adaptive difficulty, assists and modes, failure, checkpoints, fairness | `references/difficulty.md` |
 | Random drops and rolls, displayed odds, weighted randomness, pity timers, input vs output randomness, loot boxes | `references/randomness.md` |
 | Co-op, competition, toxicity, reporting, matchmaking, leaderboards, gifting, light social features | `references/social.md` |
 | Planning or reading a playtest, how many testers, think-aloud, surveys, telemetry vs watching | `references/playtesting.md` |
-| Automation, player-written rules, simulations, overlays, tooltips, "why did it do that" | `references/legibility.md` |
-| Screen layout, HUD, diegetic UI, an interface that grows, touch targets, hover, mobile browser viewport | `references/game-ui.md` |
-| What players of a genre expect: roguelike, puzzle, strategy/4X, platformer, narrative, simulation | `references/genres/overview.md` |
+| Automation, player-written rules and which conditions they can test, simulations, overlays, tooltips, recipe inputs, "why did it do that" | `references/legibility.md` |
+| Screen layout, HUD, diegetic UI, an interface that grows, touch targets, hover, mobile browser viewport, settings/options menus | `references/game-ui.md` |
+| What players of a genre expect: roguelike, puzzle, strategy/4X, platformer, simulation | `references/genres/overview.md` |
+| Story-driven games: delivery, pacing story against play, choices and agency, mysteries solved by learning, spoilers | `references/genres/narrative.md` |
 | Idle and incremental games: offline progress, exponential costs, prestige | `references/genres/idle.md` |
 
 The source rows behind each reference, with url, how much was read, and the label, are in `evidence/<topic>.jsonl`
@@ -60,8 +62,10 @@ on a rule.
   clarity by watching someone new.
 - **Watch what testers do; what they say is a lead.** Take the problem they report and discard their fix (developer,
   Valve playtest slides).
-- **Teach only what can't be discovered, at the moment it is first needed.** Tutorials paid only in the complex game
-  of three tested (research, Andersen et al. CHI 2012); players skip text.
+- **Teach only what can't be discovered, at the moment it is first needed.** Tutorials raised engagement only in the
+  complex game of three tested (research, Andersen et al. CHI 2012); just-in-time beat up-front on enjoyment even in a
+  simple game, not on learning (research, Frommel et al. 2017). That players skip text is developer report, not
+  measurement. Start with cues and add a few words where cold testers miss them (`references/onboarding.md`).
 - **Answer every input at once**, even if only with a press state or a refusal; 100 ms is the ceiling for "it reacted"
   (practitioner, Nielsen), and precise, deadlined actions need far less: on a direct touchscreen, drag lag was noticed
   from 11 ms on average and tap lag from 69 ms (research, Claypool 2010; Jota et al. 2013; Deber et al. 2015).
@@ -85,6 +89,13 @@ on a rule.
   2009; Vuorre et al. 2022).
 - **Show what a system will do before it does it**, as facts with numbers on them, so failure traces to the player's
   choice (developer, Into the Breach).
+- **Progress is stated; the route is the player's.** Where progress is and what reaching it means is on screen in
+  plain words: every unlock condition is a readable goal before it is met, the next story beat is marked on what it
+  waits on, and any wait it depends on shows its countdown. A goal names its condition, never the find it brings.
+  Players should be able to review current objectives and what to do next (guideline, Xbox XAG 109; research, HEP
+  heuristics). The yellow-paint fights are about marking the *route*, which designers add only after cold testers get
+  lost (developer, Ubisoft, Square Enix, Arkane). A gate met only by accident, or a clock the story waits on that the
+  player can't see, is a defect (inference). `references/progress.md`.
 - **Weight randomness for feel, but keep every shown number true.** Players read 85% as certain (developer, XCOM);
   smooth streaks and bound droughts (PRD, pity timers, shuffle bags) rather than silently inflating a displayed
   percentage (`references/randomness.md`).

@@ -382,6 +382,7 @@ before "what words do I type?"
 | what do practitioners think? | HN; Reddit via the route in `references/tool-routing.md` |
 | official behaviour / defaults | the vendor's own docs or wiki — go there directly |
 | a table of per-item values | find the table, fetch it, read it — don't ask search for one row |
+| a conference talk or video critic (GDC, YouTube essays) | the talk's own captions: `yt-dlp --skip-download --write-auto-subs --sub-langs "en.*"` on the uploaded video, beside a `ytsearch5:"<title>"` lookup. A paywalled GDC Vault listing is often free on GDC's YouTube channel. After a burst YouTube answers 429; the page's "Show transcript" panel in a live browser still works |
 
 **Retrieve-then-grep beats query-by-query.** When one thread or archive plainly *is* the topic, pull
 the whole thing and search it locally.

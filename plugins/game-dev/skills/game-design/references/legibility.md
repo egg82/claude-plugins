@@ -1,7 +1,7 @@
 # Making systems and automation legible
 
 How to let a player see what a system will do, what it did, and why. Sources: `evidence/legibility.jsonl`. Primary
-sources are thin: the GDC talks (Slay the Spire metrics, RimWorld, Into the Breach) have no transcripts, and Klei's
+sources are thin: the Slay the Spire metrics and RimWorld GDC talks have no transcripts, and Klei's
 forums refuse scripted fetches. Several rules below are inference and say so.
 
 ## Show what will happen before it happens, so failure traces to a choice
@@ -18,7 +18,15 @@ forums refuse scripted fetches. Several rules below are inference and say so.
   not reached). They replaced a "Next Turn" display that broke down with several enemies (snippet, a Wikipedia
   mirror's account of the Ars piece). A legibility fix found by watching players, not designed in.
 
-Rule: few symbols, numbers printed on them. Intents show facts (damage 12 x 2), not advice; whether a game should
+- Davis's GDC 2019 postmortem (developer, captions read): enemy attacks have "no miss chance and no hit chance";
+  showing every attack made threat management trivial, so immovable buildings became the thing to protect. They
+  aimed for a chess-like board with no mouseovers; icons took "years", some added three months before release, as
+  testers stayed confused. Showing only each enemy's target wasn't enough, so they built "weapons that could be
+  described by the UI" instead of a UI for the weapons, cutting attack types and upgrade trees to fit. Attacks run
+  in straight lines so direction reads at a glance; an upgrade that added a push was "really hard to remember", so
+  upgrades only raise numbers. The power grid "sounds important" but he doesn't think it was explained well.
+
+Rule: few symbols, numbers printed on them. Cut the mechanic the screen can't show, not the showing. Intents show facts (damage 12 x 2), not advice; whether a game should
 ever hand the player a verdict is a design stance, not a finding.
 
 ## In a player-written rule list, the order on screen is the logic
@@ -80,6 +88,39 @@ Rule (inference): state the ordering rule on the control itself: what runs first
 ready. Extends "In a player-written rule list, the order on screen is the logic" with player reports, not only FFXII's
 layout.
 
+## Anything the player can see, their automation can watch
+
+- Final Fantasy XII's original sold gambit conditions in shops and chests, so useful ones came "quite a while" in; the
+  International edition changed that "to be able to use those gambits a bit earlier on in the game" (developer,
+  producer Kato, Siliconera, via summary); The Zodiac Age makes them "all available very early on" (snippet, Prima
+  guide). No Square Enix statement defends the original gating (null).
+- Idle players ask for automation sooner ("make automation unlock earlier… carpal tunnel"); one argues the opposite,
+  that you only value automation after going without it (opinion, Revolution Idle Steam thread). Antimatter
+  Dimensions moved some autobuyers earlier in weaker form (snippet).
+- Novice users often don't know a tool exists at all ("Awareness of Functionality") (research, Grossman et al. CHI
+  2009 survey of 88 papers). That a user who fails to find a feature once never looks again appears only in
+  unattributed blogs (null).
+
+Rule (inference): gating *when* automation unlocks is a pacing choice the evidence leaves open; gating *which
+conditions* a rule can test, once automation exists, is not. A condition the player can see (an enemy's health, a
+resource count) is offered in the rule editor from the moment it is on screen. A player who looks for it once and
+finds it missing concludes the tool can't do it. FFXII's original is the case above: a foe's weakness to fire is in
+play from early fights, but the gambit that tests for it was sold in shops or found in chests and arrived "quite a
+while" in, and the later editions moved conditions earlier.
+
+## An item says where its inputs come from
+
+- Factorio built Factoriopedia because Space Age adds so much "you can start to lose track"; an item's entry lists
+  every recipe using it and links the technology that unlocks it (developer, FFF #397, via summary). Base Factorio
+  does not always show "made in" on a recipe, players asked for it, and mods add it (snippet, forum and mod portal).
+- Just Enough Items, a Minecraft mod whose job is "show recipe / show uses", has hundreds of millions of
+  CurseForge downloads (inflated by modpack pulls, so a weak proxy for demand). Terraria hides recipes until you hold
+  the ingredients and puts lookup behind showing the Guide a material (snippet). Mojang added a recipe book in 1.12
+  with no recorded reason beyond a MINECON mention (snippet, wiki).
+
+Rule (inference): each input on a recipe or card says where it comes from, in place or one tap away (tapping an
+input lights its producers). Where a game leaves provenance out, players build or install it.
+
 ## Let the player see a change's effect without making it
 
 - Spiel et al. name UIs that signal a change's effect without making it, citing Kittens' tooltips and chat
@@ -89,4 +130,5 @@ layout.
 ## What the evidence cannot say
 
 No developer account of displaying which rule fired, why a rule didn't, or why a simulated agent chose an action. No
-transcript of the RimWorld or Into the Breach postmortems.
+transcript of the RimWorld postmortem. No study of gating automation conditions, and no
+Factorio-forum or Klei-forum text read first-hand (both refuse scripted and automated reads).
