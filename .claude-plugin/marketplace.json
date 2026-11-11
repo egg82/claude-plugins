@@ -10,7 +10,7 @@
       "name": "engineering",
       "source": "./plugins/engineering",
       "description": "Keep an agent-built codebase well designed: structural gates with held ledgers, tests proven able to fail, bug hunts proven by running them, API contracts.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -30,7 +30,7 @@
       "name": "writing",
       "source": "./plugins/writing",
       "description": "Prose that doesn't read as model-written; READMEs, PR descriptions and wiki pages a stranger can read cold.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"

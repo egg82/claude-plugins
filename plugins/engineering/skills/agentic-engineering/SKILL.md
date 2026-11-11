@@ -205,6 +205,12 @@ requests. Make speed a gate while the suite still runs in seconds:
   just gets made, with its test. Mechanics are in `fanout-craft`: one task per fresh agent from the
   queue, writers capped at 2-3, each in its own worktree and database. The gates are what make
   parallel writers safe in one repo; without them, keep to one writer.
+- **The orchestrator alone edits the shared single-file docs** (the systems inventory, a decisions index, the
+  queue, `CLAUDE.md`, `engineering.md`). A writer ends its report with a doc delta, the exact rows and lines to
+  change, and the orchestrator applies it at merge, after rebasing. Parallel writers editing those files collided
+  at every merge in one repo, and the workaround (bullets instead of table rows, so fewer lines conflict) bloated its
+  inventory to nearly a thousand lines. A writer still edits a decisions file it owns outright (where decisions are split per system), and may fix a
+  backticked citation mechanically when it renames what the citation names, so its own citation gate stays green.
 - **Written scope rules don't cap agent-accelerated scope.** Repo A's own decisions said "scope it
   tightly" and it reached hundreds of commits in days. Scope is the human's call, made per item.
 

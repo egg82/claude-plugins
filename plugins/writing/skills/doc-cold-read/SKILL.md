@@ -1,6 +1,6 @@
 ---
 name: doc-cold-read
-description: "Adversarially cold-read a document (README, ADR, design doc, wiki page, spec) the way a stranger will — leaked deliberation, insider shorthand, low-density prose, false claims, staleness from editing — and decide when it should be split. Use before a doc is \"done\", when reviewing someone's doc for clarity, when a doc reads like walking into the middle of a conversation, and after any burst of editing."
+description: "Adversarially cold-read a document (README, ADR, design doc, wiki page, spec) the way a stranger will — leaked deliberation, insider shorthand, low-density prose, false claims, staleness from editing — and decide when it should be split, including a doc every session is told to read that has grown too costly to load. Use before a doc is \"done\", when reviewing someone's doc for clarity, when a doc reads like walking into the middle of a conversation, and after any burst of editing."
 ---
 
 # Cold-read a doc the way a stranger will
@@ -124,6 +124,19 @@ all rot at once. Routing by invalidation puts each piece where its own subject w
   deepest inside a section about something else.
 - **Narration of how the doc itself changed** — "the withholding that was removed", "the non-goal was
   too broad". This is changelog wearing a design doc's clothes. Git already has it.
+
+**A second axis: how the doc is read.** Invalidation decides where a section belongs. Read cost decides
+whether one file is too big, and it matters most for a doc an always-loaded file (`CLAUDE.md`) tells every session
+to read, which every session pays for in full. One repo's decisions log grew past a hundred thousand tokens that
+way, every writer reading it before its task. Measure in tokens, not lines, and act when such a doc outgrows a budget:
+
+- **Looked up by key** (decisions, runbooks, per-service notes): split by the key a reader arrives with, usually the
+  system, which is also what invalidates those entries, and leave an index of title, file and one line each.
+  Point the always-loaded file at the index.
+- **Scanned whole** (a systems inventory, a queue): keep one file and make it denser instead. Its use is seeing
+  every row at once, which a split breaks.
+- **Cited by title elsewhere:** a split silently strands every citation. Land it with a check that each cited title
+  resolves to a heading, and move the text byte-identical first, distilling in later changes.
 
 **Do not reach for ADRs by reflex.** They are the obvious answer and usually the wrong one here: an
 ADR log is append-only and never retires, so a reader asking "why does this behave this way *now*"

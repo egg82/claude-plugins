@@ -14,6 +14,9 @@ Secrets in more than one namespace, restarts and a monitoring rule — count tha
   the set of words meaning "secret" is open. Print fields you decided are safe; reduce the rest.
 - Hashes answer the real questions (set? changed? same in two places?) — comparing a credential
   across two namespaces by hash beat seeing it.
+- **A hash hides only a high-entropy value.** Names, words, hosts and IPs fall to guess-and-check: a "salted hash"
+  list of people's names shipped beside its salt, and an audit recovered most of them with a dictionary.
+  Never ship a low-entropy list in hashed form; keep it out of the tree (a CI secret).
 - **A hash cannot tell you the probe failed.** A redacted `len=20` was the literal string
   `(Property not found)`. Test the raw value against the API's not-found/null/error shape BEFORE
   reducing it, and give the probe a control field known to exist and one known not to.
