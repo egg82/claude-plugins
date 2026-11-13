@@ -1,6 +1,6 @@
 {
   "name": "engineering",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Keep an agent-built codebase well designed: structural gates with held ledgers, tests proven able to fail, bug hunts proven by running them, API contracts.",
   "author": {
     "name": "egg82",

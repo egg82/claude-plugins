@@ -1,6 +1,6 @@
 ---
 name: selfhosted-options
-description: "Research and recommend a self-hosted app for a job — \"I want something that does X, what are my options?\" or \"is there something better than X?\" Use whenever the user is choosing between self-hosted tools, asking what exists for a homelab need, thinking of switching away from something they run, or evaluating an arr-stack or Docker/Kubernetes app. Vetting one known repo is repo-vet."
+description: "Research and recommend a self-hosted app for a job (\"what are my options?\", \"something better than X?\"). Use whenever the user is choosing between self-hosted tools, asking what exists for a homelab need, thinking of switching away from something they run, or evaluating an arr-stack or Docker/Kubernetes app. Vetting one known repo is repo-vet."
 ---
 
 # Choosing a self-hosted app

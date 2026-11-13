@@ -1,6 +1,6 @@
 ---
 name: search-craft
-description: "How to construct, diagnose and iterate a web search query so it finds the answer. Use BEFORE any web search — WebSearch, SearXNG, or a site's own search box — and again whenever results disappoint, especially before rewording a query you already tried; tells whether the query, the index or the question is at fault."
+description: "How to construct, diagnose and iterate a web search query so it finds the answer. Use BEFORE any web search — WebSearch, SearXNG, or a site's own search box — and again whenever results disappoint, especially before rewording a query you already tried."
 ---
 
 # Search craft

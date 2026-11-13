@@ -1,6 +1,6 @@
 ---
 name: pr-description
-description: "Write a pull/merge request description a reviewer understands in a minute — Why, How (with what was verified), a small flow diagram, screenshots for UI — and publish it with gh or glab. Use when opening a PR or MR, asked to \"write the PR description\" or \"make a PR/MR\", or adding a diagram to one. NOT commit messages or reviewing a PR (/code-review)."
+description: "Write a pull/merge request description a reviewer understands in a minute and publish it with gh or glab. Use when opening a PR or MR, asked to \"write the PR description\" or \"make a PR/MR\", or adding a diagram to one. NOT commit messages or reviewing a PR (/code-review)."
 ---
 
 # PR / MR descriptions a reviewer can read

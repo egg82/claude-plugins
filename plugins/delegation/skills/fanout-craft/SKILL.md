@@ -1,6 +1,6 @@
 ---
 name: fanout-craft
-description: "How to delegate to subagents or peer sessions so it stays affordable and nothing gets lost — the brief, model per agent, breadth over depth, durable findings, collecting results, reading a run's cost. Use BEFORE spawning subagents for research, sweeps or parallel investigation; before setting up a controller session over other sessions; and when a fan-out returned less than it should; and before heavy local work, a CI pipeline or an API burst while other sessions share the host. NOT whether you may fan out."
+description: "How to delegate to subagents or peer sessions so it stays affordable and nothing gets lost: which model per agent, the brief, collecting results. Use BEFORE spawning subagents for research, sweeps or parallel investigation; before setting up a controller session over other sessions; when a fan-out returned less than it should; and before heavy local work, a CI pipeline or an API burst while other sessions share the host. NOT whether you may fan out."
 ---
 
 # Fan-out craft
@@ -146,7 +146,8 @@ detail and the incident are in the `references/` file named:
   is a valid answer", and for research *"load the `search-craft` skill before your first search"*
   (`brief-readers.md`).
 - **For writers:** a worktree under `$HOME` (not the scratchpad), its own test database and port, explicit
-  worker counts, a commit after each verified step, and *"never raise a held count or loosen a check to
+  worker counts, the target tests to run (a full-suite run in a subagent is gated), a commit after each
+  verified step, and *"never raise a held count or loosen a check to
   pass"* — that rule is owned by `agentic-engineering` (`brief-writers.md`).
 - **No `ps` while credentialed commands run** — argv leaks bearer tokens into the transcript; hand secrets
   over by file or env var (`brief-hazards.md`).

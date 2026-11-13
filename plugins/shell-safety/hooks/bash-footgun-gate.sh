@@ -242,6 +242,30 @@ if re.search(r"\bpipefail\b", cmd) and re.search(r"\|\s*grep\b[^|;&]*\s-[a-zA-Z]
         "or drop pipefail for that check."
     )
 
+# RULE-ID: grep-v-status
+# 4b. `grep -v` whose output is discarded (-q, or stdout to /dev/null) in the Bash tool's shell. There
+#    `grep` is the harness's function over an embedded ugrep, and in that shape it exits 0 only when NO
+#    line matches, instead of when ANY line survives the inversion. Measured on a two-line
+#    file with one matching line: -vq, -v >/dev/null and -v &>/dev/null all gave 1; to a file, to a
+#    pipe and via `command grep` all gave 0. A CI path classifier probe called a code change docs-only.
+#    `command grep`, `/usr/bin/grep` and `git grep` are not the function and pass.
+for _m in re.finditer(r"\bgrep\b", cmd):
+    _pre = cmd[: _m.start()]
+    if re.search(r"(?:\bcommand|\bgit|/)\s*$", _pre) or (_pre and _pre[-1] in "-_."):
+        continue
+    _rest = re.sub(r"'[^']*'|\"(?:[^\"\\]|\\.)*\"", "Q", cmd[_m.end():])  # a quoted pattern's | is not a pipe
+    _seg = re.split(r"\|\||&&|[|;\n]", _rest, maxsplit=1)[0]
+    _inv = re.search(r"\s-[a-zA-Z]*v[a-zA-Z]*\b|\s--invert-match\b", _seg)
+    _quiet = re.search(r"\s-[a-zA-Z]*q[a-zA-Z]*\b|\s--(?:quiet|silent)\b|(?:^|\s)[1&]?>\s*/dev/null", _seg)
+    if _inv and _quiet:
+        findings.append(
+            "`grep -v` with its output discarded (-q or >/dev/null): in this shell grep is the harness's "
+            "ugrep function, which then exits 0 only if NO line matches, not if any line survives — "
+            "so the status is wrong exactly when the answer matters. Use `command grep -v …`, or count "
+            "survivors: `[ \"$(grep -vc X f)\" -gt 0 ]`."
+        )
+        break
+
 # RULE-ID: for-in-find-ls
 # 5. `for f in $(find ...)` / `$(ls ...)`. The shell word-splits the output on whitespace, so every
 #    filename containing a space becomes several loop iterations that are not paths. It fails
@@ -768,8 +792,9 @@ if _unguarded_push(cmd, False):
 #     were committed on a branch while the transcript showed "15 failed" two lines above the commit.
 #     Allowed when the status is read in between (`$?`, `PIPESTATUS`), or `pipefail` is set and the
 #     test run is joined to the commit by `&&` alone.
-_TEST_RUN = re.compile(r"\b(?:pytest|py\.test|tox|nox|jest|vitest|cargo\s+test|go\s+test"
-                       r"|(?:npm|pnpm|yarn)\s+(?:run\s+)?test|make\s+(?:test|check)|-m\s+pytest)\b")
+# Not inside a path or file name (`tests/pytest.ini`, `vitest.config.ts`): a `git add` of one is no test run.
+_TEST_RUN = re.compile(r"(?<![/\w.-])(?:pytest|py\.test|tox|nox|jest|vitest|cargo\s+test|go\s+test"
+                       r"|(?:npm|pnpm|yarn)\s+(?:run\s+)?test|make\s+(?:test|check)|-m\s+pytest)(?![\w./-])")
 _GIT_WRITE = re.compile(r"\bgit\s+(?:-C\s+\S+\s+)?(?:commit|push)\b")
 
 
@@ -1292,6 +1317,96 @@ if (re.search(r"%s\s+volume\s+prune\b(?![^;&|]*--filter)" % _ctr, cmd)
         "sessions' and the operator's included. `podman rm -v` already took your container's anonymous "
         "volumes; remove anything else by name (`podman volume rm <name>`) or prune with `--filter label=<yours>`."
     )
+
+# RULE-ID: subagent-full-suite
+# Not a silent foot-gun but a cost, gated here because the prose rule failed at scale: subagents ran the whole suite
+# far more often than main sessions did, though "run only the tests the change touches" was written in every repo. Applies
+# only when the payload carries agent_id (a subagent; the root session is never blocked). "Full" means no test path,
+# `::`, `-k`, `-m` or `--lf`; a bare tests directory counts as full. `FULL_SUITE=1` in the command is the explicit
+# opt-in a brief grants for one deliberate full run.
+_PY_WRAP_RUN = {"uv", "poetry", "pdm", "pipenv", "hatch", "rye"}
+_PY_WRAP_PLAIN = {"timeout", "nice", "env", "time", "stdbuf", "xvfb-run"}
+_PY_INFO = {"--collect-only", "--co", "--version", "-V", "-h", "--help", "--fixtures", "--markers"}
+
+
+def _pytest_args(toks):
+    """Arguments after pytest when this statement runs pytest in command position, else None."""
+    while toks and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", toks[0]):
+        toks = toks[1:]
+    if not toks:
+        return None
+    head = toks[0].rsplit("/", 1)[-1]
+    if head in ("pytest", "py.test"):
+        return toks[1:]
+    if re.match(r"^python[0-9.]*$", head) and toks[1:3] == ["-m", "pytest"]:
+        return toks[3:]
+    if head in _PY_WRAP_RUN and toks[1:2] == ["run"]:
+        return _pytest_args(toks[2:])
+    if head in _PY_WRAP_PLAIN:
+        rest = toks[1:]
+        while rest and (rest[0].startswith("-") or re.match(r"^[0-9.]+[smh]?$", rest[0])):
+            rest = rest[1:]
+        return _pytest_args(rest)
+    return None
+
+
+def _targets_tests(args):
+    for a in args:
+        if a in _PY_INFO or a in ("--lf", "--last-failed", "--sw", "--stepwise", "--pyargs"):
+            return True
+        if re.match(r"^-(k|m)", a) and not a.startswith("--"):
+            return True
+        if a.startswith("-"):
+            continue
+        if "::" in a or a.endswith(".py"):
+            return True
+        if "/" in a and not re.match(r"^(\./)?([\w.-]+/)*tests?/?$", a):
+            return True
+    return False
+
+
+def _statements(s):
+    """Split on ; newline && || | outside quotes: `grep -E 'xdist|pytest -n' ci.yml` is one statement, not a pytest."""
+    out, cur, q, i = [], [], "", 0
+    while i < len(s):
+        c = s[i]
+        if q:
+            cur.append(c)
+            if c == q:
+                q = ""
+            elif c == "\\" and q == '"' and i + 1 < len(s):
+                cur.append(s[i + 1])
+                i += 1
+        elif c in "'\"":
+            q = c
+            cur.append(c)
+        elif c in ";\n|" or s.startswith("&&", i):
+            out.append("".join(cur))
+            cur = []
+            if s.startswith(("&&", "||"), i):
+                i += 1
+        else:
+            cur.append(c)
+        i += 1
+    out.append("".join(cur))
+    return out
+
+
+if d.get("agent_id") and not re.search(r"\bFULL_SUITE=1\b", cmd):
+    import shlex
+    for _st in _statements(cmd):
+        try:
+            _toks = shlex.split(_st)
+        except ValueError:
+            _toks = _st.split()
+        _args = _pytest_args(_toks)
+        if _args is not None and not _targets_tests(_args):
+            findings.append(
+                "A full-suite pytest run in a subagent. Run the tests your change touches (a path, `file::test`, "
+                "`-k` or `-m`) plus the structural gates; CI runs the rest. If your brief asked for one deliberate "
+                "full run, prefix that command with `FULL_SUITE=1`."
+            )
+            break
 
 if not findings:
     sys.exit(0)

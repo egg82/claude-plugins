@@ -1,6 +1,6 @@
 ---
 name: api-contract-first
-description: "Give an HTTP API a contract a client can turn into typed objects — one schema per resource, one type per field name, typed errors, constrained parameters, affordances so clients need not poll or over-fetch. Use when a route returns bare `dict`/`Any`, near-duplicate schemas disagree on a field, deciding new-endpoint-vs-parameter, a generated client is full of `Object`, adding response models to a shipping API, or naming new fields. NOT auth or transport security."
+description: "Give an HTTP API a contract a client can turn into typed objects. Use when a route returns bare `dict`/`Any`, near-duplicate schemas disagree on a field, deciding new-endpoint-vs-parameter, a generated client is full of `Object`, adding response models to a shipping API, or naming new fields. NOT auth or transport security."
 ---
 
 # Contract-first APIs

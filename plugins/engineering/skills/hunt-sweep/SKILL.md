@@ -1,6 +1,6 @@
 ---
 name: hunt-sweep
-description: "Run the standing whole-stack hunt over a repo — correctness, performance and (with an attack surface) security lanes, each as duplicate hunters in waves across every layer — then dedupe and land each confirmed finding test-first. Use when the user asks to \"run the bug hunts\", \"hunt for bugs and optimizations\", \"a bug hunt and a perf hunt\", \"add a security hunt\", or repeats that standing instruction. Hunter method is bug-hunt."
+description: "Run the standing whole-stack hunt over a repo — correctness, performance and security lanes — and land each confirmed finding test-first. Use when the user asks to \"run the bug hunts\", \"hunt for bugs and optimizations\", \"a bug hunt and a perf hunt\", \"add a security hunt\", or repeats that standing instruction. Hunter method is bug-hunt."
 ---
 
 # Hunt sweep

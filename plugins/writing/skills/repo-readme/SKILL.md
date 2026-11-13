@@ -1,6 +1,6 @@
 ---
 name: repo-readme
-description: "Write a genuinely good, human-readable README (or docs/ tree) for a code repository — what it is, why it exists, how to use or contribute. Use when creating a README, replacing GitLab/GitHub \"Getting started\" boilerplate, revising one, or structuring a repo's docs. NOT Confluence pages (confluence-kb-docs), CLAUDE.md files, or a cold-read review (doc-cold-read)."
+description: "Write a genuinely good, human-readable README (or docs/ tree) for a code repository. Use when creating a README, replacing GitLab/GitHub \"Getting started\" boilerplate, revising one, or structuring a repo's docs. NOT Confluence pages (confluence-kb-docs), CLAUDE.md files, or a cold-read review (doc-cold-read)."
 ---
 
 # Writing a genuinely good repo README

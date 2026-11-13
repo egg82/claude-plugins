@@ -1,6 +1,6 @@
 ---
 name: always-on-prune
-description: "Decide which loading tier each piece of instruction text belongs in — CLAUDE.md imports, skill descriptions, memory indexes, path rules, skill bodies, references — and move it to the cheapest tier that still delivers it. Use to reduce always-on load, prune resident memory or CLAUDE.md, when skill descriptions are dropped from the listing, a hygiene check reports growth, or context feels heavy. Also to split a skill into method plus references, move instance data out, or dedupe a rule across skills."
+description: "Decide which loading tier each piece of instruction text belongs in and move it to the cheapest tier that still delivers it. Use to reduce always-on load, prune resident memory or CLAUDE.md, when skill descriptions are dropped from the listing, a hygiene check reports growth, or context feels heavy. Also to split a skill into method plus references, move instance data out, or dedupe a rule across skills."
 ---
 
 # Pruning the always-on tier

@@ -1,6 +1,6 @@
 ---
 name: cc-tool-vet
-description: "Decide whether a hyped Claude Code / AI-agent tool, framework or skill collection (usually a GitHub link) is worth adopting FOR YOU versus what Claude Code and your skills already do. Use when someone drops a link and asks \"is this worth it / would this help / is this just hype\". Verdict: adopt / steal-the-idea / skip. NOT \"should I trust this code?\" (repo-vet)."
+description: "Decide whether a hyped Claude Code / AI-agent tool, framework or skill collection (usually a GitHub link) is worth adopting FOR YOU versus what Claude Code and your skills already do. Use when someone drops a link and asks \"is this worth it / would this help / is this just hype\". NOT \"should I trust this code?\" (repo-vet)."
 ---
 
 # Is this tool actually worth adopting, or is it hype?

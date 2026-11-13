@@ -6,7 +6,9 @@ metadata:
   check: "n/a — a standing preference about spending, with no live system to probe"
 ---
 
-The user pays a flat-rate subscription, so unused weekly budget is simply lost. Ideally usage reaches 100% every week, right at the reset time. Budget is a schedule, not a cost to minimise.
+The user pays a flat-rate subscription, so unused weekly budget is simply lost and nothing short of the weekly cap
+argues for spreading work out. Ideally usage reaches 100% every week, right at the reset time. Budget is a
+schedule, not a cost to minimise.
 
 **How to apply:** when they give the usage level and the reset time, plan toward finishing near 100% at the
 reset: start the next worthwhile job rather than holding it "to be safe", and front-load big fan-outs early

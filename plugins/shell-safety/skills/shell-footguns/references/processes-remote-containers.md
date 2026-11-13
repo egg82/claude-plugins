@@ -224,6 +224,10 @@ So detaching is two steps, always: launch it detached, **then** arm a harness-tr
 *separate* call from the launch: the `nohup` exec itself should return immediately and must not be the
 thing you background.
 
+**A `run_in_background` job dies with the session that started it**, a handoff at the context limit included. A job
+that must outlive the session is launched detached (above, with its own `PATH`), and the receiving session's prompt
+names it and its log.
+
 **`cd dir && nohup job &` sends the `cd` to the background as well.** `&` applies to the whole `&&` list, so the
 `cd` runs in the backgrounded subshell, and the next line runs in the directory you started in. In one
 session an `echo … >> notes.txt` placed after such a launch went into the repo checkout instead of the
@@ -319,3 +323,9 @@ dated holding dir (`.holding-YYYYMMDD`) is shared: every session that moves some
 there. One session cleared its own two items by removing the whole dir, with an `ls` in the same command that it
 never read, and took other projects' holds with it. List the dir, read the listing, then remove the items you put
 there by name. An item path inside the dir is allowed; the dir itself is blocked.
+
+**A full-suite pytest run in a subagent is blocked.** `[gate:subagent-full-suite]` Not silent but costly: subagents
+ran the whole suite far more often than main sessions, though every repo said to run only what the change touches.
+A subagent runs a path, `file::test`, `-k`, `-m` or `--lf` plus the structural gates; a bare `tests/` counts as
+full. A brief that wants one deliberate full run says so, and that command carries `FULL_SUITE=1`. The root session
+is never blocked. The rule's owner is `fanout-craft`'s `references/brief-writers.md` (delegation plugin).

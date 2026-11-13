@@ -1,6 +1,6 @@
 ---
 name: agentic-engineering
-description: "How to keep a codebase that coding agents write well-designed — small single-purpose functions and files, decoupling patterns, no god objects — via structural gates and held ledgers, a fit pass before new systems, tests proven able to fail, and LLM behaviour kept in code. Use when starting or restructuring an agent-built app, a file or function has become a god object, adding tests to untested code, writing a repo's engineering doc or CLAUDE.md, an agent loosened a threshold, or asked how to do agentic / vibe-coded development well."
+description: "How to keep a codebase that coding agents write well-designed — structural gates, held ledgers, decoupling patterns, a fit pass before new systems, LLM behaviour kept in code. Use when starting or restructuring an agent-built app, a file or function has become a god object, adding tests to untested code, writing a repo's engineering doc or CLAUDE.md, an agent loosened a threshold, or asked how to do agentic / vibe-coded development well."
 ---
 
 # Agentic engineering
@@ -43,9 +43,11 @@ day the rule arrives, so freeze today's violations in a **per-file ledger** that
   rose, then set the final counts from CI's "stale, lower it" output. A split moves counts between
   files, so it may re-seed only when no pre-existing file rises in any rule. (One repo's rework
   merged a dozen branches this way; taking one side whole silently undoes the other's reductions.)
-- **Never raise a held count to get a change through.** Agents did it twice in repo A, and both times
-  the real cause was a fixable regression. Put this line in the repo's CLAUDE.md and in every worker's
-  brief. A Stop hook can enforce it (`held-ledger-raise-gate.sh` in this setup).
+- **Never raise a held count or loosen a check to get a change through.** Agents did it twice in
+  repo A, and both times the real cause was a fixable regression. Put this line in the repo's CLAUDE.md
+  and in every worker's brief. A Stop hook can enforce it (`held-ledger-raise-gate.sh` in this setup).
+- **Replacing a gate with one that measures better is a design change, not loosening**: allowed with
+  evidence the old one mismeasured and the owner's approval, as its own change stating both.
 - **Nor make the code worse to stay under a limit**, e.g. by cramming lines, deleting explanatory
   comments, or moving SQL work into Python to save a line. No count rises, so only review sees it. Pay
   with a real reduction, split the file, or report it.
@@ -132,33 +134,47 @@ machine, because those were what the work needed.
 - **Tests from the agent that made the change are weak.** A mutation audit of a large
   agent-written suite found dozens of surviving planted mutants. Agent-written fix tests showed no effect on
   outcomes.
-- **Blind contract tests:** a different agent, given only the interface and the contract, never the
-  implementation, writes the tests. In repo A that found a real undo bug the implementation-aware
-  tests missed. Interface-first designs (an API module of interfaces) make this cheap. **This is the best use
-  of an agent for someone who designs well and dislikes writing tests.**
+- **One suite per contract, written blind:** a different agent, given only the interface and the
+  contract, writes the tests, and the writer adds no duplicate. Isolation measurably helps; a second
+  suite beside it is unmeasured (`references/evidence.md`). In repo A a blind suite found a real
+  undo bug the implementation-aware tests missed. **This is the best use of an agent for someone who
+  designs well and dislikes writing tests.**
+- **Test depth follows risk, tiered once in the engineering doc** (the template's table): silent or
+  data-losing logic gets behaviour-level tests first; glue one smoke test per entry point; UI
+  render-and-look, never snapshots; one-off scripts none. In audited repos tests were about half of
+  what agents wrote while most escaped bugs were unit-sized logic defects.
+- **Simulations run nightly, readouts never fail.** One smoke route per PR, the full run on a label;
+  very few escaped bugs needed a simulation to catch, while a nightly lane still caught regressions. A nightly
+  red is read and queued the next day. Moving a suite there: `verification-gate`'s
+  `references/suite-conformance.md`.
 - **Property tests from the stated contract** find real bugs (56% of LLM-written reports valid in a
   100-package study). Run a fast profile on every push and a deep one on a schedule.
 - **Prove a suite can fail:** plant a written list of wrong implementations (`MUTANTS.txt`), add directed
   tests for the survivors, and record equivalent mutants with the reason no test can tell them apart.
+  Commit the script that plants them beside the list: plants left in scratch make a "before" score nobody can re-run.
 - **Bug hunts land findings-first:** each finding is committed as a strict xfail asserting the wanted
   behaviour, then fixed in a separate commit that flips it.
 - **When an interface removes or renames a type, port the existing suites in the same change.** A suite
   that no longer imports doesn't go red; it silently stops collecting (about 90 contract tests did).
 
-## 6. Fast from the first test
+## 6. A test budget from the first test
 
 Repo A's suite grew slow and was sped up after the fact with shards, a durations file and CPU
 requests. Make speed a gate while the suite still runs in seconds:
 
-- **A per-test ceiling with a held list that starts empty** (`templates/conftest_time_gate.py`). Set the
-  ceiling from measurement plus headroom. Speed the test up or split it; never raise the limit.
-  **Measure CPU seconds, not wall seconds**: a wall-time gate fails fast tests on a slower CPU type or
-  an overloaded runner, and a gate that cries wolf gets switched off. CPU time still drifts when a
-  lazily built shared cache charges whichever test fills it first, and on a swapping host; the
-  template's docstring says how to handle both.
+- **State the scope and a per-PR wall-clock budget at project start**, in the engineering doc (a CLI:
+  under 2 min; an app with an API: about 5). Anchor it on an outside figure, never the suite's own
+  history: a unit test costs milliseconds, 0.05 s at most. Hunts that compared a suite with itself made
+  it faster by their own measure while the total never moved.
+- **Budgets are wall clock and count setup, teardown and waiting**: each CI job's timeout is its
+  budget, plus a per-test ceiling (`templates/conftest_time_gate.py`, held list starting empty). The
+  CPU-only body gate this template used to be taught agents to move cost into fixtures, and passed a test waiting
+  out a 5 s production timeout. Time in tests comes from an injected clock (`verification-gate` §7).
 - **Whoever writes a test makes it fast before committing it**: run it under the gate and read the
-  slowest durations. The usual agent-made cause is quadratic re-computation, such as re-simulating from
-  time zero for every sample. Carry state forward instead.
+  slowest durations. The usual agent-made cause is quadratic re-computation (re-simulating from time
+  zero per sample); carry state forward instead.
+- **Run what you touched**, plus the structural gates; CI runs the rest. A full-suite run in a
+  subagent is gated (`fanout-craft`).
 - **Test jobs run in a prebuilt image** with dependencies installed, rebuilt only when requirements
   change, so no job spends its first minute on `pip install`.
 - **Mutation runs need per-test timeouts**, thread-based: about 1 in 10 mutants hangs. (Worker counts
@@ -247,7 +263,8 @@ so mark anything beyond these items non-blocking. Read the MR diff, its pipeline
 3. **A split is byte-identical**: the MR names its proof (identical outputs or hashes, the same test
    results), and no behaviour change rides along in the same commit.
 4. **Tests are blind and can fail**: written from the interface by an agent that didn't write the
-   code, with a planted-mutant run or a red-first commit, not just a green suite.
+   code, with a planted-mutant run or a red-first commit, not just a green suite. One suite per
+   contract: the writer added no duplicate, and test depth matches the code's risk tier.
 5. **The design moved toward fewer, narrower things**: net lines down or flat for a refactor, no new
    parallel system (a fit pass shows on any new kind of thing), and patterns where they remove a
    class of bug, not as decoration (no new locator for something with one caller).
@@ -276,9 +293,11 @@ Report findings as pass, or as concrete defects with file and line. A clean MR g
 
 ## Rolling this out to an existing repo
 
-1. Measure it: functions over 80 lines, files over ~300, pyright errors, slowest tests, import hubs.
-2. Write `docs/engineering.md` with the repo's rules, pointing at the ledgers for the numbers rather
-   than a dated table (the table goes stale with the first split).
+1. Measure it: functions over 80 lines, files over ~300, pyright errors, slowest tests, import hubs,
+   and CI wall time per job against a stated budget.
+2. Write `docs/engineering.md` with the repo's rules, test budget and risk tiers, pointing at the
+   ledgers for the numbers rather than a dated table. Queue "bring the suite to the current rules"
+   (`verification-gate/references/suite-conformance.md`) as an item.
 3. Add the gates with ledgers seeded at today's counts, each with its controls, in CI.
 4. Trim CLAUDE.md toward a router: the house rule, "never raise a held count", the fit pass, and
    pointers.

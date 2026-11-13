@@ -87,6 +87,13 @@ no PCRE inline flags — so every `(?i)`-prefixed pattern was silently dead. A d
 indistinguishable from a clean result. Use `grep -i`, and **validate a probe in the context that will
 actually run it.**
 
+**That function also gets `grep -v`'s exit status wrong when the output is discarded.** `[gate:grep-v-status]`
+With `-q`, `>/dev/null` or `&>/dev/null`, it exits 0 only when *no* line matches, instead of when any
+line survives the inversion. On a two-line file with one matching line, all three forms gave 1; to a
+file, into a pipe, through `command grep` and inside `bash script.sh` (GNU grep) all gave 0. A local
+probe of a CI path classifier therefore called a code change docs-only while CI, on GNU grep, was right.
+For a status, use `command grep -v`, or count the survivors (`grep -vc`).
+
 **A glob is expanded by the shell that TYPES it, not the one that gains privilege.**
 **Deliberately NOT gated** — the string cannot say whether the path is readable to the caller, and
 `sudo ls /var/log/*.log` is both fine and identical in shape. `sudo -n stat /var/lib/app/keys/*.pem`

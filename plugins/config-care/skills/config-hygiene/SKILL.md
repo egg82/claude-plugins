@@ -35,6 +35,7 @@ Detail, and what to do about each finding: `references/checks.md`.
 | `refs` | `[[links]]` in skills and companions pointing at a memory or skill that doesn't exist |
 | `numbering` | colliding (level, number) headings, or numbers out of order after a graft |
 | `testiso` | a test suite mutating the real `$HOME` |
+| `growth` | a skill's body or references grown past its recorded size (seed or re-seed after review with `skills --write-sizes`, kept in `~/.claude/local/config-hygiene/`) |
 | `shareable` | refusals on a copy leaving this machine (`references/shareable-gate.md`) |
 
 `section-inventory.py` is not a mode: it diffs a file's per-section inventory before and after your own

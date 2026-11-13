@@ -1,6 +1,6 @@
 ---
 name: model-golf
-description: "Empirically compare models, prompts or effort settings on YOUR real workload instead of benchmarks and vibes — task set, run matrix, honest grading, cost under prompt caching. Use when choosing which model to route subagents to, deciding whether an expensive model is worth it, testing whether a prompt change changes behaviour, or asked \"is X actually better than Y for this\". NOT skill triggering (skill-creator)."
+description: "Empirically compare models, prompts or effort settings on YOUR real workload instead of benchmarks and vibes. Use when choosing which model to route subagents to, deciding whether an expensive model is worth it, testing whether a prompt change changes behaviour, or asked \"is X actually better than Y for this\". NOT skill triggering (skill-creator)."
 ---
 
 # Golf a model choice

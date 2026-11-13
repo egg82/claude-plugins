@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 4  # bump on any behaviour change; the session hook reports skew
+# hook-version: 5  # bump on any behaviour change; the session hook reports skew
 # Stop: report memory/skill files that changed this session WITHOUT a Write/Edit that explains it.
 #
 # WHY THIS EXISTS, and why it is a second mechanism rather than a wider version of the first:
@@ -234,10 +234,10 @@ more = len(unexplained) - len(shown)
 lines = "\n".join("  " + p.replace(home, "~") for p in shown)
 sys.stderr.write(
     "%d memory/skill file(s) changed this session with no Write/Edit in any session's transcript to explain "
-    "it, so `memory-write-gate.sh` never checked them:\n%s%s\n\n"
-    "If you wrote these from Bash: that gate is PreToolUse on Write|Edit|MultiEdit only, so the "
-    "write looked fine and was never validated. Re-run it against each file before finishing, or "
-    "re-apply the change with Edit.\n"
+    "it, so no write gate checked them:\n%s%s\n\n"
+    "If you wrote these from Bash: memory/*.md -- re-run `memory-write-gate.sh` against each file, or "
+    "re-apply the change with Edit. skills/ -- that gate exits 0 there, so re-running it proves nothing; "
+    "diff each file against its pre-edit copy and run config-hygiene's `hygiene.py skills` if you have it.\n"
     % (len(unexplained), lines, ("\n  ...and %d more" % more) if more > 0 else "")
 )
 sys.exit(2)

@@ -1,6 +1,6 @@
 ---
 name: game-design
-description: "Evidence-labelled game design method for any genre and for gamified apps. Use when designing or reviewing fun, juice, game feel, controls, readability or polish; 'dopamine' or compulsion-loop claims; onboarding, tutorials, glows vs words; players not knowing how to progress, hidden unlocks, quest markers, yellow paint; rewards, streaks, return visits; currencies, sinks and faucets, inflation, cost or XP curves, balance and dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle and incremental with prestige, story-driven: pacing, choices, mysteries, spoilers); planning a playtest or modelling progression; making automation or simulations understandable; laying out a HUD, touch controls or a settings menu. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
+description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, juice, game feel, controls, readability, polish; 'dopamine'/compulsion-loop claims; onboarding, tutorials, glows vs words, players stuck on how to progress, hidden unlocks, quest markers, yellow paint; rewards, streaks, return visits; currencies, sinks/faucets, inflation, cost or XP curves, balance, dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle/incremental/prestige, story pacing, choices, mysteries, spoilers); playtests, progression models; making automation or simulations understandable; a HUD, touch controls, settings menu. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
 ---
 
 # Game design
@@ -125,7 +125,8 @@ on a rule.
 - **A simulation fails only on invariants; rhythm is a readout.** Softlocks, runaway spirals, a tool user forced to
   babysit and a shown number that doesn't come true are failures. How often a player meets a new thing or a decision
   is taste: report it, never hold content to a target, or the content contorts to the number and the game goes stiff
-  (inference; no source gives a decision rate for any genre).
+  (inference; no source gives a decision rate for any genre). A readout never fails a build, and
+  whole-game simulations run nightly, not per PR (`agentic-engineering` §5).
 - **In a gamified app, a miss is the person's life, not a play.** Letting losses from the player's own choices stand
   is right for a game and wrong for a fitness tracker: there, nothing goes down and absence is never punished. Before
   carrying a rule between the two, name which side it came from (inference, an illustrative comparison of

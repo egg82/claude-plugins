@@ -19,7 +19,8 @@ Use the smallest unique anchor; when one must span a call, grep the call count a
 form: *the work completing and the record of it completing are different events* — when a system
 works but its dashboard says stale, suspect the recording.
 
-**When a scripted edit is right** (many mechanical steps, or one edit applied across files):
+**When a scripted edit is right** (many mechanical steps, or one edit applied across files; never for
+skill or memory paths, since a write gate on those paths cannot see a script file's writes):
 
 ```python
 def rep(path, old, new, label):

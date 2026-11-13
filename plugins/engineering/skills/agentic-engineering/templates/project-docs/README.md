@@ -4,8 +4,10 @@ Skeletons for the doc set an agent-built repo keeps. Copy `CLAUDE.md` to the rep
 every section has a comment saying what goes there and one invented example (a recipe tracker) to replace. Delete
 the comments and the examples when you fill them in. Method: `../../SKILL.md`.
 
-- `CLAUDE.md`: short router plus the few rules that must fire every session (fit pass, never raise a held count).
-- `docs/engineering.md`: how code is built and shipped; the gate table points at ledgers, not counts.
+- `CLAUDE.md`: short router plus the few rules that must fire every session (fit pass, never raise a held count,
+  run only the tests a change touches).
+- `docs/engineering.md`: how code is built and shipped, the project's scope, test budget and risk tiers; the gate
+  table points at ledgers, not counts.
 - `docs/systems.md`: the inventory checked before building anything new; one row per system.
 - `docs/decisions.md`: design rules as distilled decisions, with rejected options and dated supersessions.
 - `docs/open-work.md`: the queue, with "Fits into:" lines; delete items when they ship.

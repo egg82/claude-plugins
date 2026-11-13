@@ -1,6 +1,6 @@
 ---
 name: grafana-dashboards
-description: "Find, vet, adapt or build a Grafana dashboard someone will actually read — reuse-vs-build, layout that survives a glance, query traps that ship wrong numbers, dashboards as code. Use when creating a dashboard or panel, importing one, auditing stale/empty dashboards, a dashboard is slow or nobody looks at it, before building any monitoring view, or choosing USE vs RED vs golden signals. NOT alert rules or general charts (dataviz)."
+description: "Find, vet, adapt or build a Grafana dashboard someone will actually read, including dashboards as code. Use when creating a dashboard or panel, importing one, auditing stale/empty dashboards, a dashboard is slow or nobody looks at it, before building any monitoring view, or choosing USE vs RED vs golden signals. NOT alert rules or general charts (dataviz)."
 ---
 
 # Build a dashboard someone will read

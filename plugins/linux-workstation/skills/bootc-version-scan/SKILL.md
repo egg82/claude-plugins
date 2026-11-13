@@ -1,6 +1,6 @@
 ---
 name: bootc-version-scan
-description: Scan git repos for PINNED dependency versions that have drifted behind upstream — container base images (bootc/Dockerfile FROM refs), kernel package pins, ARG *_VERSION tool pins, Ansible Galaxy collections + roles, and role-var tool versions — check each against its upstream latest, and push anything behind to a webhook. Use to check for available updates to a container image stack or provisioning repo, or as a scheduled update-notifier. Reports; does not edit the repos.
+description: "Scan repos for pinned versions that have drifted behind upstream (container base images, kernel pins, tool pins, Ansible Galaxy) and push anything behind to a webhook. Use to check for updates to a container image stack or provisioning repo, or as a scheduled update-notifier. Reports only."
 ---
 
 # Pinned-version drift scan

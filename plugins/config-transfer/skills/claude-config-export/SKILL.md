@@ -1,6 +1,6 @@
 ---
 name: claude-config-export
-description: "Package Claude Code config (skills, memories, hooks, CLAUDE.md prefs) into a scrubbed, generalized bundle for a DIFFERENT trust domain — a second machine you don't control, a friend, a public share. Use for \"package my skills and memory for my other machine\", \"export my claude config\", \"share my setup\". Consuming a bundle is claude-config-import; own machines are claude-fleet-sync."
+description: "Package Claude Code config into a scrubbed, generalized bundle for a DIFFERENT trust domain — a second machine you don't control, a friend, a public share. Use for \"package my skills and memory for my other machine\", \"export my claude config\", \"share my setup\", and to publish or sync a public plugin-marketplace repo. Consuming a bundle is claude-config-import; own machines are claude-fleet-sync."
 ---
 
 # Claude Code config export (cross-boundary)

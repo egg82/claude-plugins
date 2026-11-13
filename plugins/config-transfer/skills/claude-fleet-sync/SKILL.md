@@ -1,6 +1,6 @@
 ---
 name: claude-fleet-sync
-description: Mirror Claude Code config (skills, project + global memory, user CLAUDE.md, plugins, permission allowlist, ssh aliases, toolkit dirs, systemd-creds) across machines you fully control, so every host holds the union. Use when the user asks to sync, mirror, or reconcile their Claude config / setup / skills / memory between their own machines (laptop, workstation, build VM) — e.g. "sync my claude config", "mirror my setup to the other box", "my skills have drifted between machines", "keep my skills and memory in sync" — or after adding a skill/memory/plugin/CLAUDE.md change on one box that should exist on the others.
+description: "Mirror Claude Code config (skills, memory, CLAUDE.md, plugins, allowlist, ssh aliases) across the user's own machines so every host holds the union. Use for \"sync my claude config\", \"mirror my setup to the other box\", or after a config change one box made that the others should get. NOT across a trust boundary."
 ---
 
 # Claude fleet config sync

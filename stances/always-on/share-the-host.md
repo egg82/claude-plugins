@@ -13,8 +13,8 @@ resource, message it before you start and say when you're done. Never message an
 at their context limit linger in the list, and a message wakes them on a stale context. Otherwise just go: this is a
 check, not a ritual, and no standing pairwise agreement replaces it.
 
-**A CI job that is slow or times out on some runs and not others** may be landing on the slower runner nodes; pin a
-long job to the fast ones if your runner setup allows it.
+**A CI job that times out on some runs and not others** may be on the slower runner nodes; pin a long job to the
+fast ones if your runner setup allows it.
 
 Method, what counts as heavy and who to tell: `fanout-craft`'s `references/shared-resources.md`. Cluster-side
 sizing: [[size-test-workloads-to-node]]. Relates to [[skill-fanout-is-authorized]].

@@ -223,7 +223,7 @@ rather than a dependency.
 
 | Skill | Mentioned by | Hooks it mentions |
 |---|---|---|
-| `agentic-engineering` | `hook:held-ledger-raise-gate`, `skill:bug-hunt`, `skill:fanout-craft`, `skill:hunt-sweep`, `skill:verification-gate`, `stance:code-design-stances`, `stance:prefer-subtraction` | `held-ledger-raise-gate` |
+| `agentic-engineering` | `hook:held-ledger-raise-gate`, `skill:bug-hunt`, `skill:fanout-craft`, `skill:game-design`, `skill:hunt-sweep`, `skill:verification-gate`, `stance:code-design-stances`, `stance:prefer-subtraction` | `held-ledger-raise-gate` |
 | `always-on-prune` | `skill:cc-tool-vet`, `skill:config-hygiene`, `skill:skill-golf` | - |
 | `api-contract-first` | `skill:hunt-sweep`, `skill:verification-gate` | - |
 | `audio-curation` | `skill:promo-video`, `skill:shell-footguns` | - |
@@ -236,10 +236,10 @@ rather than a dependency.
 | `claude-fleet-sync` | `skill:cc-tool-vet`, `skill:claude-config-export` | - |
 | `cluster-cert-renew` | `skill:k8s-triage` | - |
 | `cnpg-postgres-ops` | `skill:k8s-resource-sizing`, `skill:k8s-storage-ops`, `skill:k8s-triage` | - |
-| `config-hygiene` | `hook:hygiene-sessionstart`, `skill:always-on-prune`, `skill:skill-golf`, `skill:verification-gate`, `stance:knowledge-routing` | `bash-footgun-gate`, `hygiene-sessionstart` |
+| `config-hygiene` | `hook:hygiene-sessionstart`, `hook:memory-bash-write-backstop`, `skill:always-on-prune`, `skill:skill-golf`, `skill:verification-gate`, `stance:knowledge-routing` | `bash-footgun-gate`, `hygiene-sessionstart` |
 | `confluence-kb-docs` | `skill:doc-cold-read`, `skill:repo-readme`, `skill:writing-craft` | - |
 | `doc-cold-read` | `skill:cc-tool-vet`, `skill:confluence-kb-docs`, `skill:repo-readme`, `skill:writing-craft`, `stance:distill-dont-dump` | - |
-| `fanout-craft` | `hook:spawn-model-gate`, `skill:agentic-engineering`, `skill:always-on-prune`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:repo-orient`, `skill:repo-vet`, `skill:shell-footguns`, `stance:share-the-host`, `stance:skill-fanout-is-authorized` | `agent-depth-gate`, `spawn-model-gate`, `subagent-digest` |
+| `fanout-craft` | `hook:spawn-model-gate`, `skill:agentic-engineering`, `skill:always-on-prune`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:repo-orient`, `skill:repo-vet`, `skill:shell-footguns`, `stance:share-the-host`, `stance:skill-fanout-is-authorized` | `agent-depth-gate`, `bash-footgun-gate`, `spawn-model-gate`, `subagent-digest` |
 | `flux-gitops` | `skill:cnpg-postgres-ops`, `skill:k8s-secrets`, `skill:k8s-triage`, `skill:talos-ops` | - |
 | `game-design` | - | - |
 | `grafana-dashboards` | `skill:bug-hunt` | - |
@@ -261,7 +261,7 @@ rather than a dependency.
 | `search-craft` | `hook:search-craft-gate`, `skill:fanout-craft`, `skill:repo-vet`, `skill:selfhosted-options`, `skill:skill-golf`, `stance:search-read-the-failure` | `search-craft-gate` |
 | `selfhosted-options` | - | - |
 | `shell-footguns` | `hook:bash-footgun-gate`, `skill:always-on-prune`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:verification-gate`, `stance:route-lessons-yourself`, `stance:shell-gotchas`, `stance:verify-dont-anchor` | `bash-footgun-gate`, `detached-work-gate`, `memory-write-gate`, `script-lint`, `secret-redact` |
-| `skill-golf` | `skill:always-on-prune`, `skill:cc-tool-vet` | - |
+| `skill-golf` | `skill:always-on-prune`, `skill:cc-tool-vet`, `skill:config-hygiene` | - |
 | `talos-ops` | `skill:cluster-cert-renew`, `skill:k8s-resource-sizing`, `skill:k8s-triage` | - |
 | `ui-craft` | `skill:bug-hunt`, `skill:game-design`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:writing-craft` | - |
 | `verification-gate` | `skill:agentic-engineering`, `skill:api-contract-first`, `skill:bug-hunt`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:shell-footguns`, `stance:assert-scripted-edits`, `stance:no-fabricated-certainty`, `stance:verify-dont-anchor` | - |
@@ -272,7 +272,7 @@ rather than a dependency.
 | Hook | Mentioned by |
 |---|---|
 | `agent-depth-gate` | `skill:fanout-craft`, `stance:skill-fanout-is-authorized` |
-| `bash-footgun-gate` | `hook:memory-bash-write-backstop`, `hook:memory-write-gate`, `hook:script-lint`, `hook:secret-redact`, `hook:shared-checkout-backstop`, `skill:config-hygiene`, `skill:model-golf`, `skill:shell-footguns`, `stance:route-lessons-yourself`, `stance:shell-gotchas` |
+| `bash-footgun-gate` | `hook:memory-bash-write-backstop`, `hook:memory-write-gate`, `hook:script-lint`, `hook:secret-redact`, `hook:shared-checkout-backstop`, `skill:config-hygiene`, `skill:fanout-craft`, `skill:model-golf`, `skill:shell-footguns`, `stance:route-lessons-yourself`, `stance:shell-gotchas` |
 | `detached-work-gate` | `skill:shell-footguns` |
 | `held-ledger-raise-gate` | `skill:agentic-engineering` |
 | `html-render-gate` | - |

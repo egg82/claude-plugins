@@ -28,9 +28,11 @@ pages, not full papers, so treat these numbers as leads: check the paper before 
   faster** (an RCT: 16 developers, 246 tasks, early-2025 tools). Measure; don't trust the feeling.
 - **Writing executable tests before the implementation improved results** (LiveCodeBench/RepoEval), with
   the warning that incomplete or wrong tests give misleading feedback.
-- **Not measured by anyone:** whether a blind test author (one that never sees the implementation) beats
-  co-written tests. Anthropic's docs endorse the split; repo A has one anecdote of it finding a real
-  bug.
+- **Information isolation helps test authors:** tests written in a fresh session from the task alone caught
+  25% of faults, against 14% for tests written after the faulty code, across five models (arXiv 2607.05139,
+  Jul 2026; checked against the abstract only, so its exact scope is unverified). Anthropic's docs endorse
+  the split, and repo A has one case of a blind suite finding a real bug. **Not measured by anyone:**
+  whether a second, co-written suite beside the blind one adds anything; so write one suite per contract.
 - **Also not measured by anyone:** whether design docs, test-first, or planner/implementer/reviewer pipelines
   improve design quality. Measure them per project: mutation score of the contract tests, and the
   defects that escape to later bug hunts.

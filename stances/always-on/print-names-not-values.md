@@ -22,11 +22,9 @@ Secrets in more than one namespace, restarts and a monitoring rule — count tha
   reducing it, and give the probe a control field known to exist and one known not to.
 - **A `ps` listing is a credential surface** — `podman exec` / `distrobox enter` put the whole
   environment in argv. It has leaked a key here twice.
-- **Backstop, not primary control:** the secret-guard plugin's secret-redact hook (PostToolUse, `Bash|Read`)
-  gitleaks-redacts values before they reach context. The command has already run, it covers only the
-  matched tools, and a redaction banner's count is findings acted on, not proof the output is clean.
-  **It also blinds you:** fetch a secret in a separate command from the probe that uses it, or every
-  error line gets redacted too.
+- **Backstop only:** the secret-guard plugin's secret-redact hook gitleaks-redacts `Bash|Read` output after the
+  command ran; its banner count is not proof the output is clean. **It blinds you too:** fetch a secret in a
+  separate command from the probe that uses it, or the probe's error lines get redacted.
 - **Diffing near-duplicate configs prints exactly what differs — the secret.** Mask values on both
   sides (`sed -E 's/[A-Za-z0-9]{24,}/<v>/g'`) or compare per-line hashes.
 

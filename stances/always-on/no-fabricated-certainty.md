@@ -6,7 +6,7 @@ metadata:
 ---
 
 A report, dashboard, test or check must never present a confident value where it has none — the
-reader cannot tell a fabricated number from a measured one, so the artifact has to. Three shapes,
+reader cannot tell a fabricated number from a measured one, so the artifact has to. The shapes,
 each shipped here and caught by a human:
 
 - **A missing measurement rendered as an ordinary one** — a timed-out probe stored `pending = 0`.

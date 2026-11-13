@@ -1,6 +1,6 @@
 ---
 name: doc-cold-read
-description: "Adversarially cold-read a document (README, ADR, design doc, wiki page, spec) the way a stranger will — leaked deliberation, insider shorthand, low-density prose, false claims, staleness from editing — and decide when it should be split, including a doc every session is told to read that has grown too costly to load. Use before a doc is \"done\", when reviewing someone's doc for clarity, when a doc reads like walking into the middle of a conversation, and after any burst of editing."
+description: "Adversarially cold-read a document (README, ADR, design doc, wiki page, spec) the way a stranger will, and decide when it should be split, including a doc every session reads that has grown too costly. Use before a doc is \"done\", when reviewing someone's doc for clarity, when a doc reads like walking into the middle of a conversation, and after any burst of editing."
 ---
 
 # Cold-read a doc the way a stranger will

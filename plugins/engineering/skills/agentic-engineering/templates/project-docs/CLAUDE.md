@@ -13,8 +13,12 @@ pattern solves it? Extend that system or combine the two; build a new one only w
 open-work item carries a "Fits into:" line. Tweaks to wording and numbers need no fit pass.
 
 <!-- The held-count rule: one line, names where the ledgers are. -->
-**Never raise a held count to get a change through; split, reduce or report instead.** The gates and their ledgers
-are in `docs/engineering.md`, "Structural gates".
+**Never raise a held count or loosen a check to get a change through; split, reduce or report instead.** The gates
+and their ledgers are in `docs/engineering.md`, "Structural gates".
+
+<!-- The test-run rule: agents run the whole suite by default, and prose alone has not stopped them. -->
+**Run the tests your change touches plus the structural gates, never the whole suite; CI runs the rest** (budget and
+risk tiers: `docs/engineering.md`, "Scope and test budget").
 
 <!-- Rules that must hold even if nothing else was read. One bullet each, one sentence plus a pointer to the
 decision that owns the detail. Add one right after an incident, not before. -->

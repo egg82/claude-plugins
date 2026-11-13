@@ -16,8 +16,8 @@ see and track them in the herdr harness. Applies when `HERDR_ENV=1`.
 (`pane split --current --no-focus`).
 
 **Confirm the agent came up before prompting it.** A new pane opens a login shell, and a shell-framework update
-prompt can eat the typed start command, leaving a garbled tab the user has to close. Check its status. If it isn't
-a running claude, close that tab and start again.
+prompt can eat the typed start command. Check its status. If it isn't a running claude, close that tab and start
+again.
 
 **After the first prompt, talk to a peer only with `SendMessage`, never `herdr agent prompt` again.** Prompting types
 into the pane's input box, so it splices into whatever the user is typing there, even mid-word. This holds for a

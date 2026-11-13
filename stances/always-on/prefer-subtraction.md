@@ -28,8 +28,7 @@ before automating a manual step, ask what its timing was holding; a one-off job 
 schedule) gets a fit pass before design** — what is it an instance of, what already does that — then extend or merge
 rather than bolt on (method: `agentic-engineering` §3). Tweaks need no fit pass.
 
-**Writing or restructuring code: load `agentic-engineering`.** It holds the design taste these stances assume, and it is held firmly:
-systems behind a service locator with a Null Object default, decoupling patterns (queues, double buffers), more and
-smaller single-job functions, static types gated by a checker in CI, generated files never beside hand-edited ones, and
-**never gating behaviour on regex over natural language** — put an explicit field where the text is authored, or a
-structured field in the LLM's output. Pairs with [[distill-dont-dump]].
+**Writing or restructuring code: load `agentic-engineering`.** It holds the design taste these stances assume, held
+firmly (its §4, "Patterns, by fit"). One of those rules applies everywhere: **never gate behaviour on regex over
+natural language** — put an explicit field where the text is authored, or a structured field in the LLM's output.
+Pairs with [[distill-dont-dump]].

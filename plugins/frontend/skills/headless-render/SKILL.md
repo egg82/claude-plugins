@@ -1,6 +1,6 @@
 ---
 name: headless-render
-description: "Render an HTML page to a screenshot and actually look at it, on a host with no browser installed. Use whenever work produces HTML a human will see — dashboard, report, generated page, published artifact, UI under evaluation — before calling it done; also to check hover/focus/dark mode, pages filled by fetch, SPA routes, a page behind a login, or whether a feature is findable on a cold first visit. NOT for driving a page or asserting on clicks (claude-in-chrome)."
+description: "Render an HTML page to a screenshot and actually look at it, on a host with no browser installed. Use whenever work produces HTML a human will see, before calling it done; also to check hover/focus/dark mode, pages filled by fetch, SPA routes, a page behind a login, or whether a feature is findable on a cold first visit. NOT for driving a page or asserting on clicks (claude-in-chrome)."
 ---
 
 # Headless render

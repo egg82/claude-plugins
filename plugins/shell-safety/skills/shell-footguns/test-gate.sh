@@ -112,6 +112,26 @@ t 0 "pipefail with plain grep"                "set -o pipefail; cat f | grep tok
 t 0 "pipefail alone"                          "set -o pipefail; make build"
 t 0 "sort -u stays allowed (not gateable)"    "cut -d, -f1 in.csv | sort -u > out.txt"
 
+echo "grep -v with output discarded MUST BLOCK (the harness's grep function gets the status wrong):"
+t 2 "grep -vE alt >/dev/null"                 "grep -vE '^docs/|^[^/]+\\.md\$' c2.txt >/dev/null"
+t 2 "grep -vq"                                "grep -vq README c2.txt"
+t 2 "grep -v &>/dev/null"                     "grep -v README c2.txt &>/dev/null"
+t 2 "pipe into grep -v >/dev/null, in if"     "if git diff --name-only | grep -v '^docs/' >/dev/null; then echo code; fi"
+t 2 "grep --invert-match --quiet"             "grep --invert-match --quiet x f"
+
+echo "MUST ALLOW — the output is kept, or it is not the function:"
+t 0 "command grep -v >/dev/null (the fix)"    "command grep -v README c2.txt >/dev/null"
+t 0 "/usr/bin/grep -vq"                       "/usr/bin/grep -vq README c2.txt"
+t 0 "git grep -v -q"                          "git grep -v -q x"
+t 0 "grep -v to a file"                       "grep -v README c2.txt > out.txt"
+t 0 "grep -v piped on"                        "grep -v README c2.txt | wc -l"
+t 0 "grep -v with only stderr discarded"      "grep -v README c2.txt 2>/dev/null"
+t 0 "grep -vc count (the other fix)"          "[ \"\$(grep -vc README c2.txt)\" -gt 0 ]"
+t 0 "grep -q without -v"                      "grep -q README c2.txt"
+t 0 "pgrep -v"                                "pgrep -v x >/dev/null"
+t 0 "grep -v, then a quoted | in a later arg"   "grep -v x f > out.txt; echo 'a|b' >/dev/null"
+t 0 "a later unrelated >/dev/null"            "grep -v x f | sort; make >/dev/null"
+
 echo "NEW RULE — for-in-find/ls word-splitting MUST BLOCK:"
 t 2 "for f in \$(find ...)"                    'for f in $(find /data -name "*.csv"); do echo "$f"; done'
 t 2 "for f in \$(ls ...)"                      'for f in $(ls /data); do echo "$f"; done'
@@ -282,6 +302,9 @@ t 0 "pipefail with && chaining"                     'set -o pipefail; pytest -q 
 t 0 "pytest named only in the commit message"       'git commit -q -m "tests: pytest now runs single-process" && git push -q origin HEAD'
 t 0 "tests with no commit at all"                   'pytest -q | tail -3; echo done'
 t 0 "|| { ...; exit 1; } guards the commit"         'pytest -q > /dev/null 2>&1 || { echo "TESTS FAILED"; exit 1; }; git commit -am ok'
+t 0 "git add of a pytest.ini, then commit"          'git add app/tests/test_x.py app/pytest.ini; git commit -F msg.txt'
+t 0 "git add of a vitest config, then commit"       'git add app/client/vitest.config.ts; git commit -F msg.txt'
+t 0 "reported FP: add pytest.ini + multi-line -m"   $'git add pkg/pytest.ini pkg/tests/test_a.py ci.yml\ngit commit -q -m "build: tidy config\n\nsome text\nwith \\"quoted words\\".\n"\necho rc=$?'
 t 0 "set -e with an unpiped test run"               'set -e; pytest -q; git commit -am ok'
 t 2 "set -e does not rescue a piped run"            'set -e; pytest -q | tail -2; git commit -am ok'
 t 0 "pytest only inside a heredoc body"             $'cat >> tests/t.py <<\'E\'\n@pytest.mark.parametrize("x", [1])\ndef test_x(x): pass\nE\ngit commit -q --only tests/t.py -m t'
@@ -651,6 +674,71 @@ t 0 "no emptiness word"                 'grep -c foo f; echo "count above"'
 t 0 "verdict echo with no probe"        'echo "(empty = use the default)"'
 t 0 "asserted control, not a gloss"     'grep foo f > out; test -s out || echo "PROBE BROKEN"'
 t 0 "guarded success echo"              'grep -q foo f && echo "found"'
+
+echo "SYNC — every gate rule is documented and vice versa:"
+sync_out=$(python3 - <<'SYNCPY'
+import os, re, pathlib
+hook = pathlib.Path(os.environ["GATE"]).read_text()
+# The catalog lives in references/ beside SKILL.md; a rule documented there is documented.
+skill_md = pathlib.Path(os.environ["SKILL_MD"])
+skill = "".join(p.read_text() for p in [skill_md, *sorted((skill_md.parent / "references").glob("*.md"))])
+in_hook = set(re.findall(r"# RULE-ID: (\S+)", hook))
+in_skill = set(re.findall(r"\[gate:([a-z0-9-]+)\]", skill))
+bad = False
+for r in sorted(in_hook - in_skill):
+    print("  FAIL  gated but undocumented in the skill: %s" % r); bad = True
+for r in sorted(in_skill - in_hook):
+    print("  FAIL  the skill claims [gate:%s] but no such rule in the hook" % r); bad = True
+if not bad:
+    print("  PASS  %d rules, hook and skill docs agree" % len(in_hook))
+raise SystemExit(1 if bad else 0)
+SYNCPY
+)
+sync_rc=$?
+echo "$sync_out"
+if [ "$sync_rc" -eq 0 ]; then pass=$((pass+1)); else fail=$((fail+1)); fi
+
+echo "SIZE — a command over 128 KiB is still gated:"
+# The payload used to reach python through an env var; past MAX_ARG_STRLEN (128 KiB) exec failed with
+# E2BIG and the gate exited 0. Built in python, because mkjson's argv has the same limit.
+big_rc=$(python3 -c 'import json; print(json.dumps({"tool_name":"Bash","tool_input":{"command":"echo " + "x"*140000 + "\nfor f in $(find /data -name \"*.log\"); do tail -1 \"$f\"; done"}}))' \
+  | bash "$GATE" >/dev/null 2>&1; echo $?)
+if [ "$big_rc" -eq 2 ]; then echo "  PASS  (rc=2) 140 KB command with a gated pattern"; pass=$((pass+1))
+else echo "  FAIL  (rc=$big_rc want=2) 140 KB command with a gated pattern"; fail=$((fail+1)); fi
+
+# The rule reads agent_id from the payload, so these cases need their own payload builder.
+ta() {
+  exp="$1"; label="$2"; cmd="$3"; aid="${4-a1b2c3}"
+  out=$(python3 -c 'import json,sys; d={"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}
+if sys.argv[2]: d["agent_id"]=sys.argv[2]
+print(json.dumps(d))' "$cmd" "$aid" | bash "$GATE" 2>&1); rc=$?
+  if [ "$rc" -eq "$exp" ]; then printf '  PASS  (rc=%s) %s\n' "$rc" "$label"; pass=$((pass+1))
+  else printf '  FAIL  (rc=%s want=%s) %s\n        %s\n' "$rc" "$exp" "$label" "${out:0:110}"; fail=$((fail+1)); fi
+}
+echo "NEW RULE — a full-suite pytest in a subagent MUST BLOCK: [gate:subagent-full-suite]"
+ta 2 "bare pytest"                         'pytest -q'
+ta 2 "python -m pytest with workers"       'cd app && python -m pytest -n 4 -q'
+ta 2 "uv run pytest"                       'uv run pytest -x'
+ta 2 "env prefix then pytest"              'PYTHONPATH=. pytest -q'
+ta 2 "the whole tests directory"           'pytest app/tests/ -q'
+ta 2 "timeout wrapper"                     'timeout 600 pytest -q 2>&1 | tail -5'
+ta 2 "venv binary by path"                 '.venv/bin/pytest'
+echo "MUST ALLOW — targeted runs, the opt-in, the root session, mentions:"
+ta 0 "a test file"                         'pytest app/tests/test_engine.py -q'
+ta 0 "a node id"                           'python -m pytest tests/test_x.py::test_y'
+ta 0 "a subdirectory"                      'pytest app/tests/engine -q'
+ta 0 "-k selector"                         'pytest -q -k "save and not slow"'
+ta 0 "-m selector"                         'pytest -m structural'
+ta 0 "last failed"                         'pytest --lf'
+ta 0 "collect only"                        'pytest --collect-only -q'
+ta 0 "explicit opt-in"                     'FULL_SUITE=1 pytest -q'
+ta 0 "root session, no agent_id"           'pytest -q' ''
+ta 0 "pytest only mentioned"               'grep -rn pytest docs/engineering.md'
+ta 0 "pip install pytest"                  'pip install pytest'
+ta 0 "pytest inside a quoted grep pattern" "grep -nE 'xdist|pytest -n' .github/workflows/ci.yml" a1
+ta 0 "pytest -n quoted, piped on"          "grep -n 'pytest -n' ci.yml | head -3" a1
+ta 2 "real run after a quoted |"           "echo 'a|b'; pytest -q" a1
+ta 2 "real run piped, still blocks"        "pytest -q | tail -3" a1
 
 echo "SYNC — every gate rule is documented and vice versa:"
 sync_out=$(python3 - <<'SYNCPY'

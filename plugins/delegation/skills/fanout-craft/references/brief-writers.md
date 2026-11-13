@@ -19,6 +19,11 @@ pytest runs `TRUNCATE` each other's fixtures both report "pre-existing flakiness
 (`brief-incidents.md`). When a child reports flakiness, check what else you dispatched against that
 resource before accepting the diagnosis; a child cannot see its siblings.
 
+**Name the target tests in the brief; the writer runs those plus the structural gates, never the whole suite.**
+CI runs the rest. Subagents ran the full suite far more often than main sessions though the repo said otherwise, so
+shell-safety's `bash-footgun-gate.sh`, where installed, blocks a subagent pytest naming no path, `::`, `-k`, `-m` or `--lf`. A brief that needs one
+deliberate full run says so, and that command carries `FULL_SUITE=1`.
+
 **Pass worker counts explicitly when agents share a host** (`pytest -n 2`, `--cpus=2`). Each defaults to
 every core, so N suites multiply into overload, and the slowness reads as a regression. Check the runner
 has the plugin first: without pytest-xdist `-n` is an argument error.

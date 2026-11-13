@@ -257,9 +257,56 @@ def check_skills(root):
         if len(desc) > 1024:
             fm_bad += 1
             print(f"  {sk.parent.name:<26} description {len(desc)} chars > 1024 — crowds the skill listing")
-    if not rows and not fm_bad:
+    grown = check_skill_growth(pathlib.Path(root))
+    if not rows and not fm_bad and not grown:
         print("  clean")
-    return len(rows) + fm_bad
+    return len(rows) + fm_bad + grown
+
+
+# Skill BODIES and references load on demand, so the always-on budget never sees them, and they grow
+# unwatched, each addition justified on its own. Same ratchet as the pref baseline: growth against a recorded size per skill, reported,
+# never blocking (legitimate additions exist). Re-seed with --write-sizes after a skill-golf pass.
+# Per-user data, so it lives under ~/.claude/local/, which a plugin update does not replace.
+SIZES = HOME / ".claude/local/config-hygiene/skill-sizes.tsv"
+# Fixed word deltas, not ratios: a ratio over a skill with large references never fires. SKILL.md loads
+# whenever the skill does, so it gets the tighter limit.
+GROWTH_BODY, GROWTH_REFS = 250, 750
+
+
+def skill_words(skill_dir):
+    body = len((skill_dir / "SKILL.md").read_text(errors="replace").split())
+    refs = sum(len(p.read_text(errors="replace").split()) for p in skill_dir.rglob("*.md")) - body
+    return body, refs
+
+
+def check_skill_growth(root, write=False):
+    now = {d.name: skill_words(d) for d in sorted(root.iterdir()) if (d / "SKILL.md").is_file()}
+    if write:
+        SIZES.parent.mkdir(parents=True, exist_ok=True)
+        SIZES.write_text("".join(f"{k}\t{b}\t{r}\n" for k, (b, r) in now.items()))
+        print(f"  wrote {len(now)} skill sizes to {SIZES.name}")
+        return 0
+    if not SIZES.is_file():
+        print(f"  no {SIZES.name} — skill-body growth is UNWATCHED (seed: hygiene.py skills --write-sizes)")
+        return 1
+    try:
+        base = {k: (int(b), int(r)) for k, b, r in (ln.split("\t") for ln in SIZES.read_text().splitlines() if ln)}
+    except ValueError:
+        print(f"  {SIZES.name} is unreadable — the growth ratchet is INERT, not clean")
+        return 1
+    flagged = 0
+    for name, (body, refs) in now.items():
+        was = base.get(name)
+        if was is None:
+            print(f"  {name:<26} new since the size baseline ({body}+{refs} words) — re-seed after review")
+            flagged += 1
+            continue
+        for part, n, w, limit in (("SKILL.md", body, was[0], GROWTH_BODY), ("references", refs, was[1], GROWTH_REFS)):
+            if n - w > limit:
+                print(f"  {name:<26} {part} grew {n - w} words since its baseline ({w} -> {n}) — "
+                      f"run skill-golf, then --write-sizes")
+                flagged += 1
+    return flagged
 
 def check_docs(repos):
     print("== docs older than the code beside them ==")
@@ -817,15 +864,22 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["memory", "skills", "docs", "doccontent", "probes", "refs",
                                      "imports", "hooks", "numbering", "testiso", "shareable",
-                                     "all"])
+                                     "growth", "all"])
     ap.add_argument("repos", nargs="*")
     ap.add_argument("--memory-root", default=str(DEF_MEM))
     ap.add_argument("--skills", default=str(DEF_SKILLS))
     ap.add_argument("--names", default="", help="comma-separated names to refuse, matched as "
                                                "whole words, case-insensitively")
     ap.add_argument("--share-root", help="the copy to gate (a plugin repo, a bundle dir)")
+    ap.add_argument("--write-sizes", action="store_true",
+                    help="skills: re-seed the per-skill size baseline (after a skill-golf pass)")
     a = ap.parse_args()
     rc = 0
+    if a.write_sizes:
+        return check_skill_growth(pathlib.Path(a.skills), write=True)
+    if a.mode == "growth":   # the session-start hook's cheap daily slice of `skills`
+        print("== skill growth ==")
+        return 1 if check_skill_growth(pathlib.Path(a.skills)) else 0
     # A mode that needs repos and got none must SAY so. Printing nothing and exiting 0 is
     # indistinguishable from "checked, clean".
     if a.mode in ("docs", "doccontent") and not a.repos:

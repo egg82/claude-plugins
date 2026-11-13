@@ -1,6 +1,6 @@
 ---
 name: verification-gate
-description: "Write, audit or fix a verification gate — test suite, lint, pre-commit hook, CI job — so it fails when the code is wrong and stays quiet when it is fine. Use when adding tests to untested code, auditing a suite, designing a lint rule, introducing CI, a gate passes and you cannot say why, a broken control still passes, a check nags or reports itself inert and you want it off, or for flaky tests and coverage claims. NOT bug hunting (bug-hunt)."
+description: "Write, audit or fix a verification gate — test suite, lint, pre-commit hook, CI job — so it fails when the code is wrong and stays quiet when it is fine. Use when adding tests to untested code, auditing a suite, designing a lint rule, introducing CI, a gate passes and you cannot say why, a broken control still passes, a check nags or reports itself inert and you want it off, a suite is slow or predates the current rules, or for flaky tests and coverage claims. NOT bug hunting (bug-hunt)."
 ---
 
 # Building a verification gate that actually verifies
@@ -24,7 +24,8 @@ confirm it stays quiet.** Everything else in this skill is downstream of that.
 
 Which structural gates an agent-written codebase needs (function and file size ledgers, type-error
 counts, import boundaries, blind contract tests) is the `agentic-engineering` skill; this one is how
-any single gate is made able to fail.
+any single gate is made able to fail. Bringing an existing suite to the current rules:
+`references/suite-conformance.md`.
 
 ## The failure that hides behind every green check
 
@@ -161,9 +162,10 @@ UI: it describes today's tree and can never tighten. Concretely:
   2602.07900: mostly print statements), while LLM-written property tests from a stated
   property found real bugs (arXiv 2510.09907). So: properties derived from the written
   contract, each tagged with the clause it checks (a failing property may be a contract
-  bug, not a code bug), by an agent that never saw the implementation. That this beats a
-  co-written suite is a hypothesis, unmeasured anywhere; measure it with the mutation
-  probe in §5.
+  bug, not a code bug), by an agent that never saw the implementation. Isolation measurably
+  helps (`agentic-engineering`'s `references/evidence.md`); whether a co-written suite beside
+  the blind one adds anything is unmeasured, so write one suite per contract and check it with
+  the mutation probe in §5.
 - **For an HTTP API, this step is the `api-contract-first` skill's "The tests worth having"**: each
   iterates a population read from the served schema (every endpoint, every field, every error) and
   asserts that population was non-empty.
@@ -207,7 +209,9 @@ broken, not killed.
 containing one instance of every class the gate claims to catch. Run the gate. Delete
 it. If the file was invisible, your inputs are enumerated somewhere.
 
-Do this work in a **copy of the tree**, never in place. If you must mutate in place,
+Do this work in a **copy of the tree**, never in place: a run killed mid-mutant restores nothing (a run that died
+with its session left a planted mutant in the worktree, one commit from shipping). A session
+taking over checks every tree a mutation run used with `git status` first. If you must mutate in place,
 verify the restore — a `git checkout` from the wrong directory fails silently, and a
 safety mechanism you removed to test a guard is a safety mechanism that is now gone.
 
@@ -235,6 +239,11 @@ with are the `shell-footguns` skill. General traps:
 - **Poll, never sleep.** Async-wait is ~45% of flaky causes (Luo et al., FSE'14);
   polling removes the flake ~55% of the time, while a longer sleep never does. Bind
   port 0 and report the bound port rather than picking one.
+- **A race test asserts the invariant, not one interleaving.** List every answer each racer can
+  correctly get, accept any of them, and assert the invariant the lock protects. One test
+  pinned `[200, 409]` for two racers revoking each other's permission; `[200, 403]` was equally right
+  (the loser no longer held it) and went red later. Prove the test still fails on the planted bug: the
+  unlocked version gives two 200s and nobody left holding the permission.
 
 ### 7. Fixtures: record, never invent
 
@@ -244,7 +253,12 @@ states it outright). This is the single most reliable way to ship a green suite 
 real bug.
 
 - Prefer the **real thing** > a fake with a contract test > a stub > interaction
-  assertions.
+  assertions. A real external service gets **one smoke test**, not a suite run through it.
+- **Time never comes from the wall.** Timeouts, leases, retries and backoff take an
+  injected clock in tests (`clock.advance()`), and an unreachable dependency is a fake that
+  fails at once, never a closed port behind production timeouts (one test waiting out a 5 s
+  connect timeout took 30 s; at 0.1 s, 0.64 s). These races are also the flakes that appear
+  only under load.
 - Stub only what has **side effects on the outside world**. Mocking a pure filter
   tests your mock.
 - Drive the real client against a **local server you control**. A throwaway HTTP server
@@ -287,13 +301,19 @@ least.
 - **A crash and a catch both exit non-zero**, and the harness scores the crash as `CAUGHT`. Assert
   *how* it failed; score a traceback as a distinct outcome.
 - **The mutation never applied**, and the harness blamed the test. Report *did the mutation land*
-  and *did the gate fire* separately; "could not plant" is its own outcome.
+  and *did the gate fire* separately; "could not plant" is its own outcome. (A same-size Python
+  rewrite within one second reuses the stale `.pyc`: `PYTHONDONTWRITEBYTECODE=1`.)
 - **A control that drives a restatement of the logic** rather than the function itself proves
   nothing. Call the real function with a degenerate input. A test containing SQL or a command that
   also exists in the code is testing the copy: fix the callability (an optional `conn` parameter),
   then mutation-test the fix (`references/instrument-failures/gates-that-pass-broken.md`, "RE-IMPLEMENTS").
 - **The mutation set is the blind spot.** For each rule the gate grows, ask what mutation exercises
   *that* rule.
+- **A control whose bad case is always the first item cannot see state carried across items**
+  (running totals, accumulators, caches): put one at position two or later. A sign-flipped
+  running total passed every first-item control and an otherwise strong mutation run.
+- **A new gate that fails nothing on its first run over known offenders is blind until shown
+  otherwise.** Name an offender beforehand and expect it red.
 - **A discriminator needs both directions proven.** Name the input that MUST be rejected, confirm it
   is present in the sample, assert it was rejected.
 - **A new check excludes itself** from a registry it enumerates (`git ls-files`, a glob). Commit,

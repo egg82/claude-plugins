@@ -27,6 +27,10 @@ for users on slow connections whose server side took 3.5 s.
 | **Bandwidth** | bytes per screen and per idle hour; compression on the wire | re-downloading what could be kept, audio and images in formats several times the needed size, uncompressed JSON |
 | **CI** | wall time per job and the critical path; cache reuse; image size and layer pulls; `pytest --durations` | dependencies installed from scratch each run, a Dockerfile copying source before installing deps (every commit busts the cache), serial jobs that don't depend on each other, tests that `sleep`, the same suite run twice under two job names |
 
+**Test-suite speed** is measured from CI against the repo's per-PR budget and an outside figure (a unit test is
+milliseconds), never the suite's own past, and counts setup, teardown and waits. A fix that moves cost into a fixture
+is not a fix. Method: `verification-gate/references/suite-conformance.md`.
+
 **Latency, in detail.** Local harnesses talk to localhost, so every hunt sees zero latency and the defect is invisible
 to all of them. For each user action count the *sequential* round trips before its visible result and whether it
 blocks other actions, then run it under 300–500 ms per request (a fetch wrapper or a delaying proxy) and screenshot

@@ -1,6 +1,6 @@
 ---
 name: claude-config-import
-description: "Apply a Claude Code config transfer bundle (from claude-config-export) arriving from a DIFFERENT trust domain (another person, another machine you keep separate, a public share), merging it into this machine's skills and memories by function rather than duplicating. Use for \"import the transfer bundle\", \"apply the claude-transfer bundle\", \"reconcile the config bundle from my other machine\"."
+description: "Apply a Claude Code config transfer bundle (from claude-config-export) arriving from a DIFFERENT trust domain (another person, another machine you keep separate, a public share), merging by function rather than duplicating. Use for \"import the transfer bundle\", \"apply the claude-transfer bundle\", \"reconcile the config bundle from my other machine\"."
 ---
 
 # Claude config import (consume a transfer bundle)

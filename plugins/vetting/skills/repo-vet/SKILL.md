@@ -1,6 +1,6 @@
 ---
 name: repo-vet
-description: "Vet a third-party repo before you adopt, depend on, or self-host it — a go/no-go \"should I trust this?\" pass: maintenance health, claims vs reality, footguns, AI-slop, redundant systems. Use when evaluating an OSS project, a dependency, or a tool someone proposes to rely on (often vibe-coded). NOT a repo you'll contribute to (repo-orient), its bugs (bug-hunt), or Claude Code tool fit (cc-tool-vet)."
+description: "Vet a third-party repo before you adopt, depend on, or self-host it — a go/no-go \"should I trust this?\" pass. Use when evaluating an OSS project, a dependency, or a tool someone proposes to rely on (often vibe-coded). NOT a repo you'll contribute to (repo-orient), its bugs (bug-hunt), or Claude Code tool fit (cc-tool-vet)."
 ---
 
 # Vet a repo before you depend on it

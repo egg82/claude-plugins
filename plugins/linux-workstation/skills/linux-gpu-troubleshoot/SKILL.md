@@ -1,6 +1,6 @@
 ---
 name: linux-gpu-troubleshoot
-description: Diagnoses NVIDIA GPU/driver failures on RHEL-family/Fedora/el9-like and bootc Linux desktops. Use when an NVIDIA Linux box crashes/freezes, boots with no GPU driver after a kernel update, hangs after the LUKS/boot prompt, or the whole machine hard-freezes running Chrome/VSCode/Electron apps.
+description: Diagnoses NVIDIA GPU/driver failures on RHEL-family/Fedora/bootc desktops. Use when an NVIDIA Linux box crashes/freezes, boots with no GPU driver after a kernel update, hangs after the LUKS/boot prompt, or the whole machine hard-freezes running Chrome/VSCode/Electron apps.
 ---
 
 # Linux NVIDIA GPU Troubleshooting

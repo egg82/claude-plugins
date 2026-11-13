@@ -1,6 +1,6 @@
 ---
 name: confluence-kb-docs
-description: "Write good wiki / Confluence docs — how-tos, troubleshooting/KB articles, system overviews, reference pages — and publish them via the confluence MCP tools if present. Starts from who lands on the page and what they want; BLUF, fix first, depth at the bottom. Use when writing, revising or publishing any wiki/KB doc, or turning a fix, procedure or system into a page. NOT auditor/compliance docs."
+description: "Write good wiki / Confluence docs — how-tos, troubleshooting/KB articles, system overviews, reference pages — and publish them via the confluence MCP tools if present. Use when writing, revising or publishing any wiki/KB doc, or turning a fix, procedure or system into a page. NOT auditor/compliance docs."
 ---
 
 # Writing genuinely good wiki / KB docs

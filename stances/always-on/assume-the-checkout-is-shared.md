@@ -17,7 +17,7 @@ namespace are shared mutable state and change under you silently. `~/.claude` is
   and say so; rewriting it is the destructive move.
 - **Commit early, onto your own branch** — uncommitted work is all another session's reset can kill.
 - **Multi-step work in a repo someone may also be in: `git worktree add <dir under $HOME> <branch>`** (not
-  the `EnterWorktree` tool; this never moves the user's checkout; not `/tmp`, which a reboot empties). Remove + prune when done.
+  the `EnterWorktree` tool; this never moves the user's checkout). Remove + prune when done.
 - **Never `git checkout` another branch in a clone you do not own. Never `git stash` in any checkout
   where a subagent or session may be writing — your own included.** Stash is a whole-tree revert that
   races any agent mid-edit (it bit here in my own checkout, with my own subagent mid-edit). To compare against another state, READ it
@@ -30,10 +30,9 @@ namespace are shared mutable state and change under you silently. `~/.claude` is
 - **Your green may borrow a collaborator's uncommitted work.** Before committing something whose
   validity rests on files outside your diff, `git status` those paths; the thorough check is a clean
   worktree of HEAD, which is what CI sees.
-- **An editable install defeats that worktree** — `pip install -e .` imports from the original
-  checkout. Set `PYTHONPATH=<worktree>/src` and prove it: `python -c "import pkg; print(pkg.__file__)"`
-  must print a worktree path, run from inside the worktree. Same for symlinked `node_modules`, `go.work`, cargo path overrides:
-  isolating the files does not isolate the build.
+- **An editable install defeats that worktree** (`pip install -e .`, symlinked `node_modules`, `go.work`,
+  cargo path overrides build from the original checkout). Set `PYTHONPATH=<worktree>/src` and prove it from
+  inside the worktree: `python -c "import pkg; print(pkg.__file__)"` must print a worktree path.
 - **Tells it already happened:** "nothing to commit" right after you edited, or a branch you never
   selected. Read `git reflog` before concluding your edits were never written.
 

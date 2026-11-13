@@ -1,6 +1,6 @@
 ---
 name: repo-orient
-description: "Orient yourself in an unfamiliar repository fast — a triage map of which few files are load-bearing, which are padding or generated, where the real logic and surprises live, and the architecture in one picture. Use before contributing to, modifying or deeply understanding an unfamiliar or LLM-bloated codebase. NOT trust/adopt decisions (repo-vet)."
+description: "Orient yourself in an unfamiliar repository fast: which few files are load-bearing, and the architecture in one picture. Use before contributing to, modifying or deeply understanding an unfamiliar or LLM-bloated codebase. NOT trust/adopt decisions (repo-vet)."
 ---
 
 # Orient fast in an unfamiliar repo

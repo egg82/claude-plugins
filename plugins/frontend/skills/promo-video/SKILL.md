@@ -1,6 +1,6 @@
 ---
 name: promo-video
-description: "Make a short, polished promo video of a real website or web app entirely from code — scripted browser, eased cursor, zooming camera, captions, title cards, optional sound — rendered to 1080p60 mp4 with no manual recording. Use when someone wants a promo, launch, demo or explainer video of their site, or says an agent driving a browser \"would make a neat video if it were smoother\". Starts by interviewing the owner. NOT AI-generated footage, NOT screenshots (headless-render)."
+description: "Make a short, polished promo video of a real website or web app entirely from code, rendered to 1080p60 mp4 with no manual recording. Use when someone wants a promo, launch, demo or explainer video of their site, or says an agent driving a browser \"would make a neat video if it were smoother\". NOT AI-generated footage, NOT screenshots (headless-render)."
 ---
 
 # Promo video

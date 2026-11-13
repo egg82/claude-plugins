@@ -7,9 +7,11 @@ Product and design rules are in `decisions.md`.
 
 ## The pipeline
 
-<!-- What runs on push, what deploys, how to deploy by hand, where secrets live (names only). -->
-Push to `main` runs `.ci.yml`: tests and the type checker run alongside an image build tagged `candidate-<sha>`;
-when both are green, the `release` job retags it `main-<sha>`. The deploy tool picks the newest `main-` tag and
+<!-- What runs on a pull request and on push, what runs only on a schedule, what deploys, how to deploy by hand,
+where secrets live (names only). -->
+A pull request and a push to `main` run `.ci.yml`: tests and the type checker run alongside an image build tagged
+`candidate-<sha>`; a pull request that touches only `docs/` runs the doc-citation test alone. The import replay over a
+year of sample data runs nightly. When both are green on `main`, the `release` job retags the image `main-<sha>`. The deploy tool picks the newest `main-` tag and
 rolls it out. A branch builds `branch-<sha>` tags that nothing deploys. Secrets live in the secret store under
 `recipes/*`, never in the repo.
 
@@ -43,11 +45,27 @@ is over its count or new, and when it is under ("stale, lower it"). Never raise 
 | `app/tests/test_boundaries.py` | package imports: a new edge fails until added to `ALLOWED` | none (the list is in the test) |
 | `app/tests/test_doc_citations.py` | backticked paths and symbols in `systems.md` must resolve | none |
 
-## Fast from the start
+## Scope and test budget
 
-<!-- Speed as a gate: per-test ceiling in CPU seconds, how to run the suite, parallelism limit. -->
-The suite runs in seconds and a per-test CPU ceiling keeps it there (`app/tests/conftest.py`). Whoever writes a
-test runs it under the gate before committing.
+<!-- The project's scale, the per-PR wall-clock budget, the outside per-test figure, the risk tiers. Stated at
+project start; a hunt measures against these, never against the suite's own history. -->
+A household recipe tracker with a web API and one database. **Per-PR budget: about 5 minutes of wall clock**, a
+docs-only PR about one. A unit test costs milliseconds. Each CI job's timeout is its budget; a per-test wall-clock
+ceiling covers setup, call and teardown (`app/tests/time_gate.py`, registered from `conftest.py`).
+
+<!-- The risk tiers, named with this project's own modules. -->
+Test depth follows risk:
+
+| Tier | Code | Tests |
+|---|---|---|
+| Logic | silent or data-losing: the importer, scaling and unit conversion, the meal-plan scheduler, permissions | test-first, behaviour-level, blind where it is a contract |
+| Glue | routes, registrations, config plumbing | one smoke test per entry point |
+| UI | pages and components | render and look; no snapshot assertions |
+| Scripts | one-off tools | none |
+
+<!-- Long-running simulations or replays, if the project has any: where they run and what a PR runs instead. -->
+The year-long import replay runs nightly; a pull request replays one week. Its report never fails a build; only its
+invariants (no recipe lost, no duplicate) do.
 
 ## Rules from day one
 

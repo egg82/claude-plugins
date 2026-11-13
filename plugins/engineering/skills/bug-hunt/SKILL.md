@@ -1,6 +1,6 @@
 ---
 name: bug-hunt
-description: "Hunt real defects in a repo and root-cause them — correctness, performance and cost, security, resilience under faults, state that breaks over months, UI and accessibility, LLM features deciding behaviour in prose — proving each by execution, with file:line pointers. Use when the user wants bugs found, asks what's broken, slow or insecure here, wants a perf/security/accessibility hunt, or wants an issue reproduced, root-caused, confirmed or filed. NOT a diff (/code-review) or trust verdict (repo-vet); the standing multi-lane sweep is hunt-sweep."
+description: "Hunt real defects in a repo and root-cause them — correctness, performance and cost, security, resilience under faults, state that breaks over months, UI and accessibility, LLM features deciding behaviour in prose. Use when the user wants bugs found, asks what's broken, slow or insecure here, wants a perf/security/accessibility hunt, or wants an issue reproduced, root-caused, confirmed or filed. NOT a diff (/code-review) or trust verdict (repo-vet); the standing multi-lane sweep is hunt-sweep."
 ---
 
 # Hunt bugs in a repo at rest
@@ -68,7 +68,8 @@ start at the top:
   against the critical path. The tell is a cost that grows while the result does not.
 - **Boundary** -- something an untrusted party controls reaches what it shouldn't.
 - **Injected fault** -- drop, kill, restart, fill the disk, move the clock; check the system recovers and says so.
-- **Simulated time** -- run months or years through the real code with a moving clock.
+- **Simulated time** -- run months or years through the real code with a moving clock. A finding it proves lands as
+  a unit-sized test of the state at that day where it can, since simulations run nightly, not per PR.
 - **Rendered output** -- look at what the user actually gets, at the sizes, states and inputs nobody opened.
 
 **Which oracle file:**

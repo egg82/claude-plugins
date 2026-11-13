@@ -1,6 +1,6 @@
 ---
 name: cluster-cert-renew
-description: "Check and renew the Talos/Kubernetes cluster admin certificates (kubeconfig client certs, talosconfig os:admin certs). Use when kubectl or talosctl says \"the server has asked for the client to provide credentials\" or \"certificate has expired\", to see how long the certs have left, to renew before expiry, to recover after the talosctl cert expired, or to rotate a cluster CA (`talosctl rotate-ca`)."
+description: "Check and renew the Talos/Kubernetes cluster admin certificates (kubeconfig, talosconfig). Use when kubectl or talosctl says \"the server has asked for the client to provide credentials\" or \"certificate has expired\", to see how long the certs have left, to renew before expiry, to recover after the talosctl cert expired, or to rotate a cluster CA (`talosctl rotate-ca`)."
 ---
 
 # Cluster cert renewal

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 8   # bump on any behaviour change
+# hook-version: 9   # bump on any behaviour change
 # SessionStart: surface config drift into context, because nobody reads a report.
 #
 # WHY: the monthly config-hygiene job writes to a scheduler log the operator never opens.
@@ -53,7 +53,10 @@ ref_out=$(python3 "$H" refs    2>&1); ref_rc=$?
 # and cheap (a line scan over ~20 prefs and ~5 suites), so neither turns the hook into wallpaper.
 imp_out=$(python3 "$H" imports 2>&1); imp_rc=$?
 iso_out=$(python3 "$H" testiso 2>&1); iso_rc=$?
-out=$(printf '%s\n%s\n%s\n%s\n' "$mem_out" "$ref_out" "$imp_out" "$iso_out" \
+# Skill bodies and references: growth against each skill's recorded size (~0.1 s). Daily, not with the
+# monthly sweep, because a delta is only useful while someone remembers why it grew.
+grw_out=$(python3 "$H" growth 2>&1); grw_rc=$?
+out=$(printf '%s\n%s\n%s\n%s\n%s\n' "$mem_out" "$ref_out" "$imp_out" "$iso_out" "$grw_out" \
       | grep -vE '^==|^  clean$|^  clean —|^  \(user/feedback|carry a probe|^  always-on: ' \
       | awk '!seen[$0]++' )
 # The `awk '!seen[$0]++'` dedupe is load-bearing, not tidiness: `imports` is ALSO run as part of
@@ -66,10 +69,10 @@ out=$(printf '%s\n%s\n%s\n%s\n' "$mem_out" "$ref_out" "$imp_out" "$iso_out" \
 # colon-space so it does NOT swallow the `always-on prefs:` line, which IS a finding.
 # hygiene.py: 0 = clean, 1 = findings, anything else = it broke. Only stamp the once-a-day cache on a
 # run that actually completed, or a crash buys 24h of silence.
-if [ "$mem_rc" -le 1 ] && [ "$ref_rc" -le 1 ] && [ "$imp_rc" -le 1 ] && [ "$iso_rc" -le 1 ]; then
+if [ "$mem_rc" -le 1 ] && [ "$ref_rc" -le 1 ] && [ "$imp_rc" -le 1 ] && [ "$iso_rc" -le 1 ] && [ "$grw_rc" -le 1 ]; then
   touch "$CACHE"
 else
-  echo "── config hygiene ── the scanner exited $mem_rc/$ref_rc/$imp_rc/$iso_rc — drift is UNCHECKED, not clean."
+  echo "── config hygiene ── the scanner exited $mem_rc/$ref_rc/$imp_rc/$iso_rc/$grw_rc — drift is UNCHECKED, not clean."
   echo "  Not caching this run, so the next session retries rather than skipping."
 fi
 

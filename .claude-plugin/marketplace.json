@@ -10,7 +10,7 @@
       "name": "engineering",
       "source": "./plugins/engineering",
       "description": "Keep an agent-built codebase well designed: structural gates with held ledgers, tests proven able to fail, bug hunts proven by running them, API contracts.",
-      "version": "1.0.4",
+      "version": "1.1.0",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -20,7 +20,7 @@
       "name": "vetting",
       "source": "./plugins/vetting",
       "description": "Decide whether to adopt something: orient in an unfamiliar repo, vet a third-party project, judge a hyped AI tool, compare self-hosted apps.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -30,7 +30,7 @@
       "name": "writing",
       "source": "./plugins/writing",
       "description": "Prose that doesn't read as model-written; READMEs, PR descriptions and wiki pages a stranger can read cold.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -40,7 +40,7 @@
       "name": "frontend",
       "source": "./plugins/frontend",
       "description": "Web UIs that look alive without lying, rendered and looked at before they're called done; promo videos of a real site.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -50,7 +50,7 @@
       "name": "game-dev",
       "source": "./plugins/game-dev",
       "description": "Game design method with evidence labels, and choosing sound you can't hear.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -60,7 +60,7 @@
       "name": "shell-safety",
       "source": "./plugins/shell-safety",
       "description": "Blocks shell commands whose result would lie silently, lints scripts as they're written, and catches detached work nobody is waiting on. Assumes the Bash tool runs bash.",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -80,7 +80,7 @@
       "name": "research",
       "source": "./plugins/research",
       "description": "Web searches that find the answer: query construction, reading a bad result set, and a gate that loads the method first.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -90,7 +90,7 @@
       "name": "delegation",
       "source": "./plugins/delegation",
       "description": "Subagent fan-outs that stay affordable: briefs, a model named per agent, depth limits, a checkout shared safely with agents and other sessions.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -100,7 +100,7 @@
       "name": "config-care",
       "source": "./plugins/config-care",
       "description": "Keep a Claude Code setup lean: a drift report at session start (plus an optional monthly sweep), always-on load pruning, and audits of skills that have grown long.",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -110,7 +110,7 @@
       "name": "memory-discipline",
       "source": "./plugins/memory-discipline",
       "description": "Opinionated memory rules: refuses memory notes that are neither user/feedback nor carry a check, catches memory written from Bash, nudges lessons into the right home. Pair with stances/rules/memory-write-discipline.md.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -120,7 +120,7 @@
       "name": "config-transfer",
       "source": "./plugins/config-transfer",
       "description": "Move Claude Code config between your own machines, or across a trust boundary as a scrubbed bundle the other side imports by function.",
-      "version": "1.1.2",
+      "version": "1.1.3",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -140,7 +140,7 @@
       "name": "k8s-ops",
       "source": "./plugins/k8s-ops",
       "description": "Kubernetes runbooks from a homelab: triage, sizing, secrets, storage, ingress/TLS, Talos, Flux, CloudNativePG, cert renewal, Grafana dashboards.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
@@ -150,7 +150,7 @@
       "name": "linux-workstation",
       "source": "./plugins/linux-workstation",
       "description": "Immutable bootc/OSTree RHEL-family workstations: installing software, pinned-version scans, LUKS with TPM unlock, NVIDIA driver failures.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"

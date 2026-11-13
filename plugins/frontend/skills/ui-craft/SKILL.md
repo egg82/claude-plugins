@@ -1,6 +1,6 @@
 ---
 name: ui-craft
-description: "How to make a web UI look and feel genuinely good — data-dense, colourful, alive — without trading away honesty. Use when building or redesigning a dashboard, stats page, leaderboard or any data-heavy front end; when a page \"looks dead\", \"bare\" or \"not as good as <site>\"; matching a reference site's look; a figure has no label or unit; or before a site-wide visual pass. NOT rendering mechanics (headless-render)."
+description: "How to make a web UI look and feel genuinely good without trading away honesty. Use when building or redesigning a dashboard, stats page, leaderboard or any data-heavy front end; when a page \"looks dead\", \"bare\" or \"not as good as <site>\"; matching a reference site's look; a figure has no label or unit; or before a site-wide visual pass. NOT rendering mechanics (headless-render)."
 ---
 
 # UI craft
