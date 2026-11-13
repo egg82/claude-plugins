@@ -280,6 +280,9 @@ def skill_words(skill_dir):
 
 
 def check_skill_growth(root, write=False):
+    if not root.is_dir():   # skills installed only as plugins: no local skills dir to watch
+        print(f"  clean — nothing to check ({root} absent)")
+        return 0
     now = {d.name: skill_words(d) for d in sorted(root.iterdir()) if (d / "SKILL.md").is_file()}
     if write:
         SIZES.parent.mkdir(parents=True, exist_ok=True)
