@@ -48,6 +48,13 @@ Google at first). Per-test timeouts are thread-based, since about 1 in 10 mutant
      by-design skips as failures). Check the first push to main actually released.
    - A simulation filter uses the engine's import closure, not each test file's (that is the whole app).
    - A diff-based selector needs git in the job image, and its fallback to "everything" prints why.
+     - On a Kubernetes runner, a job that decides to skip from inside its script still gets its pod, with its
+       full memory request, scheduled first: a docs-only MR's jobs exited after one second of script, behind
+       minutes of `Unschedulable: Insufficient memory`. Decide in `rules:` (GitLab `changes:` with `[!x]`
+       character classes can say "any path not ending .md") so no pod is created. Prove that root files and
+       deleted paths count.
+     - To prove a selector on its own branch, open the proof MR against that branch, not main. Against main,
+       its diff includes the CI change and never looks docs-only.
 2. **Simulations out of the per-PR path**: nightly, one smoke route per PR sized from CI's durations,
    the full run on a label. Before the per-PR jobs go, read the nightly lane's history and see it green
    (one had been red since creation, unseen), and give its red somewhere read. If it is red on a real
@@ -63,10 +70,21 @@ Google at first). Per-test timeouts are thread-based, since about 1 in 10 mutant
 6. **Duplicate suites to one per contract**, keeping the blind one.
 7. **The old CPU-only gate to wall-clock budgets** (`agentic-engineering` §6, its template). This is a
    gate replacement, a design change made with evidence and the owner's approval, never loosening to
-   pass one change. Quote the owner's words, with the date, in the decisions doc the change updates: a PR line
+   pass one change. The evidence is usually already in CI. A gate reading process CPU (every thread, GC and
+   JIT included) moves with node load: it fired repeatedly in one day on tests the changes never touched, at
+   over 4x the slowest time recorded when its ceiling was set. Count its reds on unchanged code.
+   Quote the owner's words, with the date, in the decisions doc the change updates: a PR line
    saying "approved" is the agent's claim, not a record. When a job's timeout becomes its budget, drop retries on timeout (GitLab's
    `retry: when: stuck_or_timeout_failure`), or a budget breach runs three times before it shows.
 8. **Runner pinning and caches**, measured before and after.
+9. **Parallel workers** (pytest-xdist and kin), when the suite is many small tests and no single one is slow.
+   Give each worker its own database. Keep `-n` out of `addopts`, because a mutation runner that counts
+   exit 1 as a kill reads xdist's exit 2 wrongly. Workers make a per-test ceiling measure CPU contention: on
+   a Kubernetes runner at its default 1-CPU request, four workers slowed a test several-fold, and even at
+   four requested CPUs four workers still brushed a 10 s ceiling on the first main run. Request
+   the CPUs (the runner's per-job variable), run one worker fewer than you requested, and read the slowest
+   calls in the after-run as headroom against the ceiling. The MR pipeline is one sample on one node: read
+   the first main run's slowest calls too before calling it done.
 
 Each step is its own PR with before and after CI times in its text.
 

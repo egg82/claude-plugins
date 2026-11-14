@@ -289,6 +289,8 @@ t 0 "backtick substitution, same shape"        'if [ "`ls | head -1`" = a ]; the
 t 0 "grep carries the status wanted"           'if kubectl get po | grep -c Running; then echo up; fi'
 t 0 "formatter in the body, not the condition" 'while read -r l; do echo "$l" | sed s/a/b/; done < f'
 t 0 "no pipeline in the condition at all"      'if git merge fix/x; then echo CLEAN; fi'
+t 0 "an if inside a quoted python program"     $'python3 -c \'import sys\nif sys.argv: print(1)\' | head -2; echo done'
+t 2 "an if inside a bash -c program is shell"  $'bash -c \'cd /x\nif make | tail -1; then echo ok; fi\''
 
 echo "test-then-commit-unguarded MUST BLOCK:"
 t 2 "the real case: piped pytest, ; then commit"  'python -m pytest -q tests 2>&1 | tail -2; cd .. && git status --short && git commit -q --only a.py -m "x"'
@@ -305,7 +307,7 @@ t 0 "|| { ...; exit 1; } guards the commit"         'pytest -q > /dev/null 2>&1 
 t 0 "git add of a pytest.ini, then commit"          'git add app/tests/test_x.py app/pytest.ini; git commit -F msg.txt'
 t 0 "git add of a vitest config, then commit"       'git add app/client/vitest.config.ts; git commit -F msg.txt'
 t 0 "reported FP: add pytest.ini + multi-line -m"   $'git add pkg/pytest.ini pkg/tests/test_a.py ci.yml\ngit commit -q -m "build: tidy config\n\nsome text\nwith \\"quoted words\\".\n"\necho rc=$?'
-t 0 "set -e with an unpiped test run"               'set -e; pytest -q; git commit -am ok'
+t 2 "set -e is ignored in the Bash tool"            'set -e; pytest -q; git commit -am ok'
 t 2 "set -e does not rescue a piped run"            'set -e; pytest -q | tail -2; git commit -am ok'
 t 0 "pytest only inside a heredoc body"             $'cat >> tests/t.py <<\'E\'\n@pytest.mark.parametrize("x", [1])\ndef test_x(x): pass\nE\ngit commit -q --only tests/t.py -m t'
 t 2 "heredoc, then a real piped run"                $'cat >> tests/t.py <<\'E\'\ndef test_x(): pass\nE\npytest -q | tail -1; git commit -am t'
@@ -329,6 +331,13 @@ t 0 "&& inside the awk program"                'kubectl get po -A | awk '"'"'$3 
 t 0 "|| inside the awk program"                'ps aux | awk '"'"'$3 > 50 || $4 > 50 {print $11}'"'"''
 t 0 "&& inside a double-quoted sed script"     'ls | sed "s/a && b/x/"'
 t 0 "awk program with no pipe at all"          'awk '"'"'$1 > 0 && $2 < 5 {print}'"'"' data.txt'
+# A formatter inside `$( … )` that is an ARGUMENT: the `)` ends that pipeline, and the operator tests
+# the command the substitution feeds. Blocked a real `git commit --only $(git status | awk …) && …`.
+t 0 "formatter in \$(…) as an argument"        'git commit --only $(git status --short | awk '"'"'{print $2}'"'"') -m x && git log -1'
+t 0 "same, double-quoted substitution"         'rm -f "$(ls -t | head -1)" && echo removed'
+# …but a BARE assignment's status IS the substitution's, so there the formatter's status is tested.
+t 2 "v=\$(… | tail) && — the assignment's status is tail's" 'v=$(git push 2>&1 | tail -1) && echo pushed'
+t 2 "subshell group: its status is tail's"     '(make build | tail -3) && echo built'
 # THE TWIN OF THOSE, and the reason the fix is not "blank quoted spans". Here the quote opens AFTER
 # the formatter name too, but the operator is outside it — so quoting alone cannot decide.
 t 2 "quoted sed script, then a REAL &&"        'terraform apply | sed "s/^/  /" && echo applied'
@@ -371,13 +380,14 @@ t 0 "line continuation into &&"                'git commit \
   && git push'
 t 0 "commit || exit, then push"                'git commit -m x || exit 1; git push'
 t 0 "&& chain inside a subshell"               '( cd repo && git commit -m x && git push )'
-t 0 "set -e carries into a function body"      'set -e; f() { git commit -m x; git push; }; f'
-t 0 "set -e inside the function body"          'f() { set -e; git commit -m x; git push; }; f'
+# The Bash tool runs commands where errexit is ignored, so `set -e` guards nothing.
+t 2 "set -e before a function body"            'set -e; f() { git commit -m x; git push; }; f'
+t 2 "set -e inside the function body"          'f() { set -e; git commit -m x; git push; }; f'
 t 0 "commit as an if condition"                'if git commit -m x; then git push; fi'
 t 0 "status read between the two"              'git commit -m x; rc=$?; git push'
 t 0 "status echoed between the two"            'git commit -m x; echo rc=$?; git push'
-t 0 "set -e before commit; push"               'set -e; git commit -m x; git push'
-t 0 "set -euo pipefail, newline form"          'set -euo pipefail
+t 2 "set -e does not guard (tool ignores errexit)" 'set -e; git commit -m x; git push'
+t 2 "set -euo pipefail, newline form"          'set -euo pipefail
 git commit -m x
 git push'
 t 0 "two independent pushes"                   'cd ~/a && git push; cd ~/b && git push'
@@ -419,7 +429,7 @@ t 0 "set -e makes the echo unreachable"        'set -euo pipefail
 git push -q origin HEAD:main
 echo "PUSHED"'
 t 0 "set -o errexit spelling"                  'set -o errexit; git push -q origin HEAD:main; echo "PUSHED"'
-t 0 "mutator is the last statement"            'cd repo; git status; git push'
+t 0 "mutator is the last statement"            'cd repo && git status && git push'
 t 0 "read-only command is out of scope"        'git log --oneline -1
 echo "done"'
 t 0 "printing what the command returned"       'git push -q origin HEAD:main
@@ -484,6 +494,14 @@ t 2 "after if"                                   'if pgrep -f job.sh >/dev/null;
 t 2 "after do"                                   'for i in 1 2; do pkill -f job.sh; done'
 echo "pgrep-f-self-match MUST ALLOW:"
 t 0 "keyword-like word mid-sentence"             "echo 'do not use pgrep -f here'"
+echo "ps-grep-wait-self-match MUST BLOCK:"
+t 2 "the real case: unanchored grep -c waiter"   $'while [ "$(ps -eo args | command grep -c \'batch-run.sh 7:\')" -gt 0 ]; do sleep 10; done'
+t 2 "until, bare pattern"                        'until [ "$(ps aux | grep -c job.sh)" -eq 0 ]; do sleep 5; done'
+echo "ps-grep-wait-self-match MUST ALLOW:"
+t 0 "anchored to the real invocation"            $'while [ "$(ps -eo args | grep -c \'^bash /x/batch-run.sh\')" -gt 0 ]; do sleep 10; done'
+t 0 "bracket trick"                              $'while [ "$(ps -eo args | grep -c \'[b]atch-run.sh\')" -gt 0 ]; do sleep 10; done'
+t 0 "grep -v grep drops the wrapper"             'until [ "$(ps -eo args | grep job.sh | grep -v grep | wc -l)" -eq 0 ]; do sleep 5; done'
+t 0 "a one-off listing, not a wait"              'ps -eo args | grep -c job.sh'
 echo "holding-dir-whole-sweep MUST BLOCK / ALLOW:"
 t 2 "whole dated holding dir"                    'ls ~/scratch/.holding-20260101; rm -rf ~/scratch/.holding-20260101'
 t 2 "trailing slash, split flags"                'rm -r -f ~/scratch/.holding-20260101/'
@@ -675,37 +693,6 @@ t 0 "verdict echo with no probe"        'echo "(empty = use the default)"'
 t 0 "asserted control, not a gloss"     'grep foo f > out; test -s out || echo "PROBE BROKEN"'
 t 0 "guarded success echo"              'grep -q foo f && echo "found"'
 
-echo "SYNC — every gate rule is documented and vice versa:"
-sync_out=$(python3 - <<'SYNCPY'
-import os, re, pathlib
-hook = pathlib.Path(os.environ["GATE"]).read_text()
-# The catalog lives in references/ beside SKILL.md; a rule documented there is documented.
-skill_md = pathlib.Path(os.environ["SKILL_MD"])
-skill = "".join(p.read_text() for p in [skill_md, *sorted((skill_md.parent / "references").glob("*.md"))])
-in_hook = set(re.findall(r"# RULE-ID: (\S+)", hook))
-in_skill = set(re.findall(r"\[gate:([a-z0-9-]+)\]", skill))
-bad = False
-for r in sorted(in_hook - in_skill):
-    print("  FAIL  gated but undocumented in the skill: %s" % r); bad = True
-for r in sorted(in_skill - in_hook):
-    print("  FAIL  the skill claims [gate:%s] but no such rule in the hook" % r); bad = True
-if not bad:
-    print("  PASS  %d rules, hook and skill docs agree" % len(in_hook))
-raise SystemExit(1 if bad else 0)
-SYNCPY
-)
-sync_rc=$?
-echo "$sync_out"
-if [ "$sync_rc" -eq 0 ]; then pass=$((pass+1)); else fail=$((fail+1)); fi
-
-echo "SIZE — a command over 128 KiB is still gated:"
-# The payload used to reach python through an env var; past MAX_ARG_STRLEN (128 KiB) exec failed with
-# E2BIG and the gate exited 0. Built in python, because mkjson's argv has the same limit.
-big_rc=$(python3 -c 'import json; print(json.dumps({"tool_name":"Bash","tool_input":{"command":"echo " + "x"*140000 + "\nfor f in $(find /data -name \"*.log\"); do tail -1 \"$f\"; done"}}))' \
-  | bash "$GATE" >/dev/null 2>&1; echo $?)
-if [ "$big_rc" -eq 2 ]; then echo "  PASS  (rc=2) 140 KB command with a gated pattern"; pass=$((pass+1))
-else echo "  FAIL  (rc=$big_rc want=2) 140 KB command with a gated pattern"; fail=$((fail+1)); fi
-
 # The rule reads agent_id from the payload, so these cases need their own payload builder.
 ta() {
   exp="$1"; label="$2"; cmd="$3"; aid="${4-a1b2c3}"
@@ -739,6 +726,23 @@ ta 0 "pytest inside a quoted grep pattern" "grep -nE 'xdist|pytest -n' .github/w
 ta 0 "pytest -n quoted, piped on"          "grep -n 'pytest -n' ci.yml | head -3" a1
 ta 2 "real run after a quoted |"           "echo 'a|b'; pytest -q" a1
 ta 2 "real run piped, still blocks"        "pytest -q | tail -3" a1
+
+echo "cd-semicolon-then-git-write MUST BLOCK:"
+t 2 "the incident, verbatim in shape"        'git worktree add -q ~/wt/x br 2>&1 | tail -1; cd ~/wt/x && git rebase -q origin/main; git push -q origin br'
+t 2 "cd && x; git push (the && chain ends in ;)"  'cd ~/wt/x && make; git push origin br'
+t 2 "cd; git push"                           'cd ~/wt/x; git push origin br'
+t 2 "cd newline git commit"                  $'cd ~/wt/x\ngit commit -m wip'
+t 2 "cd; later git reset after other work"   'cd /srv/repo; make test; git reset --hard origin/main'
+t 2 "cd; git worktree remove"                'cd ~/wt; git worktree remove x --force'
+echo "cd-semicolon-then-git-write MUST ALLOW:"
+t 0 "cd && git push (chained)"               'cd ~/wt/x && git push origin br'
+t 0 "cd; git status"                         'cd ~/wt/x; git status'
+t 0 "cd; git log / diff / fetch"             'cd ~/wt/x; git log --oneline -3; git diff --stat; git fetch -q'
+t 0 "cd with no later git write"             'cd ~/wt/x; ls; make test'
+t 0 "bash script.sh"                         'cd ~/wt/x && bash script.sh'
+t 0 "guarded cd || exit 1; git push"         'cd ~/wt/x || exit 1; git push origin br'
+t 0 "git write only mentioned in quotes"     'cd ~/wt/x; echo "then git push later"'
+t 0 "git write BEFORE the cd"                'git push origin br; cd ~/wt/x; ls'
 
 echo "SYNC — every gate rule is documented and vice versa:"
 sync_out=$(python3 - <<'SYNCPY'

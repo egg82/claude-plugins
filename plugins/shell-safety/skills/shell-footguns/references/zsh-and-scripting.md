@@ -79,6 +79,10 @@ loop's exit status is its last command's, so a false final iteration makes the l
 errexit ends the script — at a point that looks like clean completion. Write it as `if cmd; then
 arr+=(x); fi`.
 
+**A helper whose last statement is a test returns that test's status.** `check() { ...; [[ -n $x ]]; }` "fails" whenever
+the final condition is false even though the helper did its job, aborting an `&&` chain or reporting a false failure. End
+such helpers with an explicit `return 0` (bit twice, in two build scripts).
+
 **When testing a script that generates a file, assert on the FILE, never on the `set -x` trace.**
 The trace shows `+ printf '%s\n' 'worker_threads = 12' ... 'cache_mb = 384'` — the *call*, not what it
 wrote — so a suite grepping the trace passes on output the script never produced, and fails on output
@@ -145,7 +149,10 @@ string cannot tell whether an MR exists.
 **`glab mr merge` waits only for a RUNNING pipeline.** If the MR's pipeline is still `created` or `pending`
 it merges immediately, unverified, and prints the same MR URL either way. Read `head_pipeline.status` first
 and merge only on `running` (to auto-merge) or `success`; afterwards check `state` together with
-`merge_when_pipeline_succeeds`. Not gated: the state lives on the server.
+`merge_when_pipeline_succeeds`. Gated by `glab-merge-gate.sh` (PreToolUse), which asks the server for
+`head_pipeline.status` before the merge runs; suite `test-glab-merge-gate.sh`. A branch pushed before its MR existed has a
+`push` pipeline as well as the `merge_request_event` one on the same sha, and only the MR pipeline gates the merge, so
+read `head_pipeline`, not a pipeline list.
 
 **Never move a hand-grabbed download into a category a library manager scans.** (Not gated in this copy.)
 Manual grabs land in the download client's default category, and "fixing" that to one a library manager
@@ -172,6 +179,8 @@ runs remotely, so they are prose now. The simplest escape from all of them is to
 - **`$var:word` loses a letter to a history modifier.** After `$var:`, `a c e h l q r s t u A P Q`
   are modifiers (`f F g w` prefix one), so `$img:latest` becomes `<img>atest` — quoting does not
   help, unquoted heredoc bodies included. `${img}:latest` is safe; `:/` and `:$` are not modifiers.
+- **`$var[word]` is a subscript, quoted or not.** On a scalar the whole `$n[dev]` expands to nothing, so
+  `pip install -e "$HOME/wt/x-$n[dev]"` became `-e <home>/wt/x-`. Brace it: `${n}[dev]`.
 - **`mapfile`/`readarray` do not exist.** `command not found`, then the next line runs on an empty
   array and reports zero.
 - **`${PIPESTATUS[0]}` is empty**; zsh's array is `${pipestatus[1]}` (lowercase, 1-indexed). Under

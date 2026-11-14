@@ -79,6 +79,37 @@ def check_memory(root):
     return bad
 
 
+def read_baseline(skill_dir):
+    """(pref_body_bytes, roster_bytes_or_None, source_name) from the always-on-prune skill's data, or
+    None when no source exists.
+    The LAST `{"type":"baseline","bytes":N}` record in prune-log.jsonl wins (an
+    optional "roster" field carries the roster figure); baseline.txt is the fallback. A source that
+    exists but does not parse raises ValueError/IndexError/TypeError, which the caller must report
+    as INERT, never as clean."""
+    log = skill_dir / "prune-log.jsonl"
+    if log.is_file():
+        rec = None
+        for line in log.read_text().splitlines():
+            try:
+                d = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(d, dict) and d.get("type") == "baseline":
+                rec = d
+        if rec is not None:
+            roster = rec.get("roster")
+            if isinstance(rec["bytes"], bool) or not isinstance(rec["bytes"], int) \
+                    or (roster is not None and (isinstance(roster, bool) or not isinstance(roster, int))):
+                raise ValueError("baseline record needs integer bytes")
+            return rec["bytes"], roster, log.name
+    txt = skill_dir / "baseline.txt"
+    if txt.is_file():
+        lines = txt.read_text().splitlines()
+        rbase = int(lines[1].split()[0]) if len(lines) > 1 else None
+        return int(lines[0].split()[0]), rbase, txt.name
+    return None
+
+
 def check_prefs(prefs):
     """The always-on prefs dir (~/.claude/memory) has no index — it is wired by @imports.
 
@@ -177,28 +208,28 @@ def check_prefs(prefs):
     # every run and becomes wallpaper. A delta fires when something changed, which is while someone
     # can still remember why. Baseline lives beside the skill that owns the procedure.
     # The baseline is per-user data: ~/.claude/local/always-on-prune/ first, then the flat-layout location.
-    base_f = prefs.parent / "local" / "always-on-prune" / "baseline.txt"
-    if not base_f.is_file():
-        base_f = prefs.parent / "skills" / "always-on-prune" / "baseline.txt"
-    if base_f.is_file():
-        try:
-            lines = base_f.read_text().splitlines()
-            base = int(lines[0].split()[0])
-            grown = total - base
-            if grown > 2000:
-                flags.append(f"pref bodies have grown {grown}B since the last prune ({base}B -> "
-                             f"{total}B) — run the always-on-prune skill")
-            if len(lines) > 1:
-                rbase = int(lines[1].split()[0])
-                if roster - rbase > 2000:
-                    flags.append(f"skill descriptions have grown {roster - rbase}B since the last "
-                                 f"prune ({rbase}B -> {roster}B) — the listing drops descriptions "
-                                 f"when over budget; run the always-on-prune skill")
-            else:
-                flags.append(f"{base_f.name} has no roster line — skill-description growth is unwatched")
-        except (ValueError, IndexError):
-            flags.append(f"{base_f.name} is unreadable — the growth ratchet is INERT, not clean")
-    # No baseline recorded: absent until always-on-prune writes one, so nothing to compare against.
+    try:
+        # per-user data first, then the skill directory
+        found = read_baseline(prefs.parent / "local" / "always-on-prune") \
+            or read_baseline(prefs.parent / "skills" / "always-on-prune")
+    except (ValueError, IndexError, TypeError):
+        found = "unreadable"
+    if found is None:
+        flags.append("no always-on-prune baseline recorded — growth is unwatched")
+    elif found == "unreadable":
+        flags.append("the always-on-prune baseline is unreadable — the growth ratchet is INERT, not clean")
+    else:
+        base, rbase, source = found
+        grown = total - base
+        if grown > 2000:
+            flags.append(f"pref bodies have grown {grown}B since the last prune ({base}B -> "
+                         f"{total}B) — run the always-on-prune skill")
+        if rbase is None:
+            flags.append(f"{source} has no roster figure — skill-description growth is unwatched")
+        elif roster - rbase > 2000:
+            flags.append(f"skill descriptions have grown {roster - rbase}B since the last "
+                         f"prune ({rbase}B -> {roster}B) — the listing drops descriptions "
+                         f"when over budget; run the always-on-prune skill")
 
     # Absolute ceiling, deliberately set well ABOVE the current floor so it stays a backstop for a
     # store that has never been pruned rather than a permanent nag. It was 32000 against file bytes;

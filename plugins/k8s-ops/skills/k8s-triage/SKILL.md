@@ -49,6 +49,9 @@ A `Failed` job is only a live problem if the *latest* run also failed — check 
 acting, since one-off failures self-resolve and their records linger:
 `kubectl -n <ns> get jobs --no-headers --sort-by=.metadata.creationTimestamp | grep <name> | tail -4`.
 
+Before acting on a `Failed` job, or trusting a CronJob's status fields (`lastScheduleTime` is the only
+field that proves the schedule fired), read `references/jobs-and-tunnels.md`.
+
 ## Pod states → meaning → fix direction
 
 - **Pending** → unschedulable. `kubectl describe pod` shows why:
@@ -84,6 +87,7 @@ kubectl get storageclass
   kubectl get endpoints <svc> -n <ns>
   kubectl get pods -n <ns> --show-labels        # compare to the Service .spec.selector
   ```
+- A `port-forward` that outlived its pod returns empty bodies, not an error; see `references/jobs-and-tunnels.md`.
 - **DNS** → CoreDNS. Check `kubectl get pods -n kube-system -l k8s-app=kube-dns` and its logs.
 - **Ephemeral debug pod** (in-cluster resolution/connectivity):
   ```bash

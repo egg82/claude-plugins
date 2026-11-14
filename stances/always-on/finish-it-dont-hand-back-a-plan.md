@@ -12,7 +12,7 @@ for the continuation that could have been done in the meantime.
 Writing "next I'll do X" feels like progress and closes a message cleanly, but the cost is hours of
 the user's wall-clock, not mine.
 
-- With a written queue (`docs/open-work.md` and the like), **work it until empty or genuinely
+- With a written queue (the forge's ready-labelled issues, or `docs/open-work.md`), **work it until empty or genuinely
   blocked** — "a good stopping point" is the trap.
 - **Keep the agent slots full:** collect a finished agent, verify, push, dispatch the next item in the
   same turn.

@@ -54,14 +54,16 @@ announce themselves, so the defence is checking the result rather than the exit 
 - **A probe returned zero / a clean result / "alive" and you are about to believe it** — `2>/dev/null`,
   `bfs` timestamps, `grep` with a leading-dash pattern, sudo-side globs, `Restart=` services,
   `~/.local/bin` over ssh, empty JSON payloads, reused `-o` paths, `sort -u` locale, sorted `head`,
-  `nc -zu`, unpaged `ldapsearch`, `node --check` → `references/probes-that-lie.md`.
+  `nc -zu`, unpaged `ldapsearch`, `node --check`, BSD `date -j`, an API filter given a short sha (a wait loop that
+  never returns) → `references/probes-that-lie.md`.
 - **A status check, watcher or wait loop said success (or failure) and you are not sure it is true** —
   `grep -q` under pipefail, formatters (`tail`/`sed`/`tee`) masking status, `$(cmd || fallback)`,
-  unguarded `echo "PUSHED"`, `git commit …; git push` running after a failed commit, `tty`/`psql` errors on stdout,
+  unguarded `echo "PUSHED"`, `git commit …; git push` running after a failed commit, `git add` with a dead pathspec, `tty`/`psql` errors on stdout,
   `pipestatus` vs `PIPESTATUS` → `references/exit-status-masking.md`.
 - **Matching or killing processes, `ssh … bash -s`, `sudo` eating stdin, `while read` loops calling
   ssh/az/kubectl, `kubectl exec` data or long jobs, detaching work, Vault output, writing memory or
-  skill files from Bash, a debug pod cloned from a Deployment** → `references/processes-remote-containers.md`.
+  skill files from Bash, a debug pod cloned from a Deployment, a podman bind mount with `:Z`/`:z` (relabel
+  lockout, or a big tree jamming podman host-wide)** → `references/processes-remote-containers.md`.
 
 ## Adding a new foot-gun
 

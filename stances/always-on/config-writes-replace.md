@@ -17,5 +17,9 @@ unchanged, untouched values still hash the same. Before writing to an unfamiliar
 whether it merges or replaces; prefer per-field APIs (`kubectl patch --type=json`, a CLI's `--add` form).
 The replacing commands are usually the older, plainer ones that feel safest to type.
 
+**Copying an object is the same trap: copy every attribute, not the ones you know.** CI variables copied between
+projects as key, value, protected and masked lost the `raw` flag; the platform then expanded the `$` inside a
+username and the registry push failed as "invalid username/password". Diff the full attribute set of source and copy.
+
 Relates to
 [[preserve-before-destroying]], [[verify-dont-anchor]].

@@ -46,6 +46,27 @@ dangling" and refuses to attach a pod.
 Fix: briefly mount the stranded PVC in a throwaway `sleep` pod so the CSI driver completes the online
 filesystem grow, delete the throwaway pod, then let CNPG reconcile and reattach.
 
+## A replica at 1/2 for a long time is often crawling, not stuck: check before restarting it
+
+While the WAL archive lags the primary (after any archiver outage), a restarted standby asks the
+archive for every segment before reading its own local copy, and with the barman plugin each miss can
+take about a minute. So it replays roughly one segment a minute through WAL it already has, logs
+nothing, sits at 1/2, and the primary shows no walsender for it. It reads exactly like a dead replica.
+
+Tell them apart by reading the startup process's title twice, a minute or more apart (the image has no
+`ps`):
+
+```bash
+kubectl exec <pod> -c postgres -- sh -c 'for p in /proc/[0-9]*; do case "$(cut -d" " -f2 $p/stat)" in *postgres*) tr "\0" " " < $p/cmdline | grep -oE "(startup|walreceiver).*";; esac; done'
+# "startup waiting for <segment N>", then N+1 a minute later = crawling; leave it alone
+```
+
+The segment advancing means it will reach the end of its local WAL, log "consistent recovery state
+reached" and start streaming by itself. **Restarting it sends it back to its redo point to crawl again**;
+a replica that had just finished crawling was deleted as "stuck", costing ~20 minutes plus a window with
+no ready replica. Do not read an empty walsender grep in the primary's log as "it never tried" either:
+with connection logging off that log could not have shown it. `pg_stat_replication` is the instrument.
+
 ## Stuck replica blocking reconcile
 
 A replica that never finishes its base backup can monopolize CNPG's reconcile loop and block primary
@@ -121,8 +142,8 @@ never recover on its own, so destroy it.
 ## After a bulk delete: verify the batch jobs, not just the endpoints
 
 A mass delete plus `ANALYZE` (or `VACUUM`/`REINDEX`) re-plans every query on the table. After
-purging about 40% of an events table, every API endpoint timed the same or faster — and that weekend's
-billing export died on a statement timeout, because a once-a-run aggregate flipped from seconds to minutes.
+archiving two-thirds of a table, every API endpoint timed the same or faster — and the next morning's
+ingest died on a statement timeout, because a once-a-run check query flipped from ~1 s to over 20 s.
 Endpoints get timed because users see them; a job's queries run once a day and nobody times them.
 `EXPLAIN` each CronJob's heavy statements on a replica, or trigger each job once, before calling it done.
 

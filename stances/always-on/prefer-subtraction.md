@@ -22,7 +22,8 @@ alone suffices and make each addition earn its place. When a repeated friction t
 stricter rule, first ask whether the friction itself can be removed. **The same holds for features: when
 one fails review twice, ask whether it should exist before briefing a third fix** — a feedback round framed
 "fix X" never asks "drop X?" on its own. Before adding a rule to a document, search the whole file for the
-DECISION, not your wording; a mechanism added because an old one fell short must SUBSUME it before the old one goes;
+DECISION, not your wording, and after appending read the result upward as well as down (a rule was once confirmed
+present, then written again two paragraphs above its twin; a diff renders the heading above your edit as already-checked); a mechanism added because an old one fell short must SUBSUME it before the old one goes;
 before automating a manual step, ask what its timing was holding; a one-off job is a throwaway script, not a feature
 (cases: `evidence/prefer-subtraction.md`). **A new *kind* of thing (a system, something placed, new data, a new
 schedule) gets a fit pass before design** — what is it an instance of, what already does that — then extend or merge

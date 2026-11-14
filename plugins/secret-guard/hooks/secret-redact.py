@@ -55,6 +55,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 GITLEAKS = next((g for g in (os.path.expanduser("~/.local/bin/gitleaks"), shutil.which("gitleaks"))
                  if g and os.path.exists(g)), os.path.expanduser("~/.local/bin/gitleaks"))
@@ -229,21 +230,30 @@ def scan(text):
     """Return raw gitleaks findings (list of dicts), or None if the scan failed."""
     if not text.strip():
         return []
-    cmd = [GITLEAKS, "stdin", "--no-banner", "--report-format", "json",
-           "--report-path", "/dev/stdout"]
-    if os.path.exists(CONFIG):
-        cmd[1:1] = ["--config", CONFIG]
-    try:
-        proc = subprocess.run(
-            cmd, input=text.encode("utf-8", "replace"),
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20,
-        )
-    except Exception:
-        return None  # None == "could not scan", distinct from [] == "scanned, clean"
-    try:
-        data = json.loads(proc.stdout.decode("utf-8", "replace") or "[]")
-    except Exception:
-        return None
+    # The report goes to a private file, never `--report-path /dev/stdout`: run as root (a
+    # container, a devcontainer, CI) gitleaks replaces the /dev/stdout symlink with a regular
+    # file, the report never reaches this pipe, and every scan read as clean -- this hook
+    # redacted nothing, silently, and /dev/stdout stayed broken for the rest of the container.
+    with tempfile.TemporaryDirectory() as tmp:
+        report = os.path.join(tmp, "report.json")
+        cmd = [GITLEAKS, "stdin", "--no-banner", "--report-format", "json",
+               "--report-path", report]
+        if os.path.exists(CONFIG):
+            cmd[1:1] = ["--config", CONFIG]
+        try:
+            subprocess.run(
+                cmd, input=text.encode("utf-8", "replace"),
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20,
+            )
+        except Exception:
+            return None  # None == "could not scan", distinct from [] == "scanned, clean"
+        try:
+            # gitleaks writes `[]` when it scanned and found nothing, so a missing or empty
+            # report means the scan did not happen (e.g. a gitleaks without `stdin`).
+            with open(report, encoding="utf-8", errors="replace") as fh:
+                data = json.load(fh)
+        except Exception:
+            return None
     if not isinstance(data, list):
         return None
     return [f for f in data if isinstance(f, dict)]

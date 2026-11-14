@@ -1,6 +1,6 @@
 {
   "name": "secret-guard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Redacts secrets from Bash and Read output before they reach the model, using gitleaks plus extra rules.",
   "author": {
     "name": "egg82",

@@ -36,6 +36,9 @@ paragraph.
   gets `writing-craft`'s editing pass; an issue rather than a PR follows `bug-hunt`'s `references/filing.md`.
 - A small change gets a short body; the sections stay, the prose shrinks. If the repo has a PR
   template, fit these sections into it rather than replacing it.
+- **A closing phrase anywhere in the body closes that issue on merge** — `Closes #7`, `Fixes #7`, `Resolves #7`,
+  even inside backticks or in a sentence about a different change. Write one only on the line meant to close;
+  elsewhere say "issue 7".
 - Keep the blank lines after `</summary>` and before `</details>`, or the Markdown inside won't render.
 
 ## The diagram

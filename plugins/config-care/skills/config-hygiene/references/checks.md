@@ -129,3 +129,33 @@ heading count.
 Median wrap is the *corroborating* column, which is where a heuristic belongs: a block whose width
 matches its neighbour rather than its own section was written elsewhere. `numbering` catches the
 resulting number collision; neither catches the orphan on its own.
+
+## Writing a check: a mention is not a use
+
+Every text-scanning rule has to decide whether a match is the thing or a *description* of the thing.
+Getting it wrong is the cry-wolf failure in its purest form: the rule fires hardest on the file that
+documents it. Three instances of one defect, found in one sitting across unrelated tools:
+
+- a pronoun check blocked the very bullet citing `you is` as a specimen of what it catches;
+- a test-isolation check flagged `cd ~/proj && nohup ./build.sh`, a string inside a test **fixture**
+  handed to a gate to judge and never executed;
+- a detached-work gate reported detached work because `nohup` appeared in a source **comment** being
+  written into a file.
+
+Four remedies, cheapest first. Pick by where the specimens actually live:
+
+| specimens appear in... | remedy |
+|---|---|
+| backticks | blank inline-code spans before matching, preserving offsets so reported positions stay right: `re.sub(r"`[^`\n]*`", lambda m: " " * len(m.group(0)), txt)` |
+| comments | drop comment-only lines first |
+| prose *below* the declaration | scope the match to the head of the file (what NO-SHIP does) |
+| an unbounded set | narrow the pattern until specimens fall outside it: `~/.claude` rather than a bare `~/` |
+
+**Prefer any of those to an allowlist.** An allowlist is instance data: it does not travel with the
+rule, it filters whole lines (so it can suppress a real hit sharing a line with an allowed one), and it
+needs a new entry every time the rule gets quoted somewhere new. Blanking keeps working because it does
+not need to know which file is the definition.
+
+**Test the rule against real content, never a fixture you wrote to match it.** Each of the three above
+was caught by running the check over the actual tree. Then prove the rule still fires on the real thing
+after you have taught it to ignore the mention, or you have replaced a noisy check with a dead one.

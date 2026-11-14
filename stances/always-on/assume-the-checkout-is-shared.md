@@ -17,15 +17,19 @@ namespace are shared mutable state and change under you silently. `~/.claude` is
   and say so; rewriting it is the destructive move.
 - **Commit early, onto your own branch** — uncommitted work is all another session's reset can kill.
 - **Multi-step work in a repo someone may also be in: `git worktree add <dir under $HOME> <branch>`** (not
-  the `EnterWorktree` tool; this never moves the user's checkout). Remove + prune when done.
+  the `EnterWorktree` tool; this never moves the user's checkout). Remove + prune when done. `worktree remove` leaves
+  the branch behind, and a script that creates a branch must reuse a leftover only when
+  `git rev-list --count origin/main..<branch>` is 0. `git worktree add -b <new> origin/<other>` makes `<new>` TRACK
+  `<other>`, so a bare `git push` goes nowhere: push with `-u origin <new>` and check `git rev-parse origin/<new>` equals `HEAD`.
 - **Never `git checkout` another branch in a clone you do not own. Never `git stash` in any checkout
   where a subagent or session may be writing — your own included.** Stash is a whole-tree revert that
   races any agent mid-edit (it bit here in my own checkout, with my own subagent mid-edit). To compare against another state, READ it
   (`git show HEAD:path | checker`, `git diff`) — don't move the tree to look and move it back.
-  `git checkout -b` is the same command: decide whether the clone is yours at the first write.
+  `git checkout -b` is that same command, though a fresh branch does not feel like switching. A clean tree is not
+  consent. Recovery: commit, check their branch back out, `git worktree add` for yours.
 - **The second actor is often one you spawned** — a writing subagent shares your tree and HEAD.
   Decide the worktree when you delegate; partitioning files in the brief does not cover HEAD.
-- **Identify an owner from `git log` on the file and `ListAgents`** — every session commits as the user.
+- **Identify an owner from `git log` on the file and `ListAgents`** — every session commits as the user, and a bystander's agreement is not consent. If you cannot identify the owner, wait.
   Something suspended that you didn't suspend (Flux, a pipeline): ask, don't resume.
 - **Your green may borrow a collaborator's uncommitted work.** Before committing something whose
   validity rests on files outside your diff, `git status` those paths; the thorough check is a clean

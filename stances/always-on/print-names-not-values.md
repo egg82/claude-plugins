@@ -24,9 +24,13 @@ Secrets in more than one namespace, restarts and a monitoring rule — count tha
   environment in argv. It has leaked a key here twice.
 - **Backstop only:** the secret-guard plugin's secret-redact hook gitleaks-redacts `Bash|Read` output after the
   command ran; its banner count is not proof the output is clean. **It blinds you too:** fetch a secret in a
-  separate command from the probe that uses it, or the probe's error lines get redacted.
-- **Diffing near-duplicate configs prints exactly what differs — the secret.** Mask values on both
-  sides (`sed -E 's/[A-Za-z0-9]{24,}/<v>/g'`) or compare per-line hashes.
+  separate command from the probe that uses it, or the probe's error lines get redacted. Classify errors into a short fixed
+  vocabulary (`no-reply`, `unknown-user`) before printing: six identical failures is the instrument, not the cause.
+- **Diffing near-duplicate files prints exactly what differs, which in near-duplicate configs or env files is the secret.**
+  Mask every assigned VALUE on both sides (`sed -E "s/(=|: *)['\"]?[^'\" ]+/\1<v>/g"`) or compare per-line hashes. To see
+  a secret-bearing line's SHAPE, use the shell-footguns skill's `mask-values.py` (run as `python3 -I`), never a hand-written
+  length filter: a `{24,}` or `{6,}` filter is a deny-list by shape, and the short groups of a dashed UUID token went on
+  screen that way twice.
 
 **If a value does escape, say so first, before anything else in the message** — rotation is cheap and
 only starts once someone knows. Rotate by adding the new credential, verifying it, then deleting the old.

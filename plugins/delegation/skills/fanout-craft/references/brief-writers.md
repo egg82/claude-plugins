@@ -51,6 +51,12 @@ finished. "Commit early and often" overshoots the other way: half-made commits t
 The line for every writer brief on its own branch: *"commit each coherent step once its tests pass; don't
 hold more than about an hour of finished work uncommitted."*
 
+**"The gate passes" is a claim about the files the gate could see.** `pre-commit run --all-files` checks tracked
+files only, so a child that runs it before `git add` never lints the file it just created. *(incident)* Three
+writers in one fan-out reported pre-commit clean while each new test file was not executable or carried a lint
+warning; all three surfaced only when the parent ran the gate after merging. Brief line: "`git add` new files
+before running the gate." And run the gate yourself on the branch before opening the MR.
+
 ## Gated numbers
 
 **Forbid loosening the gate, by name.** The rule is owned by `agentic-engineering` ("never raise a held

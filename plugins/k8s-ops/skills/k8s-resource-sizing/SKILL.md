@@ -82,6 +82,22 @@ Size from what the app declares about itself, then correct from measurement with
   hand-written PromQL. If VPA is used, set `controlledValues: RequestsOnly` and consider
   `controlledResources: ["memory"]` so it never reintroduces a CPU limit.
 
+**PromQL gotchas:**
+
+- A distroless Prometheus pod has no shell to exec into: `port-forward` and curl it.
+- A `[10d:5m]` subquery across all series blows the query timeout (HTTP 422). Query per namespace in a
+  loop and coarsen the step (`[7d:30m]`).
+- `max by(namespace,container)(...)` gives the per-replica value, which is what goes in a manifest. For
+  cluster totals multiply by `count by(namespace,container)(...)`; forgetting this makes daemonsets (times
+  node count) and multi-replica deployments wildly wrong.
+- Exclude the `POD` and empty container labels.
+
+**Edit topology matters more than the numbers.** Shared bases (a database operator base, a cache, a tunnel
+client) are edited once and affect every consumer, the biggest single lever (a base with three instances
+multiplies by three per database). Per-app patches override the base. Rook-Ceph resources live on the
+`CephCluster` CR. Helm- and operator-managed resources, and Talos static pods, often are not cleanly
+editable: record them as skipped rather than fighting them.
+
 **Before raising a memory limit for an app you own, ask whether that memory belongs on disk.** A limit raise
 treats state the app chose to hold as a fixed cost. Measured: an image service's limit went from
 512Mi to 768Mi to keep generated thumbnails (~150 KiB each, never changed once made) that a volume would

@@ -14,9 +14,10 @@ instead of `rm`**; sweep it once the replacement is verified.
 you the test — an "already present?" check fused with a copy mixed two editions into one folder. Run
 the check, read it, then act.
 
-**A snapshot counts only if it restores** — prove the round trip at capture (`kubectl apply
---dry-run=server -f`). **The undo must run:** `trap ... EXIT`; `git checkout` is inert on an untracked
-file. **Blast radius is the dependency graph:** `--assumeno` every package transaction; ask a table's
+**A snapshot counts only if it RESTORES and is a PRE-state** — prove the round trip at capture (`kubectl apply
+--dry-run=server -f`; a `-o yaml` dump keeps `uid`/`resourceVersion`/`status`) and check it records the value you are
+about to change (a dump taken after the change preserves nothing). **The undo must run:** `trap ... EXIT`; `git checkout` is inert on an untracked
+file; run the undo once and check it changed back, since a happy-path restore is skipped by the first `exit 1`. **Blast radius is the dependency graph:** `--assumeno` every package transaction; ask a table's
 `ON DELETE`. **"Safe to delete" is a claim about the reader** — what does it do with nothing?
 
 Destructive operations rarely look destructive at the call site: a *metadata refresh* pruned ~138

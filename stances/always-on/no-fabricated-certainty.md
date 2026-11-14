@@ -19,6 +19,10 @@ each shipped here and caught by a human:
   scheme. Detect mismatched scales and say "cannot compare".
 - **Two sources feeding one view** — the working one hides the broken one; a half-full panel reads
   as working. Count per source (`GROUP BY` collector/version) before trusting the whole.
+- **A statistic that cannot express the distinction it was added for** — a mean cannot separate "many people
+  affected" from "a few filing repeatedly". Check what the field means before building a ratio on it.
+- **Dropping a sourced claim fabricates a negative too.** Search the evidence base first: an unsourced claim and a
+  source-not-checked claim look identical.
 
 **A caveat beside a number does not neutralise it** — the figure travels and the caveat doesn't. If a
 measurement can't stand unqualified, fix the comparison or say "unproven" with no number. A bound

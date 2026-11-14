@@ -31,9 +31,18 @@ force-delete a `VolumeAttachment` to clear a Multi-Attach error without checking
 `rbd status <pool>/<image>` first: a live watcher/exclusive lock means the image is
 still mapped and deleting the attachment risks corruption.
 
+- CNPG's own knob for the same job is `spec.enablePDB: false` for the maintenance window and back to
+  `true` after (`nodeMaintenanceWindow` now warns in favour of it).
+- For multi-instance clusters, `kubectl cnpg promote` a replica off the node first. It is not needed for
+  the drain, but it turns an unplanned failover into a clean switchover. A promote aimed at a replica whose
+  own node rebooted a minute earlier can be silently dropped (target reverts, no error): wait for
+  `currentPrimary` to change and retry once. A switchover that never reaches "healthy" is worth reading:
+  one sat at "Switchover in progress" because the demoted primary must archive its WAL first and that
+  cluster's archiving had been failing for days.
+
 **Never put a "PGs active+clean" gate between drain and uncordon.** The drained node's own
 OSD cannot run while it is cordoned, so the gate can never pass — it holds the cordon, and
-on pools with a single replica that is a data outage (`stale` PGs, blocked client I/O) for the gate's whole
+on size-1 pools that is a data outage (`stale` PGs, blocked client I/O) for the gate's whole
 timeout. Measured: 22 minutes, from re-running a gated script against a node an earlier
 failed attempt had left drained. Gate only before the cordon and after the uncordon, and
 keep drain → reboot → uncordon back-to-back.

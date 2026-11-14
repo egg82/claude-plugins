@@ -307,6 +307,8 @@ least.
   nothing. Call the real function with a degenerate input. A test containing SQL or a command that
   also exists in the code is testing the copy: fix the callability (an optional `conn` parameter),
   then mutation-test the fix (`references/instrument-failures/gates-that-pass-broken.md`, "RE-IMPLEMENTS").
+- **The corruption is sometimes a no-op** (an in-place edit that rewrites a character to itself): replace the
+  value, don't edit it, and assert the corrupted input differs from the original.
 - **The mutation set is the blind spot.** For each rule the gate grows, ask what mutation exercises
   *that* rule.
 - **A control whose bad case is always the first item cannot see state carried across items**
@@ -444,6 +446,13 @@ A gate is only proven when you have watched it **refuse** something, and that pr
 in hand, filed as an outage: a denied login, a rejected write, an unexpected 403. **When something is
 refused, blocked, or broken, ask what that refusal proves before you repair it** — then check the
 proof still applies to the CURRENT configuration. Worked case: `references/controls-that-lie.md`.
+
+**A red-first run of a test executes the bug.** When the defect is a resource runaway (recursion, fork bomb,
+unbounded loop or allocation), every path of the test that reaches it needs a bound inside the test (a depth
+counter, a timeout) and an outer one root cannot bypass: `podman run --pids-limit N`, `--memory`,
+`timeout -s KILL`. `ulimit -u` does nothing as root, and CI and test containers usually run as root. In one
+case a test copied the recursing handler into a second, uncapped test, and its red run spawned over a
+thousand host processes before the container was killed.
 
 ## What only a human can catch
 

@@ -136,6 +136,25 @@ if re.search(r"(?m)(?:^|[;&|])\s*(?:(?:while|until|if|elif|then|do|else)\s+)?(?:
         "`ps -eo pid,args | grep -E '<real invocation>' | grep -v grep`, then kill resolved PIDs."
     )
 
+# RULE-ID: ps-grep-wait-self-match
+# pgrep-f-self-match's twin: a wait loop counting `ps ... | grep <pattern>` matches the same wrapper line, which
+#     holds the pattern too, so the count never reaches zero and a merge waiter stalled this way. Safe forms: a
+#     pattern anchored to the real invocation (`^bash /abs/x.sh`), the bracket trick (`[x]`), `-x`, or a
+#     `grep -v grep` stage. Only while/until conditions: a one-off listing is read by a person, while a loop
+#     silently spins.
+for _m in re.finditer(r"(?:^|[;&|\n]|\bdo\b|\bthen\b)\s*(?:while|until)\s+(?P<cond>[^;\n]+?)(?:;|\bdo\b)", raw_cmd):
+    _c = _m.group("cond")
+    if re.search(r"\bgrep\s+-v\s+grep\b", _c):
+        continue
+    _pm = re.search(r"\bps\b[^|]*\|\s*(?:command\s+)?grep((?:\s+-[A-Za-z]+)*)\s+(['\"]?)([^'\"\s)]+)", _c)
+    if _pm and "x" not in _pm.group(1) and not _pm.group(3).startswith("^") and "[" not in _pm.group(3):
+        findings.append(
+            "A wait loop counting `ps ... | grep <pattern>` matches its own harness wrapper, whose argv holds the "
+            "pattern, so the count never reaches zero and the loop spins forever. Anchor the pattern to the real "
+            "invocation (`grep -c '^bash /abs/path/x.sh'`), use the bracket trick (`[x]`), or add `| grep -v grep`."
+        )
+        break
+
 # RULE-ID: holding-dir-whole-sweep
 # A dated holding dir (`.holding-YYYYMMDD`) is shared by every session that moved things aside that day.
 # One session swept the whole dir to clear its own two items and deleted other projects' holds
@@ -561,8 +580,27 @@ _COND_FMT = re.compile(
 _FMT_LAST = re.compile(
     r"\|\s*(sed|awk|cut|tr|nl|column|fmt|expand|unexpand|pr|rev|fold|head|tail|cat|tee)\b[^|]*$"
 )
+def _blank_foreign_quotes(s):
+    """Blank the inside of each top-level quoted span, keeping offsets, unless it is a shell's `-c`
+    program: an `if` inside `python3 -c '…'` is Python, one inside `bash -c '…'` is shell."""
+    out, i = list(s), 0
+    while i < len(s):
+        c = s[i]
+        if c == "\\" and i + 1 < len(s):
+            i += 2; continue
+        if c in "'\"":
+            j = i + 1
+            while j < len(s) and s[j] != c:
+                j += 2 if (c == '"' and s[j] == "\\") else 1
+            if not re.search(r"\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-\w*c\s*$", s[:i]):
+                out[i + 1:j] = " " * (min(j, len(s)) - i - 1)
+            i = j + 1; continue
+        i += 1
+    return "".join(out)
+
+
 if not _status_ok:
-    for _m in _COND_FMT.finditer(cmd):
+    for _m in _COND_FMT.finditer(_blank_foreign_quotes(cmd)):
         # A formatter inside $(...) or `...` feeds a real test (`[ -n "$(x | tail -1)" ]`),
         # so strip substitutions before asking what the pipeline's last stage is.
         _cond = re.sub(r"\$\([^()]*\)", "S", _m.group("cond"))
@@ -601,13 +639,41 @@ if not _status_ok:
 #     opened before the pipe, so from the formatter's position the operator is bare. So the scan
 #     starts fresh at the formatter token and tracks quote state from THERE — deliberately not from
 #     the start of the command, which is the whole mechanism.
+#     Likewise a formatter inside a `$( … )` that is an ARGUMENT stops at its `)`:
+#     `git commit --only $(git status | awk …) && …` tests git commit. A bare `v=$(… | tail) && …`
+#     still blocks, since an assignment's status is its substitution's.
 _FMT_TOK = re.compile(
     r"\|\s*(?:sed|awk|cut|tr|nl|column|fmt|expand|unexpand|pr|rev|fold|head|tail|tee)\b")
 
 
+_BARE_ASSIGN = re.compile(r"(?:^|[;&|\n(])\s*(?:[A-Za-z_]\w*=\S*\s+)*[A-Za-z_]\w*=$")
+
+
+def _arg_substs(s):
+    """(start, end) of each `$( … )` that is an argument, not the whole value of a bare assignment:
+    its `)` ends the formatter's pipeline, and the operator after it tests the command it feeds.
+    `v=$(x | tail -1) && …` stays out: an assignment's status IS its substitution's."""
+    spans, stack, i = [], [], 0
+    while i < len(s):
+        if s.startswith("$(", i):
+            stack.append([i, 1]); i += 2; continue
+        if stack and s[i] == "(":
+            stack[-1][1] += 1
+        elif stack and s[i] == ")":
+            stack[-1][1] -= 1
+            if not stack[-1][1]:
+                start = stack.pop()[0]
+                if not _BARE_ASSIGN.search(s[:start]):
+                    spans.append((start, i))
+        i += 1
+    return spans
+
+
 def _fmt_then_op(s):
+    arg_spans = _arg_substs(s)
     for m in _FMT_TOK.finditer(s):
-        i, n, q = m.end(), len(s), ""
+        ends = [e for b, e in arg_spans if b < m.start() < e]
+        i, n, q = m.end(), min(ends) if ends else len(s), ""
         while i < n:
             c = s[i]
             if q:                       # inside the formatter's own quoted program
@@ -650,11 +716,11 @@ if _fmt_then_op(cmd) and not _status_ok:
 #     `echo`, a comment, a heredoc body or `$(git commit-tree …)` is not command position.
 #     Guarded, so quiet: `git commit … && … && git push` (an unbroken `&&` chain), `git commit … ||
 #     exit|return`, the commit as an `if`/`while` condition, `$?` read between the two, or
-#     `set -e`/`set -o errexit` before the commit. `case … esac` is blanked first: its branches are
+#     `set -e`: the Bash tool runs the command where errexit is ignored (measured: `set -e; false;
+#     echo x` prints x, in a subshell too). `case … esac` is blanked first: its branches are
 #     alternatives, and `;;` is not a sequence.
 #     The splitter keeps a stack of quote/paren/brace contexts, so `"$(echo 'a"b')"`, `${x:-\}}`
 #     and `$( … )` do not end a statement early or swallow the rest.
-_SET_E = re.compile(r"^\s*set\s+(?:-[A-Za-z]*e[A-Za-z]*\b|.*-o\s+errexit\b)")
 _LEAD = re.compile(r"^(?:\s*(?:then|do|else|fi|done|\{|\}|\()(?=\s|$|;|\())*\s*")
 _COND = re.compile(r"^(?:if|elif|while|until|!)\s+")
 _GIT_CMD = re.compile(
@@ -743,14 +809,12 @@ def _groups(s):
     return out
 
 
-def _unguarded_push(text, errexit):
+def _unguarded_push(text):
     stmts = _top_statements(_CASE.sub(lambda m: " " * len(m.group(0)), text))
     pending, chain = None, False
     for i, (st, sep) in enumerate(stmts):
         body = _LEAD.sub("", st)
-        if _SET_E.match(body):
-            errexit = True
-        if any(_unguarded_push(g, errexit) for g in _groups(st)):
+        if any(_unguarded_push(g) for g in _groups(st)):
             return True
         if pending is not None:
             if "$?" in st:
@@ -766,7 +830,7 @@ def _unguarded_push(text, errexit):
                 return True
             continue
         # a commit
-        if errexit or cond or sep == "|":
+        if cond or sep == "|":
             continue
         if sep == "||":
             nxt = _LEAD.sub("", stmts[i + 1][0]) if i + 1 < len(stmts) else ""
@@ -776,12 +840,13 @@ def _unguarded_push(text, errexit):
     return False
 
 
-if _unguarded_push(cmd, False):
+if _unguarded_push(cmd):
     findings.append(
         "`git commit` and then `git push` in one command with nothing stopping the push when "
         "the commit fails, so it pushes whatever was ALREADY committed. This shipped nineteen "
         "untested commits once, after a commit failed on a pathspec. Chain them: "
-        "`git commit … && git push`, or put `set -e` at the top."
+        "`git commit … && git push`. `set -e` does not help here: the Bash tool runs the command "
+        "where errexit is ignored."
     )
 
 # RULE-ID: test-then-commit-unguarded
@@ -790,8 +855,9 @@ if _unguarded_push(cmd, False):
 #     between them. Sibling of formatter-then-and, which needs a literal `&&` right after the
 #     formatter and so missed `pytest -q | tail -2; cd .. && git commit …`: fifteen failing tests
 #     were committed on a branch while the transcript showed "15 failed" two lines above the commit.
-#     Allowed when the status is read in between (`$?`, `PIPESTATUS`), or `pipefail` is set and the
-#     test run is joined to the commit by `&&` alone.
+#     Allowed when the status is read in between (`$?`, `PIPESTATUS`), `|| exit` follows the run, or
+#     `pipefail` is set and the test run is joined to the commit by `&&` alone. NOT allowed for
+#     `set -e`: the Bash tool runs the command where errexit is ignored (see the push rule above).
 # Not inside a path or file name (`tests/pytest.ini`, `vitest.config.ts`): a `git add` of one is no test run.
 _TEST_RUN = re.compile(r"(?<![/\w.-])(?:pytest|py\.test|tox|nox|jest|vitest|cargo\s+test|go\s+test"
                        r"|(?:npm|pnpm|yarn)\s+(?:run\s+)?test|make\s+(?:test|check)|-m\s+pytest)(?![\w./-])")
@@ -830,8 +896,6 @@ def _test_then_commit(s):
         return True
     if re.match(r"\s*\|\|\s*(?:\{[^}]*?)?\b(?:exit|return)\b", between[stmt_end.start():] if stmt_end else ""):
         return False                # `pytest … || exit 1` / `|| { echo …; exit 1; }` stops the commit
-    if re.search(r"\bset\s+-[A-Za-z]*e|\berrexit\b", s[:t.start()]):
-        return False                # errexit stops on an unpiped failing test run
     return bool(re.search(r"[;\n]", between))
 
 
@@ -1301,6 +1365,31 @@ for _i, _st in enumerate(_seq_pv):
             "you predicted, nothing downstream can tell that label from a measurement. Run the "
             "probe, READ the output, then state what it showed. For a control, assert it "
             "(`test -s out || echo \"PROBE BROKEN\"`) instead of glossing a blank in advance."
+        )
+        break
+
+# RULE-ID: cd-semicolon-then-git-write
+# `cd <dir>; ... git <write>`: with `;` (or a newline) a failed cd does not stop the rest, so the git
+# write runs in whatever directory the shell was already in, usually the main clone. Happened twice:
+# `git worktree add ... | tail -1; cd ~/wt/x && git rebase ...; git push ...` rebased and pushed the
+# main clone because the worktree add had failed. The cd's `&&` chain must END in `;`/newline (the `;`
+# is what un-guards what follows); `cd x && git push` and `cd x || exit 1;` stop on failure. Quoted text is blanked, so a commit message or echo that
+# mentions `cd` or `git push` does not match. Read-only git (status, log, diff, fetch) stays allowed.
+_cdq = blank_quoted(cmd)
+_gitw = re.compile(
+    r"(?:^|[;&|\n(]|\bthen\b|\bdo\b)\s*git\s+(?:-C\s+\S+\s+)?"
+    r"(?:rebase|push|commit|reset|checkout|merge|clean|stash(?!\s+(?:list|show)\b)|worktree\s+remove)\b"
+)
+for _m in re.finditer(r"(?:^|[;&|\n(]|\bthen\b|\bdo\b)\s*cd\b[^;&|\n]*(?:&&[^;|\n]*)*(?:;|\n)", _cdq):
+    # A later statement that has its own cd is that cd's business (its own match, if any), so
+    # `cd ~/a && git push; cd ~/b && git push` passes.
+    if any(_gitw.search("\n" + _st) for _st in re.split(r"[;\n]", _cdq[_m.end():])
+           if not re.search(r"\bcd\b", _st)):
+        findings.append(
+            "`cd <dir>;` (or a newline) followed later by a git write (rebase/push/commit/reset/checkout/"
+            "merge/stash/clean/worktree remove). If the cd fails, the git write runs in the directory the "
+            "shell was already in, usually the main clone. Chain with `&&` after the cd "
+            "(`cd <dir> && git ...`), or put multi-step work in a script with `set -euo pipefail`."
         )
         break
 

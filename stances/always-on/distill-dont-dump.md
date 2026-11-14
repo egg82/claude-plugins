@@ -19,4 +19,7 @@ drifted across five files). Keep a number only where it *is* the argument, besid
 Same for an enumeration of files or links. **When a summary word justifies a decision, write the
 checkable property instead** — an adjective about a set is a claim about whoever joins it later.
 
+**Every prose edit that ships gets the `writing-craft` tells pass**, not only the doc you were asked for: a README
+paragraph, an MR description, a commit body. A model tell leaked into a README edit made in passing.
+
 Pairs with [[prefer-subtraction]]; the `doc-cold-read` skill catches these leaks.

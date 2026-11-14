@@ -159,3 +159,50 @@
   harness kills a run that was about to succeed and it reads as a failure of the technique.
 - **`--network=none` is deliberate.** The page must be self-contained anyway; if it renders blank
   without network, that is a finding about the page, not a reason to open egress.
+
+## When `--screenshot` is the wrong shutter: WebGL, throttled animation, late fetches
+
+Headless Firefox cannot do WebGL on its own (it needs GLX, so Xvfb), and the Firefox version decides when
+`--screenshot` fires; note both in your `instance.md`. The recipe and the traps around it:
+
+- **The error moving from "error constructing widget" to "the browser supports WebGL, but initialization
+  failed" reads like progress and is not**, even with `webgl.force-enabled` and `LIBGL_ALWAYS_SOFTWARE=1`.
+  Build an image with Xvfb, run `Xvfb :N -screen 0 WxHx24`, export `DISPLAY`, drop `--headless`, wait for
+  `xdpyinfo` before starting Firefox. **Give each run its own display number**: under `--network=host`
+  concurrent containers share the X socket namespace, and parallel renderers on one fixed display photograph
+  EACH OTHER's pages. Check each kept shot shows your route.
+- **Firefox throttles `requestAnimationFrame` in the window `--screenshot` uses**, so a render loop runs
+  exactly one frame (tell: the engine's frame counter is 1 after twenty seconds). `setInterval` is not throttled.
+- **`--screenshot` captures a black rectangle for a WebGL canvas** and `preserveDrawingBuffer: true` does not
+  fix it. If stuck with it, measure instead of photograph: in the injected probe `drawImage(webglCanvas,...)`
+  into a 2D canvas in the same tick as the render, `getImageData`, and print a non-black pixel count into
+  the on-page `<pre>`.
+- **Better: grab the display yourself.** ImageMagick in the image, Firefox `--kiosk` without `--screenshot`,
+  sleep as long as you want the page to run, `import -window root -screen out.png`, kill Firefox. The WebGL
+  canvas is captured, rAF is not throttled, and capture happens on your clock, so probe interactions
+  (`xdotool mousemove X Y click 1`) have a window you choose. A harness whose timing depends on the browser
+  build silently changes meaning when the base image moves; use kiosk for anything data-driven (tell of a
+  too-early shot: the server log, not the picture, shows the data requests never happened).
+
+### Kiosk traps, each cost a render
+
+- `--kiosk` does not fill the Xvfb screen and `--window-size` beside it makes it worse; the page lays out at
+  a width you did not choose and a responsive grid reads as broken. Size it after launch:
+  `xdotool search --onlyvisible --class firefox | head -1`, then `xdotool windowsize "$WID" W H`.
+- Window height caps what `import -window root` sees: make the screen AND the window tall. Keys sent with
+  `xdotool key` may never reach the page; scroll from an injected probe (`el.scrollIntoView()`).
+- Firefox will not lay out narrower than ~450 px, so a "390 px phone" shot is the left 390 px of a 450 px
+  layout and reads as overflow. Print `innerWidth` into the shot before believing a clipped edge; shoot phone
+  widths with `--screenshot` and keep kiosk for states needing your clock.
+- A capture of a few hundred bytes is a failed grab, not a blank page (`import` logged "Serial number of
+  failed request" when several shots ran in one container). Check file size before looking; retry one shot
+  per container.
+
+## A browser colour-scheme pref does not reach an app with its own theme store
+
+An app that reads `localStorage.getItem("theme")` first (the common pre-paint shape, Tailwind
+`darkMode: "class"`) consults `prefers-color-scheme` last or never, so two "light" and "dark" shots can both
+come out dark and the page renders perfectly. Drive the app's own mechanism: serve `index.html` with a
+`localStorage.setItem` script injected ahead of the pre-paint script, use a FRESH profile per shot
+(localStorage persists between shots in one run), and print a control that greps the served HTML for the
+injection, because "the pref did not take" and "the injection did not land" produce the same dark picture.

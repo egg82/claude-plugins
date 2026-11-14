@@ -10,8 +10,8 @@ post-production adds the camera, captions and sound. Every frame of UI is real.
 
 `engine/` is the method and stays generic. Each project keeps its own **promo dir**
 (`theme.json`, `scenes/`, `assets/`, `videos/`, `brief.md`) in its repo, because scenes go
-stale when the site changes, not when this method does. Record what this host has (container
-image, browser, ffmpeg, CPU count) in `~/.claude/local/promo-video/instance.md`; none ships.
+stale when the site changes, not when this method does. An `instance.md` beside this file says what this host
+has (container image, browser, ffmpeg, CPU count); none ships.
 
 ## 1. Interview the owner first
 
@@ -98,7 +98,7 @@ and `act(page, d)` (recorded). `d` is the Director:
 | `d.wide()` | camera back out to the full frame |
 | `d.park(x, y)` | move the cursor somewhere neutral |
 | `d.caption(text, secs)` | caption pill composited in post |
-| `await d.say(text)` | narration line, also shown as the caption; the next line waits for this one |
+| `await d.say(text, { caption })` | narration line; the caption defaults to the spoken text; the next line waits for this one |
 | `d.accent()` | marks the beat the story turns on; sounds only if the spec names an accent sample |
 | `await d.fastForward(fn)` | whatever `fn` waits for (a slow server, a re-render) plays at 20x, effectively a cut; later cues are retimed |
 | `d.prewarm(sel)` / `d.startAt(x, y)` | setup only: load a hover card off camera / place the cursor before filming |
@@ -149,10 +149,17 @@ shapes as later cut-downs of beats that already work, filmed at tighter zooms.
 ## Voiceover
 
 **Captions alone are not enough.** A viewer who didn't watch the captions came away
-confused. Narrate: `await d.say("…")` speaks a line and shows it as the caption, and
-`card({ voice: "…" })` speaks over a title card. `vo.py` synthesizes every line before
-filming, so each scene is paced by its narration: a line waits for the previous one, and
-the scene waits for its last line. Lines must be string literals. Set the voice per video:
+confused. Narrate: `await d.say("<spoken line>", { caption: "<short label>" })` speaks the
+line and shows the label, and `card({ voice: "…" })` speaks over a title card.
+**Write the two differently.** The one-argument `d.say("...")` shows the spoken words as the
+caption, and a voice reading the subtitle word for word sounds flat: "it's just saying exactly
+what the text at the bottom says". Speak it the way a colleague would talk you through the
+screen; caption the point.
+`vo.py` synthesizes every line before filming, so each scene is paced by its narration: a line
+waits for the previous one, and the scene waits for its last line. **So a hover's `dwell` is the
+camera's settle time (~900 ms), never the line's length:** the camera already holds until the next
+`say`, and a dwell sized to the line, plus the travel after it, is dead air the owner heard as the
+video "just holding" (3.5 s gaps, measured from `out/<scene>/cues.json`). Lines must be string literals. Set the voice per video:
 `"voice": {"engine": "kokoro", "id": "am_fenrir", "speed": 1.05}` for drafts (local,
 Apache-2.0, ~1x realtime; `~/.local/share/promo-video/tts/`), or `"engine": "elevenlabs"`
 for finals (key file `~/.config/promo-video/elevenlabs.key`; better intonation). Write
@@ -165,6 +172,17 @@ delivery with inline tags: `d.say("[curious] Think you can…? [confident] Prove
 tags are stripped from captions (and from Kokoro's input). Check the account's plan
 before a commercial use: as understood here (not verified), the free tier doesn't
 include a commercial licence.
+
+**Record the narration as ONE take.** `vo.py` synthesizes each line as its own request by default, and
+each generation comes out a little different: clean lines that the owner heard as "recorded on
+different days in different settings". Set `"take": "one"` in the video's `voice` (ElevenLabs only);
+`vo.py` voices the whole script in one `with-timestamps` request, in cut order, and cuts it at the
+midpoint of each gap using the returned character alignment. Holds are baked in at filming time, so
+a new take means filming again (one take ran 6% slower than the same lines voiced separately).
+
+**Let the owner pick the voice by ear.** Voice 3-4 candidates on the same two script lines, and put
+one on both models (`eleven_v3`, `eleven_multilingual_v2`) to separate "wrong voice" from "wrong
+model". A voice that tested well was still "slightly uncanny valley" to the owner.
 
 ## Sound
 

@@ -100,6 +100,14 @@ case rather than proceeding -- and make "could not plant" a distinct outcome fro
 `MISSED`. A harness that prints `MUTATION SCRIPT FAILED` and then evaluates anyway, as mine did, has
 told you and scored against you in the same breath.
 
+**A corruption that is sometimes a no-op.** A must-fail test for a bad checksum "corrupted" a sha256 in place with
+`sed 's/^./0/'`. When the digest already began with `0` nothing changed, the checksum still verified, and the test
+passed by chance about one run in sixteen. The digest was of an artifact regenerated each run, so the fixture varied
+and the failure was rare enough to survive review, mutation checks and a full suite. Corrupt fixture data by
+*replacing* it with a value that cannot be the real one (an all-zero digest), never by editing it in place, since an
+edit that rewrites a character to the one already there changes nothing. Loop any test whose fixture is regenerated
+per run before trusting a single green, and assert that the corrupted input differs from the original.
+
 **And a control is only a control if it drives THE SAME CODE as the subject.** Two of mine in one day
 did not, and both read as thorough. One asserted `len(pairs) > MAX` — arithmetic about the fixture,
 true whatever the matcher did, standing in for "a match-everything matcher breaches the bound". The

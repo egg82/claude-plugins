@@ -11,6 +11,12 @@ output to weight a task set, not as an exact taxonomy.
 """
 import json, glob, os, re, collections
 
+# $GOLF_TRANSCRIPTS overrides the tree to mine (default: this user's own transcripts).
+TREE = os.path.expanduser(os.environ.get("GOLF_TRANSCRIPTS") or "~/.claude/projects")
+if not os.path.isdir(TREE):
+    raise SystemExit(f"not a directory: {TREE} (set $GOLF_TRANSCRIPTS). Every category would read 0, "
+                     "which looks like a workload with no subagents in it")
+
 # Coarse categories, matched against description + prompt opening.
 CATS = [
     ("research/web",     r"\b(research|search|sentiment|landscape|competitor|review|find out|news|forum|reddit|community)\b"),
@@ -24,7 +30,7 @@ CATS = [
 
 def spawn_records():
     """(description, prompt, model, depth) for every recorded spawn."""
-    for path in glob.glob(os.path.expanduser("~/.claude/projects/**/*.jsonl"), recursive=True):
+    for path in glob.glob(os.path.join(TREE, "**", "*.jsonl"), recursive=True):
         for line in open(path, errors="replace"):
             if '"agentId"' not in line:
                 continue
@@ -54,7 +60,9 @@ for desc, prompt, model, aid in recs:
     seen.add(aid)
     uniq.append((desc, prompt, model))
 
-print(f"unique spawn records with prompts: {len(uniq)}\n")
+print(f"unique spawn records with prompts: {len(uniq)}  (tree: {TREE})\n")
+if not uniq:
+    raise SystemExit("no spawn records under the tree: a table of zeroes is not a workload profile")
 
 cats = collections.Counter()
 lens = collections.defaultdict(list)

@@ -116,6 +116,15 @@ if voiced:
 mix = fx + vo
 if spec.get("music"):
     m = load(resolve(spec["music"]), total, spec.get("music_start", 0))
+    # A track shorter than the picture used to stop dead mid-video (96s of music under 132s),
+    # with its fade-out at the track's end rather than the video's. Loop it, 2s crossfade.
+    xf = int(2.0 * SR)
+    loop = m.copy()
+    while len(m) < len(fx):
+        if len(loop) <= 2 * xf:
+            raise SystemExit("sfx: music too short to loop")
+        ramp = np.linspace(0, 1, xf)
+        m = np.concatenate([m[:-xf], m[-xf:] * (1 - ramp) + loop[:xf] * ramp, loop[xf:]])
     m = m[: len(fx)] * spec.get("music_gain", 0.45)
     fi, fo = int(0.4 * SR), int(1.8 * SR)
     m[:fi] *= np.linspace(0, 1, fi); m[-fo:] *= np.linspace(1, 0, fo)

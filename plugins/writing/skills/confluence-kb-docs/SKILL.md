@@ -64,6 +64,7 @@ can't*.
    corrections.
 4. **Scrub conversational leakage** -- read the whole draft cold and delete anything that answers
    the chat rather than the reader (dates, ticket numbers, "as we discussed", process residue).
+   Traps caught in review, including `<placeholder>` redirection in shell blocks: `references/doc-style.md`.
    Then run `writing-craft`'s editing pass (`references/editing-pass.md`) over the prose for model tells.
 5. **Adversarial cold read, before publishing.** Spin up 2-3 subagents with **no knowledge of this
    conversation** and have them read the finished draft cold. Give each only the draft text plus the
@@ -75,6 +76,7 @@ can't*.
    it.)
 6. **Publish only on an explicit "send it."** With the confluence MCP tools: create under the right
    parent, add a table-of-contents macro, strip the duplicate H1, add labels, cross-link siblings.
+   Mechanics and the gotchas that silently eat content: `references/confluence-publishing.md`.
 7. **Keep the repo `.md` in sync** with what's published.
 
 ## Non-negotiables

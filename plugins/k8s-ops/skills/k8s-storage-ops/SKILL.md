@@ -1,6 +1,6 @@
 ---
 name: k8s-storage-ops
-description: Diagnoses and fixes homelab Kubernetes persistent storage. Use when a PVC won't bind, a pod is stuck ContainerCreating on a volume, a storage operator (Rook-Ceph/Longhorn) is unhealthy, volume expansion is stuck, or stateful workloads are down.
+description: Diagnoses and fixes homelab Kubernetes persistent storage. Use when a PVC won't bind, a pod is stuck ContainerCreating on a volume, a storage operator (Rook-Ceph/Longhorn) is unhealthy, volume expansion is stuck, or stateful workloads are down. Also use when CHOOSING a storage class or arguing about redundancy (whether to add local/node-pinned storage, whether a replicated CSI is worth its overhead, whether a volume is 'HA'), because those answers invert depending on what the layer beneath Kubernetes already replicates.
 ---
 
 # k8s-storage-ops
@@ -11,7 +11,9 @@ BLUF: If anything stateful is broken, **check the storage operator/CSI health FI
 `StorageClass` → **provisioner (CSI driver)** → `PV` dynamically provisioned + **bound** to a `PVC` → **mounted** into a pod. In a homelab the provisioner is usually one of:
 - **Rook-Ceph** — distributed; block (`rbd`), shared filesystem (`cephfs`), and object. Replicated across nodes/disks. Most moving parts.
 - **Longhorn** — replicated block, per-volume replicas across nodes, has a UI.
-- **local-path** (Rancher) — single-node, data pinned to one node's disk, no replication. Fine for non-critical; not HA.
+- **local-path** (Rancher): single-node, data pinned to one node's disk, no replication *at this layer*,
+  and no capacity accounting (it will place ten PVCs on a disk that fits two). Fine for non-critical.
+  Whether that means "not HA" depends on what is underneath; see "Redundancy is layered" before repeating it.
 
 ## PVC / PV triage
 ```
@@ -107,7 +109,7 @@ kubectl -n longhorn-system get volumes.longhorn.io
 - Node **disk pressure** or a node marked unschedulable stops replica scheduling — Longhorn won't rebuild replicas onto a cordoned node.
 
 ## local-path
-Dead simple: hostPath-style, data physically on one node's disk. A pod rescheduled to another node **loses access to its data** (a fresh empty PV, or Pending if node-affinity pins it). Acceptable for single-node / throwaway workloads; never for anything needing HA or that survives a node loss.
+Dead simple: hostPath-style, data physically on one node's disk. A pod rescheduled to another node **loses access to its data** (a fresh empty PV, or Pending if node-affinity pins it). Acceptable for single-node / throwaway workloads; on bare-metal disks never for anything needing HA or that survives a node loss (on replicated infrastructure beneath the VM, see "Redundancy is layered").
 
 ## Backups (not optional)
 Operator replication is **not a backup** — it protects against disk/node loss, not deletion, corruption, or a bad `kubectl delete pvc`. PV data needs its own backup: Velero, VolSync, k8up, or the operator's own snapshots (Ceph RBD snaps / Longhorn backups to an S3/NFS target).
@@ -128,3 +130,24 @@ k8up's backup/prune/restore runner pods are rejected at admission by PodSecurity
 schedule fires, the Job fails `BackoffLimitExceeded`, no pod is ever created, and nothing looks
 obviously broken until a restore is needed. If backups have gone quiet with no clear error, see
 `references/k8up-podsecurity-restricted.md`.
+
+## Redundancy is layered: establish the substrate before arguing about it
+
+"Is this volume HA?" is unanswerable from inside Kubernetes. A CSI's replica count describes one layer.
+Underneath it there may be another that already replicates (a hypervisor datastore, a SAN or array, ZFS/RAID, a cloud
+disk), and a guest cannot see it. Ask what the disks actually sit on before recommending for or against
+node-pinned storage, because the answer inverts:
+
+- **Local storage on bare-metal disks:** node dies, data is gone. "Not HA" is correct.
+- **Local storage on replicated infrastructure:** the virtual disk survives a host failure and comes
+  back with the VM. You trade availability during a reboot, not durability, a far smaller price.
+
+The mirror image is the expensive half: **a replicated CSI on replicated infrastructure multiplies.**
+Ceph `size=3` on storage that already mirrors is six physical writes per logical write, plus
+replication traffic between guests that re-enters the lower layer. When costing a migration, the lower
+layer's factor cancels out of the ratio: moving a workload from a replicated CSI to a plain volume on the
+same substrate saves exactly the pool's replica count, with no need to know the substrate's own policy.
+
+Nothing in `kubectl`, SMBIOS or node labels exposes the substrate. Find it out from the
+hypervisor layer and record the answer in the repo beside the storage config, or it is re-derived (or
+guessed) every time.

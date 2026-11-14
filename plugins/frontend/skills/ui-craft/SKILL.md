@@ -8,7 +8,7 @@ description: "How to make a web UI look and feel genuinely good without trading 
 The method for taking a working data UI from "fine" to "I want to use this". Learned on a project that
 went from a white, table-shaped page to a dense, colourful analytics-site look in one evening, and paid for every step.
 
-**Read `~/.claude/local/ui-craft/preferences.md` if you keep one** — the person's own taste (target look,
+**Read a `preferences.md` beside this file if you keep one** — the person's own taste (target look,
 theme, density), kept separate so this method stays portable; none ships, record your own. Without it, ask what the
 reference sites are before choosing a look.
 
@@ -29,6 +29,10 @@ of which the description carried.
 - Hand the images to whoever builds the page as the acceptance target ("match this structure"), with
   your summary demoted to a hint about where to look.
 - **When a restyle keeps landing on "a few graphs on top of a table", the structure is the problem and whoever built it cannot see past it.** Brief two or three clean-room designers with only the real payloads, the API schema, the product's purpose and the honesty rules (no code, no screenshots of the current site), each on a different lens (the work someone does, the entities they argue about, one picture of everything). Render every mockup yourself, then take each one's best layer: on one dashboard the job board, the entity pages and the cross-check came from three different designs, and no single one was right on its own.
+- **Brief a designer with building blocks, not "design a page".** Hand it a component kit (an existing app's components
+  and tokens, by path) and the instruction to pick, for each piece of data, the block whose shape fits that data. A
+  model told to "design a website" lands on a table or something table-like however hard it is prodded; composing from
+  named blocks does not.
 
 ## 2. Diagnose the gap by measuring, not by eye
 
@@ -41,7 +45,7 @@ content width. **The gap is usually not where taste says.** Measured once: type 
 ## 3. What makes a data UI feel alive
 
 - **Each page's content picks its own layout.** One house shape for every page, with charts added
-  to it, still reads as a table, and as a generated one. A ranking gets a hero chart and a
+  to it, still reads as a table, and as a generated one (a reviewer's verdict on one: "still very table-like"). A ranking gets a hero chart and a
   top-three strip, an entity a profile card, a version history a timeline, an event log a
   filterable feed. A chart earns its place because the data supports it, never because a page looked empty.
   The chart's form, colours and marks are `dataviz`; button, label and error wording is `writing-craft`'s

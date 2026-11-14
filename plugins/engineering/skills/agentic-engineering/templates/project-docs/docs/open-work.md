@@ -1,4 +1,4 @@
-<!-- Template. The queue, kept true: swept against the code for done or never-built claims. Delete these comments. -->
+<!-- Template, only for a repo with no forge (on a forge the queue is its issues: ../../references/forge-queue.md). The queue, kept true: swept against the code for done or never-built claims. Delete these comments. -->
 # Open work
 
 <!-- Opening: ordering rule and deletion rule. Any standing coordination rules (agent slots, who pushes when) go here. -->

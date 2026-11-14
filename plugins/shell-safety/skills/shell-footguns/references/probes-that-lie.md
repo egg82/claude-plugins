@@ -262,3 +262,33 @@ reading, and print per-file before/after so a column of identical values is visi
 pulled**, so "not running" fires before it ever started and the loop exits in seconds. Check the
 `podman run` process (`pgrep -f "podman run --rm --name <n>"`) or the container's own output file
 instead, and print the count you waited for beside the result.
+
+**`grep -r` does not follow symlinks it meets while recursing** (only `-R` does; command-line
+arguments are followed either way). On a tree whose files are symlinks (managed config directories, alternatives, stow
+farms) it silently skips them, so a module that is present reads as absent. Grep the path directly, or use `-R`, and
+give the probe a control you know is a symlink.
+
+**jq's `//` treats `false` and `null` alike as "empty".** `.enabled // "unset"` reports `unset` for
+a real `false`, so a feature switched off reads as never configured. Use `if has("k") then .k else
+… end` or `.k | if . == null then … else . end` when the value can be a boolean.
+
+**A dry run can hide the failure that only the live run reaches.** A wrapper that returns early in
+dry-run mode never executed the line that leaked `set -e` into a script whose header was only
+`set -u -o pipefail`: every dry run completed, the live run aborted at step one. Anything sensitive
+to shell options or side effects gets one real, non-dry execution on a throwaway target before it
+ships. Likewise canary a parameterised check with the arguments it will actually be wired with: a
+threshold read from `$1` while the caller passed `-w=90` held the literal string, the comparison
+errored, and every case fell through to OK.
+
+**An API filter given an abbreviated id returns `[]`, not an error, and a wait loop on it never
+ends.** **Deliberately NOT gated**: the command string can't tell a full sha from a short one in a
+variable. A forge's `pipelines?sha=` filter matches only the full 40-character sha: a pipeline
+waiter handed `abc1234` read "none" every 30 s for its whole hour while the same query with the
+full sha found the pipelines at once. **Expand ids before filtering**
+(`git rev-parse --verify "$sha^{commit}"`), and run the waiter once against a pipeline you know has
+finished.
+
+**BSD/macOS `date -j -f` fills every field the format omits from the CURRENT clock.** Ungated: the
+format string cannot say which fields the input lacks. Parsing `"Mon Sep 28 15:53"` gave `:03`
+seconds (whatever second the script ran) on every value, so the timestamps looked real and differed
+run to run. Put every field in the format (`'%a %b %d %H:%M:%S %Y'` with `"$s:00 $year"`).

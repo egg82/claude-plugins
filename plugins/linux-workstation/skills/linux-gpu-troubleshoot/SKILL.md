@@ -14,14 +14,16 @@ Pick the topic:
 - Whole machine hard-freezes launching Chrome/VSCode/Electron/a media player → **Topic 2** (driver regression).
 - Running kernel has no GPU drivers at all, dnf won't install modules → **Topic 3** (versionlock trap).
 - A new-ish device (Wi-Fi, etc.) has no driver on a fresh kernel → **Topic 4** (firmware lag).
+- Black screen at login (no panel/wallpaper) while the compositor responds, or a hard mid-session wedge on resize / fullscreen / tab switch with no panic in the log → **Topic 5** (shell dies in the GL stack). Do not stop at Topic 2 just because an Electron app was on screen.
 
 ---
 
 ## Topic 0 — Get the freeze evidence BEFORE blaming the GPU
 
 **A reported "freeze" on an NVIDIA box is not yet a GPU finding.** The hardware being NVIDIA is a
-coincidence until a log says otherwise. One case that matched Topic 2's hardware and symptoms exactly turned
-out to be a background service in a 5-second restart loop.
+coincidence until a log says otherwise. One case that matched Topic 2's hardware exactly — a low-end
+discrete GPU alongside integrated graphics, nouveau loaded, no proprietary driver — turned out to be
+a background service in a 5-second restart loop.
 
 **`journalctl -b -1` is a trap on any host with a volatile journal.** With no `/var/log/journal`,
 `journalctl --list-boots` shows exactly one boot and every previous-boot query returns empty. That zero
@@ -103,6 +105,8 @@ Bump it in the image build; don't `dnf module` on the running host.
 
 **Symptom:** the ENTIRE machine hard-locks (not just the app) when launching a GPU-accelerated
 Electron/Chromium app. This is an NVIDIA driver regression interacting with the app's GPU compositing.
+First rule out Topic 5: if the dGPU is on nouveau (`nvidia-smi` absent,
+`/sys/class/drm/card*/device/driver` = `nouveau`) there is no driver branch to pin.
 
 **Fix:** pin a known-good NVIDIA driver version/branch — do not float to latest.
 
@@ -153,3 +157,33 @@ modprobe iwlwifi
 ```
 
 **Durable fix:** bump the firmware package in the base image.
+
+---
+
+## Topic 5 — Desktop shell dies in the GL stack (nouveau, NVK, zink)
+
+**Cause:** a discrete NVIDIA GPU left on nouveau (no proprietary driver installed) makes Mesa drive
+OpenGL through zink (GL-on-Vulkan) on the NVK Vulkan driver. A texture upload `memcpy`s into a mapped
+Vulkan buffer and takes SIGBUS. The shell does constant uploads, so it dies first and repeatedly while the
+compositor, not on that path, survives. That split is the tell.
+
+- **Symptom A, black screen at login:** no panel or wallpaper, but a hot corner still opens the overview
+  and the mouse moves. Reboots and clearing caches do not help (a clean disproof of a per-user cause); a
+  different desktop on the same box is fine. The logs will not say why: you must get a core
+  (`references/zink-shell-crash.md`).
+- **Symptom B, hard wedge mid-session:** the desktop locks when the shell rebuilds a large surface
+  (fullscreen toggle, un-maximise, tab switch); the user recovers with a long power hold. No panic, soft
+  lockup or OOM; the last GPU events name the shell:
+  `nouveau ...: gsp: mmu fault queued` / `...[gnome-shell[PID]] errored - disabling channel` /
+  `ZINK: vkQueueSubmit failed (VK_ERROR_DEVICE_LOST)`, then `Power key pressed short` (the human, not the
+  machine). **You can SSH in during the "freeze"** (`systemctl restart gdm`), which confirms it. `last -x`
+  still shows `crash` and the journal simply stops; do not read that as a kernel lock-up.
+- **Correlate with the kernel, not the app.** The fault can sit latent for months and go
+  several-times-a-day on a kernel bump. Count per boot (`journalctl -b -N | grep -c 'mmu fault'`) against
+  the kernel each boot ran: clean on the old kernel over days, nonzero on every boot of the new one, is the
+  whole argument.
+
+**Fix:** put the proprietary driver on the box (on bootc, the `-nvidia` image variant). Verify
+`lsmod | grep -c '^nouveau'` is 0, the drm card's driver is `nvidia`, and the shell has tens of seconds of
+`etimes`: a crash-looping shell always has a live process, so `pgrep` means nothing. This is indicated by
+the reproducible crash, not a reason to default all NVIDIA hardware to that variant (it can stutter).

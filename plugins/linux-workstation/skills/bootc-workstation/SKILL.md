@@ -105,6 +105,10 @@ system-level container runtime or kubelet onto the immutable host.
   `/run/user/<uid>/podman/podman.sock` and enable **linger** for that user so the socket survives
   logout.
 
+- **Growing a full filesystem: plain `lvextend -r` fails and rolls back, because LVM cannot write its metadata archive to `/etc/lvm/archive` on the full root.** Use `lvextend --config 'backup{archive=0 backup=0}' -L +NG <lv>`, then `xfs_growfs /` (or `resize2fs`), then `vgcfgbackup` to restore the archive.
+
+- **Ansible merges same-level group vars alphabetically, and the last group wins.** A host in two groups that both set a size variable silently takes the alphabetically-later group's value, so the group meant to enlarge it was a dead setting on every host that also belongs to the other. Set `ansible_group_priority=10` in the intended group's `:vars` and verify with `ansible-inventory --host <h>`, not by reading the files.
+
 - **Host GPU or unlock failures** (driver missing after a kernel bump, freezes, TPM auto-unlock lost) are
   `linux-gpu-troubleshoot` and `luks-tpm-recovery`; the fix still lands in the image here.
 - **GPU in a container: probe by running it, not by looking for the CDI file.** The image's

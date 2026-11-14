@@ -96,6 +96,12 @@ format. It spends money (`--max-usd` caps it).
 - **A null here is weak evidence** — turn one of a clean, tool-free session; a memory redundant on
   turn 1 may be load-bearing on turn 80. Cross-check a null against real transcripts before acting.
 
+**Writing or changing a check: a mention is not a use.** A text-scanning rule must decide whether a
+match is the thing or a *description* of it. Get it wrong and the rule fires hardest on the file
+documenting it. Prefer blanking inline code, dropping comment lines, scoping to the file head or
+narrowing the pattern over an allowlist, and test against real content, never a fixture written to
+match. Remedy table and incidents: `references/checks.md`.
+
 ## Autonomous scheduled mode
 
 There is **no `--auto` flag** — the script takes only a mode and paths. "Autonomous mode" is a

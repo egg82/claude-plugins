@@ -44,7 +44,8 @@ sound=$(field sound)
 
 # Narration first: capture needs every line's length to pace the scenes.
 if grep -qs 'd\.say(' $(printf 'scenes/%s.mjs ' "${scenes[@]}"); then
-  PROMO_SPEC="$spec" python3 vo.py $(printf '%s\n' "${scenes[@]}" | sort -u)
+  # In CUT order, not sorted: a one-take narration ("take": "one") is read in this order.
+  PROMO_SPEC="$spec" python3 vo.py $(printf '%s\n' "${scenes[@]}" | awk '!seen[$0]++')
 fi
 
 todo=()

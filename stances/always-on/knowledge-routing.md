@@ -26,8 +26,13 @@ Before writing a fact down, ask **what would make it wrong** — that decides wh
   considered and rejected, so it gets re-derived, sometimes wrongly.
 - **Capture while it's live**, into the artifact that owns it; end-of-session retros leave platitudes.
 - **A doc that REQUESTS an upstream change goes wrong the moment it lands**, and nothing prompts a
-  revisit: write what will be true when they act. Cite a subject, never a position ("item 3").
+  revisit: write what will be true when they act. Cite the SUBJECT, never a position or number ("ADR-0007", "item 3", "step 4"): reordering breaks the
+  citation with no diff at the citation site. Write the claim, or point at a path whose name says its subject, and gate it
+  (every cited path resolves). An applied database migration is immutable (its hash is checked at deploy): exempt it.
 - Colocation is the forcing function: a doc beside the code moves with it and dies with it. Don't add
   "remember to update this" — add a check that reports drift (`config-hygiene`).
+- **When adding to anything that routes by symptom, make the row name every entry that answers that symptom.** A new
+  entry can capture a symptom a sibling already answered; grep the neighbours for the mechanism you just wrote up, since
+  the one you are duplicating is the one that will contradict you.
 
 Full reasoning: `~/.claude/memory/evidence/knowledge-routing.md`.

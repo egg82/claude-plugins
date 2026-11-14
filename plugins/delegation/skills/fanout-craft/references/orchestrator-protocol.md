@@ -27,6 +27,12 @@ loses the queue, because it only existed in its scrollback — so the queue belo
 (`NEXT.md`), with enough reasoning per item that a reader with no context can evaluate it rather than
 re-litigate it.
 
+**Keep everything a successor needs on persistent disk, not in a session scratchpad under `/tmp`.** Scratchpads
+are cleared between sessions. One clear-out took the merge driver, its cleanup script, the writer-brief
+template every brief cited and every brief and MR body, while the handoff file still pointed at all of them; the
+successor rebuilt the template by replaying Write/Edit calls from transcripts. Put orchestration tooling, briefs
+and notes in a directory named for the effort, and have the handoff file point there.
+
 **The tell that it has already failed:** you are composing a status summary and no peer has messaged
 you in a while, or the user asks whether the idleness is intentional. Before ending a turn where a peer
 might be finishing, ask what is armed — theirs and yours. A harness-tracked waiter

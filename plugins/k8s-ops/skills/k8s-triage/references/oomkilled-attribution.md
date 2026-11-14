@@ -32,6 +32,15 @@ But Talos also runs its own userspace `runtime.OOMController`, which can act on 
 `SystemOOM` list does not rule out a node-level OOM — check `talosctl dmesg` for OOM lines and
 `talosctl cgroups --preset memory` too before concluding it was a plain cgroup limit.
 
+- **The controller is pressure-driven, not free-bytes-driven.** One firing tripped while containerd was
+  *extracting an image*, at a small fraction of node memory; no pod memory limit bounds that.
+- **It kills by its own heuristic, so the offender often survives while bystanders (an OSD, a CNI agent,
+  a log shipper) get SIGKILLed.** Run `talosctl -n <ip> dmesg | grep "OOM controller"` for the cgroup
+  UIDs and map them back to pods rather than inferring cause from what died.
+- **Read what a test workload declares before launching it.** Many charts ship `resources: {}`, which is
+  BestEffort and invisible to the scheduler: it lands on the node with the least real headroom precisely
+  when cluster requests are wrong, and there is no number to sum against headroom.
+
 **`kubectl describe node` understates real usage on Talos**, since the static control-plane pods
 declare almost no memory requests: the requests-vs-allocatable view can show headroom that is not
 there. Read it with that caveat:

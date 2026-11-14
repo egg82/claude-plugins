@@ -63,3 +63,14 @@
   but in the comparison it captured before images loaded, left a loading popover in
   frame and rendered at 30fps. Its idle speed-up idea is worth borrowing. Its README
   describes APIs the published npm version lacks, so trust the installed `.d.ts` over it.
+- **A scene's page must be navigated to, never `page.setContent()`.** The drawn cursor is an init script, which
+  only a navigation runs, so `d.click` dies on `reading 'style'` of null. For an inline test page use
+  `page.goto("data:text/html," + encodeURIComponent(html))`.
+- **Passing over a card or row opens its hover popup, not only resting on it.** Moving from a panel above straight
+  down to a target below a list crosses every row, and the last row's card stays up over the drawing being
+  narrated. `below` alone does not help; route with `park()` down a gutter first.
+- **A one-take cut came out as silence of exactly the right length.** Cutting with `-ss`/`-to` after `-i` made the
+  fade filter see the take's own timestamps, so its clip-relative fade-out muted everything past it: on ffmpeg 6.1
+  every line after the second measured -91 dB. Fix (now in `vo.py`): seek on the input, and require every cut to
+  measure louder than -60 dB. The first guess ("the alignment went wrong around a number and an acronym") was
+  false. Measure the clip's level before theorising about its timing.

@@ -112,6 +112,10 @@ list points the editor at lines to read; it never passes or fails them.
    essays only: literary fiction and speeches use dashes heavily, so flag them there only in quantity beside other
    tells.
 8. **Emoji, bold and markdown where the venue is plain text.** **Fix:** `conversational-and-web-copy.md`.
+   **List items that open with an inline bold header are a tell in ANY venue**, formatted pages and docs included
+   (practitioner view, Wikipedia's AI-cleanup list; judgement of one reader, who called it a dead giveaway on an
+   HTML guide). The plain-text scoping above let six of them ship on a published page. **Fix:** prose paragraphs whose
+   first sentence carries the point; a real heading if the item needs to be findable.
 9. **Rhetorical tics.** A question answered at once ("What did she feel? Everything and nothing."); the fragment
    reveal ("She smiled at him: not with kindness. With liberation."); emotion labelled ("A wave of grief washed over
    her"); a wisdom line closing the scene ("Some wounds, she understood now, never fully closed"); a catalogue of

@@ -10,8 +10,9 @@ the comments and the examples when you fill them in. Method: `../../SKILL.md`.
   table points at ledgers, not counts.
 - `docs/systems.md`: the inventory checked before building anything new; one row per system.
 - `docs/decisions.md`: design rules as distilled decisions, with rejected options and dated supersessions.
-- `docs/open-work.md`: the queue, with "Fits into:" lines; delete items when they ship.
+- `docs/open-work.md`: only for a repo with no forge (otherwise the queue is the forge's issues); "Fits into:"
+  lines, delete items when they ship.
 
 Fill in this order: `engineering.md` (with the gates and ledgers in CI), `decisions.md` (what you already know you
-want), `systems.md` (rows for what exists; the citation gate checks it), `open-work.md` (the backlog, worst
-offenders first), then `CLAUDE.md` last, as a router over the others plus the rules that must fire unread.
+want), `systems.md` (rows for what exists; the citation gate checks it), the backlog as issues, or `open-work.md`
+with no forge (worst offenders first), then `CLAUDE.md` last, as a router over the others plus the rules that must fire unread.

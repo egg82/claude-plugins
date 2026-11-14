@@ -45,11 +45,17 @@ First diagnostics (harmless): `clevis luks list -d <dev>` (is a tpm2 binding pre
 
 **Safe by design:** worst case boot just falls back to the prompt after 10s — it cannot make boot *worse*. A failed dracut build leaves the old initramfs intact, so it won't brick boot.
 
+**Two caveats on the sleep override** (observed on RHEL-family hosts, one incident each). It cures a race, not a policy mismatch: if the journal says `policy check failed` the unseal fails deterministically and a delay cannot help (Topic 2). And once clevis is fast enough that the password request is withdrawn during the sleep, systemd sends TERM to the sleeping `ExecStartPre`, the unit is marked failed, and the box reads `degraded` from then on, masking real failures. Add `SuccessExitStatus=TERM SIGTERM` to the same drop-in and rebuild the initramfs. So "cannot make boot worse" holds for unlocking, not for the `degraded` state.
+
+**Prove auto-unlock by the unlock duration, not by the box coming back.** A reboot that returned proves nothing if a human typed the passphrase. Read the cryptsetup unit's start-to-finish time in the journal: failed unseals followed by roughly a minute is the prompt path; no failures and a few seconds is clevis. Capture both numbers before and after the change.
+
+**A full `/boot` fails silently and leaves the box one reboot from unbootable.** At ~90% full, a kernel install can write the kernel and its BLS entry but not the initramfs (dnf still exits 0), and `grub2-editenv list` `saved_entry` then points at an entry that cannot boot. After any kernel install on a small `/boot`, check `ls -l /boot/initramfs-<ver>.img` exists and `df /boot`, and prune old kernels before the next update. Preview any package removal with `dnf --assumeno remove …`: removing six kernel packages erased twenty because a driver package depended on `kernel-devel`.
+
 **bootc / immutable hosts:** this override belongs in the image build, not hand-applied to a live root (it won't survive an update). Apply live only as a stopgap and fold it into the image (`bootc-workstation`).
 
 ## Topic 2 — PCR7 / Secure Boot drift kills auto-unlock (and TPM-sealed credentials)
 
-**Trigger:** PCR 7 (Secure Boot state) changes out-of-band — a vendor BIOS/firmware update, a dbx/Secure-Boot-key update, or Secure Boot toggled off. This invalidates the clevis tpm2 binding (typically `pcr_ids=7`), so the disk no longer auto-unlocks (passphrase needed *every* boot), **and** invalidates any systemd-creds / TPM2-sealed secret that was PCR-bound.
+**Trigger:** PCR 7 (Secure Boot state) changes out-of-band — a vendor BIOS/firmware update, a dbx/Secure-Boot-key update, or Secure Boot toggled off. Also: a **locally-signed DKMS module** (the signing key is not enrolled in MOK) can force Secure Boot off so the module loads, which changes PCR 7 and breaks the binding. Precompiled signed modules are built per exact kernel and trail the available kernel, so the version lock that holds the kernel at a built version is load-bearing; prove a pin works with `dnf --assumeno update kernel` saying `Nothing to do`. This invalidates the clevis tpm2 binding (typically `pcr_ids=7`), so the disk no longer auto-unlocks (passphrase needed *every* boot), **and** invalidates any systemd-creds / TPM2-sealed secret that was PCR-bound.
 
 **Symptoms:** `clevis-luks-askpass` logs `Esys_Unseal(...) policy check failed`; a PCR-sealed credential fails to unseal even live (`Failed to unseal secret using TPM2: Operation not permitted`); `inLockout:0` (it is the *policy*, not a dictionary-attack lockout); `mokutil --sb-state` shows `disabled` if SB-off was the trigger.
 

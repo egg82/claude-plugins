@@ -38,6 +38,20 @@ flux reconcile kustomization flux-system     # 2. THEN apply it
 
 Shortcut for a single applier: `flux reconcile kustomization <name> --with-source` (fetches its source, then applies).
 
+**After an image bump, pick the pod by image.** A `Running` pod is not evidence it is the pod you mean:
+during a rolling update both ReplicaSets have Running pods, so `kubectl get pods | awk '/^api-/ && /Running/ {print $1; exit}'`
+can hand back an old one, and a one-shot command then fails (`invalid choice: <new subcommand>`) in a way
+that reads as a bad build.
+
+```bash
+POD=$(kubectl -n ns get pods \
+  -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[0].image}{"\n"}{end}' \
+  | grep -E '^api-' | grep "$TAG" | awk '{print $1; exit}')
+```
+
+When waiting for a roll, wait for every pod to be off the old image
+(`... | grep -E '^api-' | grep -vc "$TAG"` reaches 0), not for the Deployment's own status.
+
 ## Everyday commands
 
 ```bash
@@ -104,6 +118,74 @@ helm history <release> -n <ns>                     # underlying Helm revisions
   under the same name *with the release's Helm labels and annotations* so Helm adopts it. Then
   restore, commit the values, and resume.
 
+## Cold bootstrap: a CR and the chart that owns its CRD cannot share a Kustomization
+
+On an established cluster this is invisible. On a cold one it is a hard deadlock that looks like a
+transient waiting to resolve itself. The all-or-nothing apply above is the cause: a `ClusterIssuer` beside
+the cert-manager `HelmRelease` that installs its CRD fails the dry-run, so the HelmRelease is never
+created, the CRD never appears, and the Kustomization retries forever on `no matches for kind`. Nothing
+self-heals, because the fix is in the set that was rejected.
+
+**`no matches for kind X` plus zero HelmReleases is the deadlock, not a race.** Check `flux get hr -A`: if
+the release that provides the CRD does not exist at all, waiting will not help.
+
+- **Break it once by hand**: apply the CRD-providing `HelmRepository` + `HelmRelease` directly, wait for
+  the CRD, then `flux reconcile`. Record the ordering in the cluster's bootstrap script, or it is
+  re-derived on every rebuild.
+- **Split the Kustomization** and use `spec.dependsOn`, so the CRs apply only after the operator is
+  healthy. Right if clusters get rebuilt often.
+
+A circular chart dependency (cert-manager mounting a ConfigMap that trust-manager generates, while
+trust-manager needs a certificate cert-manager must issue) is the nastier sibling and no ordering fixes
+it: one controller sits in `ContainerCreating` on `configmap ... not found`, the other in `Init:0/1`.
+Seed the artifact by hand once (copy it from a working cluster) and the operator takes ownership from
+then on. Look for `FailedMount` in events; a Helm timeout reported against a Deployment does not say
+which side of the cycle you are on.
+
+## A HelmRelease that succeeds and is still wrong
+
+Helm values are a permissive merge: a key you got wrong is not an error, it is ignored and the chart's
+default ships in its place. `helm template` exits 0, Flux reports `Ready=True`, and the release does
+something you did not ask for. Four shapes:
+
+- **Wrong key.** The chart took a list (`volume.dataDirs`); a scalar `volume.data` was written. The
+  chart's `hostPath` default stayed and the namespace's PodSecurity `baseline` rejected it at admission,
+  far from the cause.
+- **Duplicate YAML key.** Two `webhook:` blocks in one values map; YAML keeps the last, so the first
+  block's probe timeouts and `replicaCount` were silently dropped.
+- **Un-set sub-key.** One sub-tree was never specified and kept a `hostPath` default while its siblings
+  became PVCs.
+- **"Removed" by omission.** Deleting a key never removes a chart default; the merge puts it back. A
+  comment saying "no CPU limit" beside an omitted `limits.cpu` still rendered the chart's `500m`. Only an
+  explicit `cpu: null` deletes a default key.
+
+The discriminator is not "did it render". Render, then assert on the output for the property you meant
+to change, and grep for **the default you were trying to displace**:
+
+```bash
+helm template <rel> <chart> -f values.yaml > r.yaml   # rc=0 proves nothing
+grep -c hostPath r.yaml                                # the default being replaced: expect 0
+```
+
+Read the chart's own `values.yaml` for the key's real shape, and `templates/` for how it is consumed
+(`tpl .Values.x.tolerations` means that key is a string, not a list), rather than inferring it from
+surrounding comments.
+
+## A file in the repo is not a file in the render
+
+Sweeping a GitOps tree for a defect by reading manifests can report a hit in a file nothing applies.
+A manifest is live only if something references it: a kustomization's `resources:`, or a chart template
+reachable under the values in force. A file commented out of `resources:` sits in the tree looking like
+its siblings (valid YAML, right `kind`, a real object name, a real defect inside). A scan flagged Service
+ports missing `protocol` in two files that had been commented out since the app was added; the live
+Services came from the HelmRelease and were correct. The finding was true about the bytes and false about
+the cluster.
+
+**Scan the render, not the tree**: `kustomize build <dir>` or `flux build kustomization`, and assert on
+that output. An excluded file is simply absent there, so the class disappears by construction. Where a
+tree scan is all you have, resolve the reference before the finding becomes a claim: check the owning
+`kustomization.yaml` lists the filename and it is not behind a `#`.
+
 ## Secrets
 
 Secrets are **SOPS-encrypted in git** (age/PGP) or delivered by a controller (external-secrets / SealedSecrets) — **never plaintext in the repo**. If decryption fails the whole Kustomization won't apply:
@@ -120,3 +202,9 @@ Secrets are **SOPS-encrypted in git** (age/PGP) or delivered by a controller (ex
   `image-reflector-controller` pod clears it; then annotate the ImageRepository and ImagePolicy with
   `reconcile.fluxcd.io/requestedAt` and the policy resolves the new tag. Nothing else alerts on this: it stalls silently.
 - Renovate/Dependabot version-bump PRs churn the repo constantly; that's normal noise, not a fault.
+- **`kubectl rollout restart` on a Flux-managed Deployment can be two rollouts.** The next
+  kustomize-controller apply can remove the `restartedAt` template annotation, rolling the Deployment
+  back to the previous ReplicaSet (tells: no annotation left, the old RS newest again, a
+  `kustomize-controller Apply` managedFields entry at that minute). The exact field-manager rule was not
+  checked. To bounce one pod, delete the pod; to restart for real, change the template in git. A watcher
+  keyed on `metadata.generation` fires on the revert too; key it on the image.

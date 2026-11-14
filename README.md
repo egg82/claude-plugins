@@ -55,7 +55,7 @@ with skills you already have.
 | `writing` | Prose that doesn't read as model-written; READMEs, PR descriptions and wiki pages | none | no |
 | `frontend` | Web UIs and dashboards, rendered and looked at before they're called done; promo videos of a site | `html-render-gate` | holds a turn's end once |
 | `game-dev` | Game design method; choosing sound you can't hear | none | no |
-| `shell-safety` | Shell commands whose result would lie, scripts linted as they're written, background jobs nobody waits on | `bash-footgun-gate`, `script-lint`, `detached-work-gate` | yes: Bash calls |
+| `shell-safety` | Shell commands whose result would lie, scripts linted as they're written, background jobs nobody waits on, GitLab merges with no pipeline | `bash-footgun-gate`, `script-lint`, `detached-work-gate`, `glab-merge-gate` | yes: Bash calls |
 | `secret-guard` | Secrets redacted from command output before the model sees them | `secret-redact` | no |
 | `research` | Web searches that find the answer | `search-craft-gate` | yes: the 1st and 4th search until the skill loads |
 | `delegation` | Subagents that stay affordable; a checkout shared safely with other sessions | `agent-depth-gate`, `spawn-model-gate`, `subagent-digest`, `shared-checkout-backstop` | yes: subagent spawns |

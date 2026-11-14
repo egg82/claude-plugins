@@ -68,6 +68,7 @@ Blocks shell commands whose result would lie silently, lints scripts as they're 
 - `shell-footguns` (skill) — catalog of shell traps and of ways a command's result can lie (masked exit status, a probe that cannot fail, `pgrep -f` matching the harness). Needs: nothing. Signals: you have had a command report success that turned out wrong; a wait loop returned instantly; Claude writes many shell scripts.
 - `bash-footgun-gate` (hook, PreToolUse Bash and Monitor; **blocks the call**) — blocks commands that fail silently, each rule with its reason (`tee` masking an exit status, `grep -q` under pipefail, `pgrep -f`, `ssh host bash -s` stdin, bare `vault kv get`, `docker rm` keeping volumes, and others). Needs: nothing. Signals: you run Bash-heavy sessions, ssh, kubectl, vault or containers. Some rules assume the author's tools; adapt or delete rules you do not want.
 - `detached-work-gate` (hook, Stop; **holds the end of a turn once per session**) — if the session detached work with `nohup`, `setsid` or `disown` and never armed a waiter, says so before ending. Needs: nothing. Signals: you have had to come back and ask "is that finished?" after a background job.
+- `glab-merge-gate` (hook, PreToolUse Bash; **blocks the call**) — refuses `glab mr merge` while the merge request has no running or passed pipeline, because `glab` merges at once when the pipeline is still pending or not created yet. Fails open, with a warning, when the MR can't be looked up. `GLAB_MERGE_UNGATED=1` skips it in a repo with no CI. Needs: `glab`, `python3`. Signals: Claude merges GitLab MRs for you.
 - `script-lint` (hook, PostToolUse Write/Edit; advisory, never blocks) — runs the bash-footgun rules over a shell script file just written; advisory only. Needs: nothing. Signals: Claude writes `.sh` files for you.
 
 ### secret-guard
@@ -219,6 +220,7 @@ appearing in another item's files counts as a mention, so some rows record a pas
 rather than a dependency.
 
 <!-- xref:begin -->
+
 #### Skills
 
 | Skill | Mentioned by | Hooks it mentions |
@@ -232,7 +234,7 @@ rather than a dependency.
 | `bug-hunt` | `hook:bash-footgun-gate`, `hook:spawn-model-gate`, `skill:always-on-prune`, `skill:fanout-craft`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:model-golf`, `skill:pr-description`, `skill:repo-vet`, `skill:shell-footguns`, `skill:ui-craft`, `skill:verification-gate`, `skill:writing-craft`, `stance:issue-writing-style` | - |
 | `cc-tool-vet` | `skill:always-on-prune`, `skill:repo-vet`, `stance:ground-claims-with-a-cold-agent` | - |
 | `claude-config-export` | `skill:claude-config-import`, `skill:claude-fleet-sync` | - |
-| `claude-config-import` | `skill:claude-config-export`, `skill:claude-fleet-sync`, `skill:config-hygiene` | - |
+| `claude-config-import` | `skill:claude-config-export`, `skill:claude-fleet-sync`, `skill:config-hygiene` | `memory-bash-write-backstop`, `memory-write-gate` |
 | `claude-fleet-sync` | `skill:cc-tool-vet`, `skill:claude-config-export` | - |
 | `cluster-cert-renew` | `skill:k8s-triage` | - |
 | `cnpg-postgres-ops` | `skill:k8s-resource-sizing`, `skill:k8s-storage-ops`, `skill:k8s-triage` | - |
@@ -260,12 +262,12 @@ rather than a dependency.
 | `repo-vet` | `skill:bug-hunt`, `skill:cc-tool-vet`, `skill:config-hygiene`, `skill:headless-render`, `skill:repo-orient`, `skill:selfhosted-options`, `skill:shell-footguns`, `stance:ground-claims-with-a-cold-agent` | - |
 | `search-craft` | `hook:search-craft-gate`, `skill:fanout-craft`, `skill:repo-vet`, `skill:selfhosted-options`, `skill:skill-golf`, `stance:search-read-the-failure` | `search-craft-gate` |
 | `selfhosted-options` | - | - |
-| `shell-footguns` | `hook:bash-footgun-gate`, `skill:always-on-prune`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:verification-gate`, `stance:route-lessons-yourself`, `stance:shell-gotchas`, `stance:verify-dont-anchor` | `bash-footgun-gate`, `detached-work-gate`, `memory-write-gate`, `script-lint`, `secret-redact` |
+| `shell-footguns` | `hook:bash-footgun-gate`, `skill:always-on-prune`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:verification-gate`, `stance:print-names-not-values`, `stance:route-lessons-yourself`, `stance:shell-gotchas`, `stance:verify-dont-anchor` | `bash-footgun-gate`, `detached-work-gate`, `glab-merge-gate`, `memory-write-gate`, `script-lint`, `secret-redact` |
 | `skill-golf` | `skill:always-on-prune`, `skill:cc-tool-vet`, `skill:config-hygiene` | - |
 | `talos-ops` | `skill:cluster-cert-renew`, `skill:k8s-resource-sizing`, `skill:k8s-triage` | - |
 | `ui-craft` | `skill:bug-hunt`, `skill:game-design`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:writing-craft` | - |
 | `verification-gate` | `skill:agentic-engineering`, `skill:api-contract-first`, `skill:bug-hunt`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:shell-footguns`, `stance:assert-scripted-edits`, `stance:no-fabricated-certainty`, `stance:verify-dont-anchor` | - |
-| `writing-craft` | `skill:always-on-prune`, `skill:bug-hunt`, `skill:confluence-kb-docs`, `skill:doc-cold-read`, `skill:game-design`, `skill:pr-description`, `skill:promo-video`, `skill:repo-readme`, `skill:ui-craft` | - |
+| `writing-craft` | `skill:always-on-prune`, `skill:bug-hunt`, `skill:confluence-kb-docs`, `skill:doc-cold-read`, `skill:game-design`, `skill:pr-description`, `skill:promo-video`, `skill:repo-readme`, `skill:ui-craft`, `stance:distill-dont-dump` | - |
 
 #### Hooks
 
@@ -274,11 +276,12 @@ rather than a dependency.
 | `agent-depth-gate` | `skill:fanout-craft`, `stance:skill-fanout-is-authorized` |
 | `bash-footgun-gate` | `hook:memory-bash-write-backstop`, `hook:memory-write-gate`, `hook:script-lint`, `hook:secret-redact`, `hook:shared-checkout-backstop`, `skill:config-hygiene`, `skill:fanout-craft`, `skill:model-golf`, `skill:shell-footguns`, `stance:route-lessons-yourself`, `stance:shell-gotchas` |
 | `detached-work-gate` | `skill:shell-footguns` |
+| `glab-merge-gate` | `skill:shell-footguns` |
 | `held-ledger-raise-gate` | `skill:agentic-engineering` |
 | `html-render-gate` | - |
 | `hygiene-sessionstart` | `skill:config-hygiene` |
-| `memory-bash-write-backstop` | `hook:memory-write-gate` |
-| `memory-write-gate` | `hook:bash-footgun-gate`, `hook:memory-bash-write-backstop`, `skill:shell-footguns`, `stance:memory-write-discipline` |
+| `memory-bash-write-backstop` | `hook:memory-write-gate`, `skill:claude-config-import` |
+| `memory-write-gate` | `hook:bash-footgun-gate`, `hook:memory-bash-write-backstop`, `skill:claude-config-import`, `skill:shell-footguns`, `stance:memory-write-discipline` |
 | `postcompact-handoff` | `hook:precompact-snapshot`, `hook:prompt-clock` |
 | `precompact-snapshot` | - |
 | `prompt-clock` | `hook:postcompact-handoff` |
@@ -334,4 +337,5 @@ rather than a dependency.
 | `user-discuss-dont-thrash` | - |
 | `user-forcing-function-style` | `stance:skill-authoring-craft` |
 | `verify-dont-anchor` | `hook:prompt-clock`, `hook:route-lesson-gate`, `hook:shared-checkout-backstop`, `skill:fanout-craft`, `skill:shell-footguns`, `skill:verification-gate`, `stance:assert-scripted-edits`, `stance:assume-the-checkout-is-shared`, `stance:config-writes-replace`, `stance:content-is-king-not-proxies`, `stance:cut-llm-cruft`, `stance:finish-it-dont-hand-back-a-plan`, `stance:no-fabricated-certainty`, `stance:preserve-before-destroying`, `stance:print-names-not-values`, `stance:pushback-not-hedging`, `stance:size-test-workloads-to-node`, `stance:stateless-calls-cant-keep-a-rate`, `stance:user-discuss-dont-thrash` |
+
 <!-- xref:end -->

@@ -1,6 +1,6 @@
 ---
 name: agentic-engineering
-description: "How to keep a codebase that coding agents write well-designed — structural gates, held ledgers, decoupling patterns, a fit pass before new systems, LLM behaviour kept in code. Use when starting or restructuring an agent-built app, a file or function has become a god object, adding tests to untested code, writing a repo's engineering doc or CLAUDE.md, an agent loosened a threshold, or asked how to do agentic / vibe-coded development well."
+description: "How to keep a codebase that coding agents write well-designed — structural gates, held ledgers, decoupling patterns, a fit pass before new systems, LLM behaviour kept in code. Use when starting or restructuring an agent-built app, a file or function has become a god object, adding tests to untested code, writing a repo's engineering doc or CLAUDE.md, an agent loosened a threshold, setting up or moving a repo's queue onto GitLab/GitHub issues, labels and boards, or asked how to do agentic / vibe-coded development well."
 ---
 
 # Agentic engineering
@@ -46,6 +46,10 @@ day the rule arrives, so freeze today's violations in a **per-file ledger** that
 - **Never raise a held count or loosen a check to get a change through.** Agents did it twice in
   repo A, and both times the real cause was a fixable regression. Put this line in the repo's CLAUDE.md
   and in every worker's brief. A Stop hook can enforce it (`held-ledger-raise-gate.sh` in this setup).
+- **In a downstream fork, the upstream merge is the one change allowed to re-seed.** Code that someone
+  else keeps growing can't be held to "never raise", and a gate that fails every upstream merge gets
+  switched off. The merge script rewrites the ledgers after merging, so that MR's ledger diff records
+  what upstream grew; every other change stays held.
 - **Replacing a gate with one that measures better is a design change, not loosening**: allowed with
   evidence the old one mismeasured and the owner's approval, as its own change stating both.
 - **Nor make the code worse to stay under a limit**, e.g. by cramming lines, deleting explanatory
@@ -56,7 +60,8 @@ day the rule arrives, so freeze today's violations in a **per-file ledger** that
   suppressions are counted in their own held ledger. Never cast a value to quiet a *safety* type (e.g.
   `cast(LiteralString, f"…")` defeats psycopg's SQL-injection guard); fix the types instead.
 - Templates in `templates/`: `held_ledger.py`, `test_function_size.py`, `test_file_size.py`,
-  `pyright_gate.py`, `conftest_time_gate.py` and `test_boundaries.py`, each with its own controls and
+  `pyright_gate.py`, `conftest_time_gate.py`, `test_boundaries.py` and `test_doc_citations.py` (with
+  its extractor `doc_citations.py`), each with its own controls and
   setup notes. Copy them, set the package path, seed with `--write`, and commit the ledger with the gate.
 
 Using ledgers, one repo roughly halved its raw SQL calls outside `db/` while still shipping
@@ -70,21 +75,28 @@ That backlog was only tractable as a ratchet.
   passes a few hundred lines. That rule plus an immediate split took repo A's entry-point file from several
   hundred lines to a handful. The split files never regrew.
 - **Small files don't stop long functions.** Function size needs its own gate: 80 lines, held.
+- **Test files count.** Point the file-size gate at tests as well as source, and split a test file by
+  the subject it tests. A repo that held function size but not file size grew a test file of over ten
+  thousand lines in which no function was over the limit.
 - **Fit pass before any new kind of thing** (a system, new data, a new schedule): what is it an instance
   of, which row of the systems inventory already does that, and which known pattern solves it (GoF,
   *Game Programming Patterns*, §4: these are worth checking before inventing a shape)? Extend or merge;
   build new only when nothing fits, and say why on the work item ("Fits into: …"). Without a fit pass,
   agents build "systems in hiding": the same rule hand-copied two to four times, drifting apart.
-- Skeletons for `CLAUDE.md` and `docs/{engineering,systems,decisions,open-work}.md`: `templates/project-docs/`.
+- Skeletons for `CLAUDE.md` and `docs/{engineering,systems,decisions}.md` (plus `open-work.md` for a repo with no forge): `templates/project-docs/`.
 - **A systems inventory** (`docs/systems.md`): each system's one question, where it lives, its pattern,
-  its callers, and known duplicates with the phase that removes them. Something counts as a system only
+  its callers. Under the tables, a **"Rules copied by hand"** section lists each rule written in two or
+  more places, leading with "Already disagrees:" where the copies have drifted and naming what removes
+  each copy; **"Looked at, and not systems"** records the no-op verdicts so nobody re-asks. Something counts as a system only
   if all four hold: many callers across packages, one question behind a narrow interface, a plausible
   second implementation, and it owns policy or state rather than a data shape. Everything else is a
   plain import. **Gate the inventory with a citation test:** every backticked path and
   `module.symbol` in it must resolve by real import, with a floor on how many it finds (the shape of
-  a `test_doc_citations.py`). Give planned references an explicit marker that
-  is skipped while the target is missing and **fails once it exists**. Otherwise writers drop the
-  backticks to get past the gate, and the reference silently stops being checked.
+  `templates/test_doc_citations.py`). A planned reference reads `` `planned: <target>` `` inside the
+  backticks: skipped while the target is missing, and **failing once it exists**. A repo with no
+  package to import (shell, Containerfiles) can only check that a code-shaped name still appears as a
+  word in its code, which is weaker. Without the marker, writers drop the backticks to get past the
+  gate, and the reference silently stops being checked.
 - **Package layering as an executable allow-list.** A new import edge fails until it's added, which is
   the moment the design question should be asked.
 - **One home per fact.** A value the server and the client both need lives in one data file, or is
@@ -170,6 +182,9 @@ requests. Make speed a gate while the suite still runs in seconds:
   budget, plus a per-test ceiling (`templates/conftest_time_gate.py`, held list starting empty). The
   CPU-only body gate this template used to be taught agents to move cost into fixtures, and passed a test waiting
   out a 5 s production timeout. Time in tests comes from an injected clock (`verification-gate` §7).
+  Runner noise is real (unchanged tests swung from 1.0 s to 2.8 s between pipelines against a 2 s
+  ceiling), so ceilings get generous headroom over millisecond tests, and a slow test is held with its
+  own measured ceiling.
 - **Whoever writes a test makes it fast before committing it**: run it under the gate and read the
   slowest durations. The usual agent-made cause is quadratic re-computation (re-simulating from time
   zero per sample); carry state forward instead.
@@ -206,8 +221,10 @@ requests. Make speed a gate while the suite still runs in seconds:
   rules.
 - **Rules arrive right after an incident**, one sentence plus a pointer to the decision that owns the
   detail. Superseded decisions stay in place with a dated note.
-- **One queue file kept true** (`docs/open-work.md` or the repo's equivalent), swept against the code
-  periodically for done or never-built claims.
+- **One queue kept true**, swept against the code periodically for done or never-built claims. On a forge
+  it is the forge's issues, labels and board, and an MR closes its issue; `docs/open-work.md` only where
+  there is no forge. Cite an issue by number, never a position in the queue. Layout, and moving a queue
+  file onto the forge: `references/forge-queue.md`.
 - **When an agent errs, engineer it out.** Add one context-file line naming the bad behaviour, plus a
   check or script the agent runs into; a must-happen action goes in a hook. A rule that already failed
   once as prose is escalated, not restated.
@@ -247,6 +264,35 @@ requests. Make speed a gate while the suite still runs in seconds:
 - **Tool schemas are provider-specific inputs.** A JSON-schema keyword one provider accepts can make another reject
   every call (Gemini 400s on nested `maxItems` alongside a strict response format), and a fallback route hides the
   outage. Keep bounds in the parser, and count calls per provider and outcome after any schema change.
+- **LLM-labelled data kept over time** (a corpus classified into named buckets) fails with confident wrong
+  numbers and no error:
+  - **Labels are a function of the prompt, not just the label set.** Labels (and derived figures such as
+    "coverage") compare only between runs with the same prompt, few-shot exemplars included. Store a prompt
+    hash per label row (a re-run in progress holds two prompts), refuse to carry labels across any wording
+    change even with byte-identical class definitions, and leave old rows NULL rather than backfilling a
+    guessed provenance. After one exemplar refresh a fifth of previously matched items stopped matching
+    because labels had been carried forward.
+  - **A guard whose input is produced by the thing it gates can't fire the first time it matters.** A digest
+    compared with a row only the labelling pass writes finds no row, so "if row and differs" is False and the
+    check passes. Interrogate the population (rows carry provenance), not a side table, and write provenance
+    only after the work it describes succeeds. SQL: `col <> :v` matches zero rows when every row is NULL; use
+    `IS DISTINCT FROM`, and confirm which branch fires on live data before fixing.
+  - **Sweep a corpus by partition, never by agent exploration**, which samples it without knowing it did.
+    Chunk contiguously by date (a time-clustered problem concentrates in one chunk; striding smears it under
+    every threshold), one worker per chunk, assert `items_read == corpus_size`, isolate per-chunk failures and
+    exit non-zero if any failed: steady yield looks healthy while a fifth of the corpus is missing.
+  - **Name classes by the symptom the reporter sees; keep cause as a separate overlay of hypotheses.** Labels
+    are permanent and causes are guesses. Each cause carries one concrete check that would refute it, and the
+    check must separate the mechanism from its likeliest alternative. Look in structured columns (request
+    type, reporter) before the prose: many reporters with byte-identical text is a machine, not a habit.
+  - **Exemplars: choose by margin, re-test after every prompt change.** Take items claimed by exactly one
+    class with nothing close behind, re-classify each candidate under the prompt that will contain it, and
+    after adding classes re-run the regression over ALL classes (every class shares one prompt). Validate
+    exemplar ids against the real key set; the proposing model can invent one.
+  - **Framing moves the headline number; a favourable sub-sample gives direction, not size.** "An empty list
+    is a good answer" undercounted matches, so A/B it against neutral wording. A gain measured on items known
+    to have a home was about half that corpus-wide. A monotonic climb in the running total across partial
+    samples is an ordering effect.
 
 ## Reviewing an agent's rework
 
@@ -295,11 +341,17 @@ Report findings as pass, or as concrete defects with file and line. A clean MR g
 
 1. Measure it: functions over 80 lines, files over ~300, pyright errors, slowest tests, import hubs,
    and CI wall time per job against a stated budget.
-2. Write `docs/engineering.md` with the repo's rules, test budget and risk tiers, pointing at the
-   ledgers for the numbers rather than a dated table. Queue "bring the suite to the current rules"
+2. A docs-only pass before any code change: a consistency sweep of the doc layer against the code
+   (every cited path and symbol resolves, every system that exists has a `systems.md` row) and
+   against the doc conventions in `templates/project-docs/`. It is not a writing exercise. Its output
+   is the inventory the fit pass reads, so later work extends an existing system instead of
+   duplicating it.
+3. Write `docs/engineering.md` with the repo's rules, test budget and risk tiers, pointing at the
+   ledgers for the numbers rather than a dated table (the table goes stale with the first split).
+   Queue "bring the suite to the current rules"
    (`verification-gate/references/suite-conformance.md`) as an item.
-3. Add the gates with ledgers seeded at today's counts, each with its controls, in CI.
-4. Trim CLAUDE.md toward a router: the house rule, "never raise a held count", the fit pass, and
+4. Add the gates with ledgers seeded at today's counts, each with its controls, in CI.
+5. Trim CLAUDE.md toward a router: the house rule, "never raise a held count", the fit pass, and
    pointers.
-5. Queue the worst offenders as backlog items, each split byte-identically when touched. Don't start
+6. Queue the worst offenders as backlog items, each split byte-identically when touched. Don't start
    with a big-bang refactor.

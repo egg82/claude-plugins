@@ -152,7 +152,7 @@ No pipe, no formatter, no `$?`, so not one of the three rules above can see it. 
 rejection is printed directly above the claim, so the output shows the failure; what went wrong is
 that the claim got read instead of the evidence. **An `echo` is a claim about what you INTENDED;
 the only evidence of what happened is what the command RETURNED.** Print the return value, guard
-with `&&`, or `set -e`.
+with `&&` (not `set -e`: the Bash tool ignores errexit).
 
 `[gate:preprinted-empty-verdict]` **The sibling where the command is read-only and the echo asserts
 nothing about success.** A probe, and a later statement in the *same command string*
@@ -179,7 +179,7 @@ the start of a statement, with optional `VAR=x` prefixes and git global options 
 `--git-dir=`, `--work-tree=`). A word in an `echo`, a comment, a heredoc body or
 `$(git commit-tree …)` does not count. It is quiet when the push waits on the commit: an unbroken
 `git commit … && … && git push` chain, `git commit … || exit`, the commit as an `if` condition,
-`$?` read between the two, or `set -e`/`set -o errexit` beforehand. `case … esac` branches are
+or `$?` read between the two — **not** `set -e`, which the Bash tool ignores. `case … esac` branches are
 alternatives, not a sequence. Fix: `git commit … && git push`.
 
 `[gate:test-then-commit-unguarded]` **A test run and a later `git commit`/`git push` in one command,
@@ -188,9 +188,11 @@ fifteen failing tests, with "15 failed" printed two lines above the commit. form
 because a `;`, not `&&`, followed the formatter. Blocked when the run is piped (its status is the last
 stage's; `set -e` doesn't change that) or a `;`/newline separates it from the commit. Quiet when the
 commit waits: `pytest && git commit`, `$?`/`PIPESTATUS` read in between, `pytest … || exit` (or
-`|| { …; exit 1; }`), `set -e` with an unpiped run, or `pipefail` with `&&`. A runner named in a quoted
-string (a commit message) or a heredoc body (a test file being written) doesn't count. Fix: run the
-tests alone and read `rc=$?`, then commit in the next command.
+`|| { …; exit 1; }`), or `pipefail` with `&&` (`set -e` is no exemption: the Bash tool ignores errexit,
+so `set -e; pytest; git commit` is blocked). A runner named in a quoted
+string (a commit message) or a heredoc body (a test file being written) doesn't count. Replayed over
+382 past commands with a test run and a git write: 167 had this shape, and a sample of them were all
+the real trap. Fix: run the tests alone and read `rc=$?`, then commit in the next command.
 
 The rule has been narrowed twice, each time after replaying it over ~2,165 real commands that
 contain a mutator. Blocking any mutator followed by anything hit 723, nearly all
@@ -256,3 +258,9 @@ except two `pathspec … did not match` lines above the push.
 **Chain the push to the commit with `&&`, never `;`** — or push in a separate call after reading the
 commit's result. A push in the same command as a commit should only ever run if the commit succeeded.
 Gated by `commit-then-push-unguarded` (above).
+
+**`git add` with ANY pathspec that matches nothing aborts the WHOLE add.** Ungated: whether a path still exists is not in
+the command string. `fatal: pathspec ... did not match any files`, nothing new is staged, and a following `git commit`
+succeeds with only what `git rm`/`git mv` staged earlier. Twice that shipped a commit deleting a file while a
+manifest still listed it. Never name a path you just `git rm`'d; stage survivors explicitly, and read
+`git status --short` (must be empty after the commit) every time.

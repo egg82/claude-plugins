@@ -2,7 +2,7 @@
 # CLAUDE.md
 
 <!-- Reading order: what to read before proposing anything, and where the queue is. -->
-Read `README.md`, then `docs/decisions.md`, before designing anything. The queue is `docs/open-work.md`.
+Read `README.md`, then `docs/decisions.md`, before designing anything. The queue is the forge's issues and the board named Work (`docs/open-work.md` only in a repo with no forge).
 How code is built and shipped: `docs/engineering.md`. The inventory of systems: `docs/systems.md`.
 Deploy is CI on push to `main`.
 
@@ -10,7 +10,7 @@ Deploy is CI on push to `main`.
 **An ask that adds a new kind of thing (a system, new data, a new schedule) starts with a fit pass, not a design:**
 what is it an instance of, which system in `docs/systems.md` already does that kind of thing, and which known
 pattern solves it? Extend that system or combine the two; build a new one only when none fits, and say why. Its
-open-work item carries a "Fits into:" line. Tweaks to wording and numbers need no fit pass.
+queue item carries a "Fits into:" line. Tweaks to wording and numbers need no fit pass.
 
 <!-- The held-count rule: one line, names where the ledgers are. -->
 **Never raise a held count or loosen a check to get a change through; split, reduce or report instead.** The gates

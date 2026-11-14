@@ -66,6 +66,15 @@ still loading does none.
   verb (policy, snippets, Atlassian and Shopify Polaris, https://polaris.shopify.com/components/empty-state).
 - A completed queue can celebrate. An exclamation on every empty list ("All caught up!") is the generic version.
 
+## Helper lines and section names
+
+**A subtitle or helper line carries data the user can't see elsewhere, or it goes.** Data: a version, a size, a date,
+a place in a queue, the one reason a control is disabled. Not data: a line explaining what the screen already shows
+("Saved automatically" under a save count, "Sorted by date" over a list, "Ships after packing"
+under "Queued - 3rd", "Searched X and Y" under "No results"). A model writes these unprompted and an experienced
+reader flags them on sight; a first pass that only fixed tone kept every one (judgement, one reader). Section
+headings are plain nouns ("Recent"), not friendly phrases ("Done today") (judgement, one reader).
+
 ## Onboarding
 
 **Tutorials for simple apps don't help.** In NN/g's test of 70 users on four iOS apps, task success was 91% for

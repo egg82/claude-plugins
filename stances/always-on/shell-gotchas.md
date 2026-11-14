@@ -22,7 +22,11 @@ the zsh way there. Send remote work as `ssh host 'bash -s' < script.sh` or `ssh 
 - **A script file gets the gate's rules only as advice, after the write** — `script-lint.sh`
   (PostToolUse on `*.sh`/`*.bash`) runs them over the file body; it cannot block. A script written by
   any other route (heredoc, `cp`, a generator) is unseen. Use `shell-footguns` as a checklist.
-- Before writing a rule about a trap, ask whether the environment can make it impossible.
+- **`set -e` typed into the Bash tool does nothing**: errexit is ignored there, even in a subshell (measured:
+  `set -e; false; echo x` prints `x`). It works inside `bash <file>` or `bash -c '...'`; in the tool, chain with `&&`.
+  A failed `git worktree add` once let the next `cd` fail and the rest ran in the main clone.
+- Before writing a rule about a trap, ask whether the environment can make it impossible. A gate rule's advice text is
+  read as a command you are about to run: three rules once recommended an array that is empty in the shell they guarded.
 
 Catalog: the `shell-footguns` skill. The silent ones are blocked by `bash-footgun-gate.sh`; new
 foot-guns go in the skill. Incidents: `~/.claude/memory/evidence/shell-gotchas.md`.

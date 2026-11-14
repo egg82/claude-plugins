@@ -38,6 +38,11 @@ ps -eo pid,args | grep -E 'bash monitor\.sh' | grep -v grep
 To kill, resolve PIDs that way first and `kill "$pid"`. Check `sid`/`ppid` to tell a background script
 apart from its own command-substitution forks.
 
+**The `grep -v grep` stage is load-bearing, not tidiness.** `[gate:ps-grep-wait-self-match]` It removes the
+wrapper line only because that line also contains "grep". Drop it, as in `while [ "$(ps -eo args | grep -c
+'x.sh 62:')" -gt 0 ]`, and the count includes the wrapper, never reaches zero, and the waiter spins forever. Without
+that stage, anchor to the real invocation (`'^bash /abs/x.sh'`) or use the bracket trick (`'[x].sh'`).
+
 ## Killing a parallel job
 
 **Kill the parent before the children, or you accomplish nothing.** **Deliberately NOT gated** — the
@@ -68,6 +73,12 @@ volumes too, not just the one you orphaned. An agent ran `podman rm -f -v <its p
 podman volume prune -f >/dev/null` to tidy up after a test database and could not say afterwards what
 it had deleted. `rm -v` already removes that container's anonymous volumes; remove anything else by
 name (`podman volume rm <name>`), or prune with `--filter label=<yours>`.
+
+**`cd <dir>;` then a git write runs in the wrong clone when the cd fails.** `[gate:cd-semicolon-then-git-write]`
+With `;` (or a newline) the rest of the string runs regardless, so `git worktree add ... ; cd ~/wt/x && git rebase ...; git push ...`
+rebased and pushed the main clone after the worktree add failed (twice). `cd x && a; git push` is the same trap:
+a failed cd skips only its own `&&` chain, and the `;` starts a fresh statement. Chain with `&&` after the `cd`,
+or write a script with `set -euo pipefail`. `cd x || exit 1;` and read-only git (`status`, `log`, `diff`, `fetch`) are allowed.
 
 ## stdin never attached: `exec` without `-i` [gate:exec-stdin-without-i]
 
@@ -187,6 +198,12 @@ mount a shared asset folder with `:ro,Z` survived for weeks. For a directory any
 lowercase `:z` (shared label), `--security-opt label=disable`, or mount a copy; keep `:Z` for a
 throwaway directory only that container uses (`$(mktemp -d)`, a scratch copy).
 
+**The relabel walks the whole tree before the container starts, and every other podman call on the host waits behind
+it.** `:Z` and `:z` both relabel recursively. A worktree with `node_modules` plus an in-tree package store (several GB)
+held one `podman run` for 11+ minutes, with other sessions' `podman ps`/`images`/`run` queued behind it; a hung install
+looked like the cause and wasn't. To mount a checkout use `--security-opt label=disable`, or `:O` (overlay) when writes
+should be discarded; either starts in seconds.
+
 **A long-running command under `kubectl exec` dies with its stream.** **Deliberately NOT gated** —
 no command string separates a two-second `cp` from a forty-minute one, so a rule here would fire on
 every exec. An API blip (`error reading from error stream: … i/o timeout`) drops the exec session,
@@ -223,6 +240,17 @@ So detaching is two steps, always: launch it detached, **then** arm a harness-tr
 `run_in_background` on a polling loop, or `Monitor` — in the same turn. Note the waiter is a
 *separate* call from the launch: the `nohup` exec itself should return immediately and must not be the
 thing you background.
+
+**A driver script's middle layer survives killing its top and bottom.** `wrapper.sh -> loop.sh -> waiter.sh`: killing the
+wrapper and the waiter leaves the loop running, and it carries on to the next step. A landing driver killed this way merged
+main into the next branch and pushed. Start long drivers with `setsid` and stop them with `kill -- -<pgid>`.
+
+**Never overwrite a script that a running bash is executing.** Bash reads its script incrementally, by byte offset, so a
+process waiting inside a loop resumes reading the new file at the old offset and runs whatever is there. Stop the process
+group, edit, then restart. A Write or Edit to the file is the overwrite: it doesn't feel like one.
+
+**Don't chain drivers by matching a process name** when two of them run the same script: an exact-line match misses the
+instance with arguments, and a substring match hits the waiter itself. Pass the previous driver's PID and wait on `kill -0 <pid>`.
 
 **A `run_in_background` job dies with the session that started it**, a handoff at the context limit included. A job
 that must outlive the session is launched detached (above, with its own `PATH`), and the receiving session's prompt

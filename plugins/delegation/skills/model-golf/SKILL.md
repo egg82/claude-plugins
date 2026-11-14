@@ -165,6 +165,30 @@ citations measures formatting, not coverage**, and the false conclusion was writ
 it was caught. Two findings are the same claim when they describe the same defective behaviour, whatever
 they cite.
 
+**A rubric blind to a right answer of an unexpected shape reads as a regression.** A prompt change was
+scored across six tasks; five improved or held and one fell from 0.94 to 0.82, which read as "this
+change broke that task". It had not. In 3 of 10 runs the model asked a clarifying question instead of
+inventing an identifier, which is what its prompt told it to do, and said in prose which approach it
+would take. The rubric looked for a structured token inside a fenced block, so a correct refusal to
+guess scored zero. **A regression invites a revert, and the revert is the destructive action taken on
+less evidence than the change had.** Before acting on a drop, read the failing runs.
+
+**Score presence of a required object, and add an over-caution control.** Five of six tasks tied at
+the ceiling across six models; the one task that discriminated did so because the *prompt* never said
+when the object (a manifest, in that run) was needed, not because the cheap models were worse.
+Quality-only scoring would have concluded "buy the expensive model". One added sentence took the cheap
+model from 2/10 to 10/10. The omission is invisible to every check short of scoring presence, because
+what comes back is valid, applies and runs, and fails later as data loss. Include tasks that must NOT
+have the object; here two stayed at 0/10 spurious across the change. Without that control the
+improvement is unclaimable.
+
+**Measure the control arm against itself before believing a gap.** On the one task in a four-task suite
+that discriminated at all, the same config scored 5/5 in one run and 2/5 in another, so every apparent
+parameter difference, including a confident "setting X is measurably worse for code" (2/5 vs 5/5), sat
+inside that single arm's own spread. Re-run at n=20 it was 13/20 vs 16/20, and an independent
+adversarial re-test on a different task family gave 16/18 vs 18/18 (Fisher p=0.49): directional in both,
+significant in neither. Count how many tasks carry a conclusion, and run the control twice.
+
 **Read the answer from a field, never from the prose.** Every task prompt ends with the same
 instruction (`grade.py`'s `answer_instruction`): finish with a fenced ```` ```json ```` block holding
 `{"answer": <typed value>}`. The grader compares that field exactly, or within a stated numeric

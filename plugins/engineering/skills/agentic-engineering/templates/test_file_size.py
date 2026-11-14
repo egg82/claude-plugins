@@ -5,8 +5,11 @@ long file, or a held one that grew, fails; one that shrank fails as stale until 
 ledger is rewritten. `python tests/test_file_size.py --write` rewrites the ledger;
 never run it to let a longer file through.
 
-Template from the agentic-engineering skill: set SRC and SUFFIXES, then seed with
---write once."""
+Generated files are named one by one in EXCLUDE_FILES, so a new generated file is counted
+until someone excludes it on purpose.
+
+Template from the agentic-engineering skill: set SRC, SUFFIXES and EXCLUDE_FILES, then seed
+with --write once."""
 
 import sys
 from pathlib import Path
@@ -15,9 +18,11 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 from held_ledger import Ledger, dump, load, problems, total  # noqa: E402
 
-# Set me: hand-written source only; generated files live elsewhere.
+# Set me: hand-written source AND tests; generated files live elsewhere.
 SRC = [ROOT / "PACKAGE"]
 SUFFIXES = {".py", ".js", ".ts", ".mjs"}
+SKIP_DIRS = {"node_modules", "dist"}
+EXCLUDE_FILES: set[str] = set()  # repo-relative generated files, e.g. a `wrangler types` output
 HELD = ROOT / "tools" / "held" / "file_size.json"
 LIMIT = 400
 
@@ -27,7 +32,10 @@ def files() -> list[Path]:
         p
         for d in SRC
         for p in d.rglob("*")
-        if p.suffix in SUFFIXES and p.is_file() and "node_modules" not in p.parts
+        if p.suffix in SUFFIXES
+        and p.is_file()
+        and not SKIP_DIRS & set(p.relative_to(ROOT).parts)
+        and p.relative_to(ROOT).as_posix() not in EXCLUDE_FILES
     )
 
 
@@ -41,7 +49,14 @@ def counted() -> Ledger:
 
 
 def test_the_gate_sees_the_code():
-    assert files(), f"no source files under {SRC}: the gate would pass on nothing"
+    found = files()
+    for d in SRC:  # per root: one root scanning nothing hides behind the others
+        assert any(d in p.parents for p in found), f"nothing scanned under {d}"
+
+
+def test_every_exclusion_exists():
+    missing = [f for f in EXCLUDE_FILES if not (ROOT / f).is_file()]
+    assert not missing, f"excluded files that do not exist: {missing}"
 
 
 def test_the_held_ledger_is_what_the_code_is():

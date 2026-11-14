@@ -5,7 +5,7 @@ description: "Render an HTML page to a screenshot and actually look at it, on a 
 
 # Headless render
 
-**Write `~/.claude/local/headless-render/instance.md` and read it first** — it says which mechanism THIS host
+**Write an `instance.md` beside this file and read it first** — it says which mechanism THIS host
 needs, and it is the one thing here that cannot be handed to you: a machine with no browser on
 `PATH` uses the podman + Firefox recipe below, while a machine with a real browser should drive that
 instead, since it can interact and this cannot. Record which of the two yours is, once. (No
@@ -52,6 +52,8 @@ obvious from the one-line version:
   `@media all`, shoot the copy.
 - `:hover`/`:focus`/`:target` never fire under `--screenshot` — rewrite the selector into a real class
   on a middle element instead.
+- WebGL, `requestAnimationFrame` loops and late fetches want Xvfb plus a kiosk grab of the display, not
+  `--screenshot`; an app with its own theme store ignores the colour-scheme pref (`references/gotchas.md`).
 - An SPA needs `index.html` fallback for routes but NOT for `/api/*`, or a 200-with-HTML masquerades
   as a broken data response.
 - A fetch/XHR page needs `file://` abandoned (serve over HTTP) AND `load` delayed (a slow `<img>`, a

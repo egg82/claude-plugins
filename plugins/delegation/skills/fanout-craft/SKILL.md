@@ -28,6 +28,8 @@ resumed. Their briefs were already "steps", but each step was still open-ended (
 until green") or several items in one ("fix D1–D4", "build X and Y"). Size a step the way a reviewer sizes
 a PR: one item, with a stop condition the agent can check. When the stop condition is "until it
 works", also give it a budget and a handoff file to write when the budget runs out.
+For a long piece of work, run **one task per fresh agent from a queue** (the forge's issues, or a queue file)
+whose items the agent only flips: a long-lived agent drifts and its context fills; the queue is the memory.
 
 **Which reference to load:**
 
@@ -140,11 +142,13 @@ detail and the incident are in the `references/` file named:
   returns "waiting for…" and nothing else (`brief-hazards.md`). A hook can refuse `Monitor` in a subagent. A background shell is allowed (a run past ten minutes is backgrounded anyway, and its completion resumes the child), so the brief says: on a backgrounded run, end the turn, never poll.
 - **Its own namespace:** a scratch subdirectory per agent, not just a unique final output path
   (`brief-readers.md`).
+- **Siblings:** say that siblings are running and name what each owns; a child cannot see them.
 - **A findings path, written as it goes** — even, especially, for a read-only agent (`brief-readers.md`;
   filename rule in §4).
 - **For readers:** a numeric budget (`~12 searches and ~10 fetches, then report`), "a well-supported null
   is a valid answer", and for research *"load the `search-craft` skill before your first search"*
-  (`brief-readers.md`).
+  (`brief-readers.md`). **Scope a reviewer or hunter to correctness and requirement gaps**: given an open
+  "find anything" brief it always finds something, and chasing that adds abstraction layers and defensive code.
 - **For writers:** a worktree under `$HOME` (not the scratchpad), its own test database and port, explicit
   worker counts, the target tests to run (a full-suite run in a subagent is gated), a commit after each
   verified step, and *"never raise a held count or loosen a check to
@@ -258,7 +262,7 @@ in the very first message:
   idle all at once with work outstanding and nothing will wake it.
 - **The protocol dies in compaction** — write it, and the queue, into the working repo (`CLAUDE.md`,
   `NEXT.md`), not only into a chat message.
-- **Verify what a peer hands you before relaying it to the user** — a good peer is the dangerous
+- **Verify what a peer hands you before relaying it to the operator** — a good peer is the dangerous
   case. Never relay a peer's list of the user's open items; never retype an identifier a peer wrote.
 
 When coordinating peers, read `references/orchestrator-protocol.md` — the full protocol and the
@@ -276,6 +280,16 @@ as covered; a stalled or truncated agent reports the same status as a finished o
 10 minutes into the background, so a child briefed against backgrounding lands there anyway: usually a
 suite, or a wait on a queued CI job. Orchestrators have read it as an ignored rule and proposed a gate. Ask
 what the call was waiting on and fix the brief's wait (`references/brief-hazards.md`), not the child.
+
+**A child cannot see its siblings**, so its claims about "another session" are unreliable: sibling edits read as a
+concurrent stranger. Three children in one run independently reported "this file was modified by another session,
+left untouched"; every time the writer was a sibling, and one read the parent's own commit as "an unrelated
+concurrent commit". Treat such claims as hearsay; check `git log`, mtimes and your dispatch list before repeating
+them.
+
+**A policy the user sets mid-run does not reach agents already running.** Their brief is frozen at spawn. When the
+user changes how output ships ("batch the MRs", "no issues yet"), `SendMessage` every live child that could act on
+it, in the same turn. A CI agent briefed to "open MRs" opened two after the user had said to open everything at once.
 
 **A writer's code change gets a conformance check before you merge it:** the review checklist in the `agentic-engineering` skill (honest ledgers, structure separate from behaviour, tests proven able to fail, design narrowed). The writer's tests carry correctness; do not re-review it for taste.
 

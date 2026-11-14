@@ -39,6 +39,10 @@ anything on the box, so the brief can prevent this with one sentence — and bet
 over by file or environment variable (a config file, or an `@file` header form) so argv never holds it at
 all. A `ps` listing is a credential surface in general, not only for children.
 
+**A secret file a child makes, even a throwaway dev key, lives in its own worktree or scratch, mode 600.**
+*(incident)* A writer left a dev encryption key world-readable in a shared screenshot folder; it had the same
+shape as production's, so it had to be hash-checked before anyone could say it was harmless.
+
 ## Spawning and forks
 
 **Tell it whether it may spawn.** Default to *"you are a LEAF agent: do not spawn subagents"*. An agent
@@ -80,3 +84,14 @@ approval was given. (A child that spent 35 minutes on denials the parent cleared
 - **When you retake a child's task, stop the child first.** Two actors creating objects in one system is
   how you get duplicates in something that must be created once. Kill it, then re-check the target for
   anything it landed late, before you create.
+- **In auto mode the classifier may still refuse the retake** as a bypass of the child's denial, even under a
+  blanket grant ("MR and merge as needed"). Name the exact change in one line and ask; a specific OK went
+  through where the blanket one did not.
+
+## Shared infrastructure a brief hands over
+
+**Licence to run CI is licence to run code on someone else's node.** Before granting it, find out what a job's
+container shares with its host, and name what is off limits. A brief that caps how many pipelines a writer may run
+says nothing about what may run in them. Name the forbidden classes in the brief: nested Kubernetes, systemd in a
+container, anything that manages cgroups, anything that loads the node past its request. Put the rule in the repo's
+CI doc too, so the next brief inherits it.

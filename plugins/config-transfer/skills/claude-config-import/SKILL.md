@@ -78,6 +78,9 @@ under a *different* slug (merge if so, per §2). Then add its one-line hook to y
   your user `~/.claude/CLAUDE.md`. **Merge** into your CLAUDE.md; never overwrite it.
 - **Other memories** → your project auto-memory dir; add one index line per file to that dir's
   `MEMORY.md`.
+- **Anything you land with `patch`, `cp` or `rsync` skipped the memory-write gate** (`memory-write-gate.sh`
+  is PreToolUse on Write/Edit only; `memory-bash-write-backstop.sh` flags it after the fact). Feed each such
+  file through the gate as a Write payload before finishing, with a control that must block.
 - Dangling `[[links]]` to notes that weren't shipped are harmless — the memory system treats them as
   "not written yet." Don't chase them.
 
