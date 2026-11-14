@@ -8,7 +8,9 @@ GATE="${GATE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../hooks/bash-foo
 SKILL_MD="${SKILL_MD:-$HERE/SKILL.md}"
 export GATE SKILL_MD
 pass=0; fail=0
-mkjson() { python3 -c 'import json,sys; print(json.dumps({"tool_name":sys.argv[1],"tool_input":{"command":sys.argv[2]}}))' "${TOOL:-Bash}" "$1"; }
+mkjson() { python3 -c 'import json,sys; d={"tool_name":sys.argv[1],"tool_input":{"command":sys.argv[2]}}
+if sys.argv[3]: d["script_file"] = True
+print(json.dumps(d))' "${TOOL:-Bash}" "$1" "${SCRIPT_FILE:-}"; }
 t() {
   exp="$1"; label="$2"; cmd="$3"
   out=$(mkjson "$cmd" | bash "$GATE" 2>&1); rc=$?
@@ -18,6 +20,8 @@ t() {
 # Same case, asserted for a different tool_name. Monitor's `command` runs in this same zsh, so the
 # rules apply identically — but the gate ignored every non-Bash tool, so none of them ran for it.
 tm() { TOOL=Monitor t "$@"; }
+# Same case, as script-lint sends a script FILE: run as `bash <file>`, where errexit works.
+tf() { SCRIPT_FILE=1 t "$@"; }
 
 echo "COVERAGE — Monitor gets the same rules as Bash MUST BLOCK:"
 # The watcher that exposed the hole, verbatim in shape: zsh does not split, so $2/$3 were empty and
@@ -389,6 +393,27 @@ t 0 "status echoed between the two"            'git commit -m x; echo rc=$?; git
 t 2 "set -e does not guard (tool ignores errexit)" 'set -e; git commit -m x; git push'
 t 2 "set -euo pipefail, newline form"          'set -euo pipefail
 git commit -m x
+git push'
+# A script FILE (script-lint) runs as `bash <file>`, where errexit does stop on failure.
+tf 0 "file: set -euo pipefail guards commit then push" 'set -euo pipefail
+git commit -m x
+git push'
+tf 0 "file: set -e guards cd then git write"   'set -e
+cd ~/wt/x
+git push'
+tf 0 "file: set -e guards an unpiped test run" 'set -e
+pytest -q
+git commit -am ok'
+tf 2 "file: set -e does not rescue a piped run" 'set -e
+pytest -q | tail -2
+git commit -am ok'
+tf 2 "file: no errexit, commit then push"      'git commit -m x
+git push'
+tf 2 "file: set +e is not errexit"             'set +e
+git commit -m x
+git push'
+tf 2 "file: set -o pipefail alone is not errexit" 'set -o pipefail
+cd ~/wt/x
 git push'
 t 0 "two independent pushes"                   'cd ~/a && git push; cd ~/b && git push'
 t 0 "case branches are alternatives"           'case $1 in

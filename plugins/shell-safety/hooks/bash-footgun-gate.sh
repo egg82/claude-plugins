@@ -75,6 +75,13 @@ cmd = strip_heredocs(cmd)
 
 findings = []
 
+# A script FILE sent by script-lint (`script_file` is set only by that hook; the harness never sends it)
+# runs as `bash <file>`, where errexit works. So there a top-level `set -e` / `set -o errexit` guards the
+# sequencing rules (commit-then-push, test-then-commit, cd-then-git-write). In the Bash tool it guards
+# nothing: errexit is ignored there.
+_FILE_ERREXIT = bool(d.get("script_file")) and bool(
+    re.search(r"(?m)^\s*set\s+(?:-[A-Za-z]*e[A-Za-z]*\b|(?:-\S+\s+)*-o\s+errexit\b)", cmd))
+
 # Quoted spans blanked to equal-length spaces, for rules about what the shell sees UNquoted
 # (a mutator named inside an echo, an exec flag). Rules about patterns look inside quotes instead.
 def blank_quoted(s):
@@ -840,7 +847,7 @@ def _unguarded_push(text):
     return False
 
 
-if _unguarded_push(cmd):
+if not _FILE_ERREXIT and _unguarded_push(cmd):
     findings.append(
         "`git commit` and then `git push` in one command with nothing stopping the push when "
         "the commit fails, so it pushes whatever was ALREADY committed. This shipped nineteen "
@@ -894,6 +901,8 @@ def _test_then_commit(s):
     piped = re.search(r"(?<!\|)\|(?!\|)", between[:stmt_end.start()] if stmt_end else between)
     if piped and not re.search(r"\bpipefail\b", s):
         return True
+    if _FILE_ERREXIT:
+        return False                # a script file under errexit stops on an unpiped failing run
     if re.match(r"\s*\|\|\s*(?:\{[^}]*?)?\b(?:exit|return)\b", between[stmt_end.start():] if stmt_end else ""):
         return False                # `pytest … || exit 1` / `|| { echo …; exit 1; }` stops the commit
     return bool(re.search(r"[;\n]", between))
@@ -1380,7 +1389,8 @@ _gitw = re.compile(
     r"(?:^|[;&|\n(]|\bthen\b|\bdo\b)\s*git\s+(?:-C\s+\S+\s+)?"
     r"(?:rebase|push|commit|reset|checkout|merge|clean|stash(?!\s+(?:list|show)\b)|worktree\s+remove)\b"
 )
-for _m in re.finditer(r"(?:^|[;&|\n(]|\bthen\b|\bdo\b)\s*cd\b[^;&|\n]*(?:&&[^;|\n]*)*(?:;|\n)", _cdq):
+for _m in ([] if _FILE_ERREXIT else
+           re.finditer(r"(?:^|[;&|\n(]|\bthen\b|\bdo\b)\s*cd\b[^;&|\n]*(?:&&[^;|\n]*)*(?:;|\n)", _cdq)):
     # A later statement that has its own cd is that cd's business (its own match, if any), so
     # `cd ~/a && git push; cd ~/b && git push` passes.
     if any(_gitw.search("\n" + _st) for _st in re.split(r"[;\n]", _cdq[_m.end():])

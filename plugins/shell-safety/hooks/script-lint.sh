@@ -17,7 +17,8 @@ case "$path" in *.sh|*.bash) ;; *) exit 0 ;; esac
 case "${path##*/}" in bash-footgun-gate.sh|test-gate.sh) exit 0 ;; esac
 [ -f "$path" ] || exit 0
 
-out=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":open(sys.argv[1],errors="replace").read()}}))' "$path" \
+# `script_file` tells the gate this runs as `bash <file>`, where a top-level `set -e` does stop on failure.
+out=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","script_file":True,"tool_input":{"command":open(sys.argv[1],errors="replace").read()}}))' "$path" \
   | bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/bash-footgun-gate.sh" 2>&1 >/dev/null)
 rc=$?
 [ "$rc" -eq 2 ] || exit 0

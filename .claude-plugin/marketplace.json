@@ -60,7 +60,7 @@
       "name": "shell-safety",
       "source": "./plugins/shell-safety",
       "description": "Blocks shell commands whose result would lie silently, lints scripts as they're written, and catches detached work nobody is waiting on. Assumes the Bash tool runs bash.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": {
         "name": "egg82",
         "url": "https://github.com/egg82"
