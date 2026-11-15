@@ -24,4 +24,10 @@ index, so a "no-skill" arm measures the skill's **body** against its **descripti
 ambient. Read a small with-vs-without delta as "the description already carried it", not "the skill
 is useless". Use opaque run names for A/B arms ([[subagent-paths-prime-results]]).
 
+**A shape a skill shows gets reproduced in full, everywhere.** Agents treat a template as mandatory and
+an optional section as required: `pr-description`'s Diagram section put Mermaid into
+agent PRs that needed none. Write any output shape as "follow the repo's existing convention;
+where there is none, this baseline", and give each optional part an explicit test for when it belongs,
+with omission as the default. `agentic-engineering`'s `references/forge-queue.md` is the model.
+
 Pairs with [[prefer-subtraction]] and [[user-forcing-function-style]].

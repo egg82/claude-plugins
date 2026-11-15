@@ -68,6 +68,9 @@ MUST = [
     ("azure-client-secret", "AZURE_CLIENT_SECRET=%s8Q~%s"
                             % (rnd(3), rnd(34, string.ascii_letters + string.digits + "._~-"))),
     ("url-basic-auth", "https://svcacct:%s@vault.example.test/v1/auth" % rnd(24)),
+    # A webhook URL carries no keyword the prefilter knew before this case.
+    ("discord-webhook", "  webhook_url: https://discord.com/api/webhooks/100000000000000001/%s"
+                        % rnd(68, string.ascii_letters + string.digits + "_-")),
     ("talos-secretbox", "    secretboxEncryptionSecret: %s="
                         % rnd(43, string.ascii_letters + string.digits + "+/")),
 ]

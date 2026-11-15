@@ -29,6 +29,10 @@ there, it says so. These are fiction rules: instructions, help and informational
 - **Omit only what you know.** A line may leave out what the writer could state, because a private canon sits
   behind it. A line that withholds with nothing behind it is vagueness (practitioner, Hemingway's iceberg,
   https://en.wikipedia.org/wiki/Iceberg_theory). So write the fact down somewhere before you leave it out.
+- **The canon is not on screen.** A writer who knows which stone, which gap, which "him" reads "the stone" as
+  anchored when no shown line ever pointed to one; a player building the scene from text alone can't. Audit
+  referents (every "the X", pronoun and name) by reading the shown lines in play order, cumulatively, never line
+  by line: a per-line pass misses these; a reader going in order catches them (inference).
 - **Details do work; they never survey.** No line after line of setting, and no details that fit together into a
   neat catalogue (opinion, M. John Harrison via https://3quarksdaily.com/?p=139062).
 - **The swap test.** Change a few nouns. If the line reads the same in another setting, it is generic (opinion, Le

@@ -79,6 +79,8 @@ _PREFILTER_SUBSTRINGS = (
     "password", "passwd", "secret", "token", "credential", "apikey", "api_key",
     "api-key", "access_key", "access-key", "client_secret", "authorization",
     "bearer ", "bootstrap", "aescbc", "secretbox", "-----",
+    # A Discord webhook URL is itself the credential and carries none of the words above.
+    "/api/webhooks/",
 )
 _PREFILTER_RE = re.compile(r"://[^\s:/?#@]{1,64}:[^\s/?#@]{6,}@")
 

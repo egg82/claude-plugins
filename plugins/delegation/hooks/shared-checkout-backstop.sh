@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 1   # bump on any behaviour change; the session hook reports skew
+# hook-version: 1   # bump on any behaviour change; config-care's session hook reports skew
 # Stop: report a repo you do NOT own that has been left on a non-default branch.
 #
 # WHY THIS EXISTS RATHER THAN MORE PROSE. `assume-the-checkout-is-shared` says plainly

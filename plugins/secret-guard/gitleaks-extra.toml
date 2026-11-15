@@ -6,14 +6,14 @@
 # cluster PKI in -- the shape that leaked twice in one session. Re-measure against
 # YOUR shapes before trusting that number; the corpus is the part that does not travel.
 #
-# This file exists for the one genuine gap. Keep it that way: every rule added here is
+# This file exists for the genuine gaps. Keep it that way: every rule added here is
 # a rule that drifts from upstream and that nobody else maintains. Prefer opening an
 # upstream issue over growing this file.
 
 [extend]
 useDefault = true
 
-# GAP 1/1: basic-auth credentials embedded in a URL. gitleaks has no default rule for
+# GAP 1/2: basic-auth credentials embedded in a URL. gitleaks has no default rule for
 # this, and it is not exotic -- secret stores, registries, S3-compatible object stores
 # and a lot of ordinary internal tooling accept `https://user:pass@host` forms, and they
 # turn up in curl invocations, connection strings and config files.
@@ -35,3 +35,12 @@ keywords = ["://"]
 regexes = [
   '''(?i)^(?:pass(?:word)?|passwd|secret|token|changeme|example|placeholder|invalid|redacted|user|username|xxx+|\*+|<[^>]*>|\$\{[^}]*\}|%[a-z_]+%)$''',
 ]
+
+# GAP 2/2: Discord webhook URLs. The URL IS the credential (anyone holding it can post),
+# and gitleaks' defaults have no rule for it. The id stays readable, the token is redacted.
+[[rules]]
+id = "discord-webhook-url"
+description = "Discord webhook URL (the token path segment is the credential)"
+regex = '''(?i)https://(?:ptb\.|canary\.)?discord(?:app)?\.com/api/webhooks/[0-9]{15,22}/([A-Za-z0-9_-]{30,})'''
+secretGroup = 1
+keywords = ["discord"]

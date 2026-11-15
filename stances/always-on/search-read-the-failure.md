@@ -7,8 +7,8 @@ metadata:
 ---
 
 The user's search skill is good and mine was not. **Load the `search-craft` skill before any non-trivial web
-search, and again whenever a search comes back unsatisfying** — `instance.md` beside it carries this
-machine's index routing.
+search, and again whenever a search comes back unsatisfying** — its `references/tool-routing.md` carries
+the index routing (edit it for your machine).
 
 The trigger easiest to miss: **good, on-topic results that don't contain the answer.** Nothing looks
 wrong, so the reflex is "search again, slightly differently" — and that burns ten queries on a

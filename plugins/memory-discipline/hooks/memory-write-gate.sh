@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 2   # bump on any behaviour change; the session hook reports skew
+# hook-version: 2   # bump on any behaviour change; config-care's session hook reports skew
 # PreToolUse gate for memory files — blocks the write BEFORE the file exists.
 #
 # WHY: path-scoped rules load on Read, not Write (anthropics/claude-code#23478, closed

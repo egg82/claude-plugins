@@ -37,21 +37,22 @@ glab api -X POST projects/$P/boards/$B/lists -F label_id=<id of workflow::ready>
 ## GitHub
 
 GitHub labels have no scoping, so nothing stops an issue holding two states. State lives in a
-**Projects** (v2) board named **Work**, in its built-in **Status** field; labels carry area and type:
+**Projects** (v2) board named **`<Repo>: Work`** (projects belong to the owner, not the repo, so one owner's repos
+share the namespace), in its built-in **Status** field; labels carry area and type:
 
 | GitLab | GitHub |
 |---|---|
 | `workflow::ready` / `in progress` / `blocked` | Status: **Ready**, **In progress**, **Blocked**, **Done** |
 | `area::<part>` | label `area: <part>` |
 | `type::bug` / `feature` / `chore` / `docs` | labels `type: bug` etc., same colours |
-| board "Work" | project "Work", linked to the repo, board layout grouped by Status |
+| board "Work" | project "`<Repo>: Work`", linked to the repo, board layout grouped by Status |
 | a checklist across steps | sub-issues (`addSubIssue`) |
 | "Closes #n" | the same keywords, in the PR description |
 
 ```bash
-# Needs the project scope once: gh auth refresh -s project   (run once by the person; it opens a browser)
+# Needs the project scope once: gh auth refresh -s project   (the user runs it; it opens a browser)
 gh label create "area: catalog" --color 6699cc --description "..."
-N=$(gh project create --owner <owner> --title Work --format json | jq .number)
+N=$(gh project create --owner <owner> --title '<Repo>: Work' --format json | jq .number)
 gh project link $N --owner <owner> --repo <owner>/<repo>
 gh project field-list $N --owner <owner> --format json     # the Status field's id
 gh api graphql -f query='mutation($f:ID!){ updateProjectV2Field(input:{fieldId:$f, singleSelectOptions:[
@@ -59,13 +60,17 @@ gh api graphql -f query='mutation($f:ID!){ updateProjectV2Field(input:{fieldId:$
   {name:"In progress",color:GREEN,description:"Someone is working on it"},
   {name:"Blocked",color:RED,description:"Waiting on something outside this repo; the issue says what"},
   {name:"Done",color:PURPLE,description:""}]}){ projectV2Field{ ... on ProjectV2SingleSelectField { options { name } } } } }' -f f=<status field id>
-gh issue create --title "..." --body-file body.md --label "area: catalog" --project Work
+gh issue create --title "..." --body-file body.md --label "area: catalog" --project '<Repo>: Work'
+# The default view is a table: make it a board. Its columns default to Status (read back verticalGroupByFields).
+V=$(gh api graphql -f query='query($n:Int!){user(login:"<owner>"){projectV2(number:$n){views(first:1){nodes{id}}}}}' -F n=$N | jq -r '.data.user.projectV2.views.nodes[0].id')
+gh api graphql -f query='mutation($v:ID!){updateProjectV2View(input:{viewId:$v,name:"Board",layout:BOARD_LAYOUT}){projectV2View{layout}}}' -f v=$V
 ```
 
 - **`singleSelectOptions` REPLACES the whole option list**, so items set to an option not in the new
   list lose their Status. Set it on a fresh project, or include every option in use.
-- In the project's settings (web UI only), turn on the built-in workflows "Item closed → Done",
-  "Pull request merged → Done" and "Auto-add to project", so new issues land on the board.
+- In the project's settings (web UI only: the API can delete a workflow but not enable one), turn on the built-in
+  workflows "Item closed → Done", "Pull request merged → Done" and "Auto-add to project", so new issues land on the
+  board. Read them back with `projectV2{workflows{nodes{name enabled}}}`.
 
 ## The issues
 

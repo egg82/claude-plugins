@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 2   # bump on any behaviour change; the session hook reports skew
+# hook-version: 2   # bump on any behaviour change; config-care's session hook reports skew
 # Stop: block once when a repo this session touched has a HELD LEDGER whose counts went UP.
 #
 # WHAT A HELD LEDGER IS. The `agentic-engineering` skill's ratchet gates (function size, file

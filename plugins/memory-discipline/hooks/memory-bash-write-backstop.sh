@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hook-version: 5  # bump on any behaviour change; the session hook reports skew
+# hook-version: 5  # bump on any behaviour change; config-care's session hook reports skew
 # Stop: report memory/skill files that changed this session WITHOUT a Write/Edit that explains it.
 #
 # WHY THIS EXISTS, and why it is a second mechanism rather than a wider version of the first:

@@ -28,6 +28,10 @@ checks hold. Evidence and citations: `references/evidence.md`. Case files: `refe
   phrase in a doc ("Done:", "used to") misfires, gets worked around by rewording, and teaches agents
   to write for the regex. Prose conventions are enforced in review. Word scans are fine as a
   *flag* for a reader, never as a pass/fail. This one is a hard line, not a default to weigh.
+- **Gates guard correctness, honesty and order; taste is a readout.** A design remark about feel ("this
+  loop feels tedious") is a "more or less" idea: make it a readout that reports, never a hard
+  gate. Turned into a structural ban it outgrows its intent and designs bend around its letter. Before gating a design remark, ask
+  which of the three it guards.
 
 ## 2. Held ledgers: adopting rules in code that already breaks them
 

@@ -21,6 +21,7 @@ waste:
 | Duplicate suites | a writer's suite and a blind suite over one contract | pairs of files testing one interface |
 | Full-suite runs by agents | locally, not in CI | count pytest runs with no path, `::`, `-k` or `-m` in the transcripts |
 | Unpinned or slow runners | the same job varies several-fold between runs | per-runner timings |
+| A fixed cost in every test | the tests over 1 s add up to a small share of the total; the rest is a few hundred ms each across most tests | sum the `--durations` rows against the total; check what nearly every test's setup does. Seen: a production-strength password hash (argon2id) on every account the tests registered through the API, a large share of the suite; A/B it by swapping cheap parameters in for one run |
 
 Compare against the budget and the outside figure, never the suite's own past (`agentic-engineering` §6).
 

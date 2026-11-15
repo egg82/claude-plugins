@@ -85,7 +85,8 @@ machine, and turn each conflict into a Leave or Adapt row with the reason:
   userland (`timeout`, `stat -c`, `realpath -e`); on macOS without GNU coreutils, say the hooks are
   untested there.
 - **`spawn-model-gate`** refuses every subagent spawn that names no model. If their transcripts
-  show `Agent` calls without `model`, say that their current habit will be blocked.
+  show `Agent` calls without `model`, say that their current habit will be blocked. It also refuses `opus` unless the prompt carries
+  an `[opus: <why>]` reason.
 
 ## 6. Report: take / adapt / leave
 

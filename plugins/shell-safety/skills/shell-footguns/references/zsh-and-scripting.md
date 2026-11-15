@@ -161,6 +161,12 @@ record parses closest **as an upgrade**, deleting what was there — no error, a
 a file size that looks wrong. Observed twice in one session, on a trap that was already written down.
 Use `category=manual-hold` (watched by nothing) and import explicitly.
 
+**`glab mr merge` prints "✓ Merged!" when all it did was set merge-when-pipeline-succeeds.** And straight after
+a push, the MR's `sha` and `head_pipeline` still name the OLD head for a few seconds, so a wait loop that
+compares the two passes on the previous pipeline's green. Together these can "merge" MRs whose
+pipelines never ran. Poll until the MR's `sha` equals the sha you pushed, then
+wait for that pipeline, and after merging read the MR's `state`; the command's output is not evidence.
+
 ## Remote zsh (`ssh host '...'`)
 
 On the remote hosts the login shell is zsh, so a single-quoted `ssh host '...'` body runs under zsh. These were

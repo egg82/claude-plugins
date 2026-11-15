@@ -19,7 +19,7 @@ script that calls python3).
 
 Keep an agent-built codebase well designed: structural gates with held ledgers, tests proven able to fail, bug hunts proven by running them, API contracts.
 
-- `agentic-engineering` (skill) — structural gates (function/file size, type-check ratchets), held ledgers that may only shrink, a fit pass before adding a new system, tests proven able to fail. Needs: a repo with CI or a test suite; the templates are Python/pytest. Signals: agents write most of your code; a file or function has grown into a god object; an agent loosened a threshold to get CI green.
+- `agentic-engineering` (skill) — structural gates (function/file size, type-check ratchets), held ledgers that may only shrink, a fit pass before adding a new system, tests proven able to fail. Needs: a repo with CI or a test suite; the templates are Python/pytest, plus a `project-docs/` starter (README, CLAUDE.md, docs tree). Signals: agents write most of your code; a file or function has grown into a god object; an agent loosened a threshold to get CI green.
 - `api-contract-first` (skill) — give an HTTP API schemas a client can generate typed objects from: one schema per resource, typed errors, constrained params. Needs: an HTTP API you own (examples lean FastAPI/pydantic). Signals: routes returning bare `dict`; generated clients full of `Object`; you run FastAPI or OpenAPI codegen.
 - `bug-hunt` (skill) — hunt real defects in a repo and prove each by execution, with file:line pointers; covers correctness, performance, security, resilience, UI. Needs: a repo you can run; subagents help. Signals: you ask "what's broken here"; you file issues on projects; you have asked for a perf or security pass.
 - `hunt-sweep` (skill) — the standing multi-lane bug/perf/security hunt over a whole repo with duplicate hunters, then findings landed test-first. Needs: subagent fan-out and a sizeable token budget (a Max plan or equivalent); builds on `bug-hunt`. Signals: transcripts show subagent spawns on code review or hunting; you maintain a repo of real size.
@@ -59,7 +59,7 @@ Web UIs that look alive without lying, rendered and looked at before they're cal
 Game design method with evidence labels, and choosing sound you can't hear.
 
 - `audio-curation` (skill) — pick, cut, level and place sound effects and music when you cannot hear them, with a listening page for a human to judge. Needs: a human with ears; SFX or music packs. Signals: you build a game or app with sound.
-- `game-design` (skill) — evidence-labelled method for fun, feel and look, onboarding, feedback, economies, difficulty, randomness, multiplayer, playtests, legibility, progress and goal visibility, game screens and settings menus, and genre conventions (idle and story-driven games in depth). Needs: nothing. Signals: you build a game or gamified app.
+- `game-design` (skill) — evidence-labelled method for fun, feel and look, onboarding, feedback, economies, difficulty, randomness, multiplayer, playtests, legibility, progress and goal visibility, friction and quality of life, game screens and settings menus, and genre conventions (idle and story-driven games in depth). Needs: nothing. Signals: you build a game or gamified app.
 
 ### shell-safety
 

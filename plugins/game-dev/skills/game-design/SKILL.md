@@ -1,6 +1,6 @@
 ---
 name: game-design
-description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, juice, game feel, controls, readability, polish; 'dopamine'/compulsion-loop claims; onboarding, tutorials, glows vs words, players stuck on how to progress, hidden unlocks, quest markers, yellow paint; rewards, streaks, return visits; currencies, sinks/faucets, inflation, cost or XP curves, balance, dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle/incremental/prestige, story pacing, choices, mysteries, spoilers); playtests, progression models; making automation or simulations understandable; a HUD, touch controls, settings menu. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
+description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, juice, game feel, controls, readability, polish; 'dopamine'/compulsion-loop claims; onboarding, tutorials, glows vs words, players stuck on how to progress, hidden unlocks, quest markers, yellow paint; rewards, streaks, return visits; currencies, sinks/faucets, inflation, cost or XP curves, balance, dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle/incremental/prestige, story pacing, choices, mysteries, spoilers); playtests, progression models; making automation or simulations understandable; quality-of-life features, friction vs convenience, hand-holding that drains the fun; a HUD, touch controls, settings menu. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
 ---
 
 # Game design
@@ -46,6 +46,7 @@ an economy or a pacing change gets the whole loop.
 | Co-op, competition, toxicity, reporting, matchmaking, leaderboards, gifting, light social features | `references/social.md` |
 | Planning or reading a playtest, how many testers, think-aloud, surveys, telemetry vs watching | `references/playtesting.md` |
 | Automation, player-written rules and which conditions they can test, simulations, overlays, tooltips, recipe inputs, "why did it do that" | `references/legibility.md` |
+| Quality-of-life features, convenience vs meaningful friction, fast travel, skips, auto-anything, over-teaching or hand-holding that made it less fun | `references/friction.md` |
 | Screen layout, HUD, diegetic UI, an interface that grows, touch targets, hover, mobile browser viewport, settings/options menus | `references/game-ui.md` |
 | What players of a genre expect: roguelike, puzzle, strategy/4X, platformer, simulation | `references/genres/overview.md` |
 | Story-driven games: delivery, pacing story against play, choices and agency, mysteries solved by learning, spoilers | `references/genres/narrative.md` |
