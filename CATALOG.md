@@ -225,13 +225,13 @@ rather than a dependency.
 
 | Skill | Mentioned by | Hooks it mentions |
 |---|---|---|
-| `agentic-engineering` | `hook:held-ledger-raise-gate`, `skill:bug-hunt`, `skill:fanout-craft`, `skill:game-design`, `skill:hunt-sweep`, `skill:verification-gate`, `stance:code-design-stances`, `stance:prefer-subtraction` | `held-ledger-raise-gate` |
+| `agentic-engineering` | `hook:held-ledger-raise-gate`, `skill:bug-hunt`, `skill:fanout-craft`, `skill:game-design`, `skill:hunt-sweep`, `skill:verification-gate`, `stance:code-design-stances`, `stance:prefer-subtraction`, `stance:skill-authoring-craft` | `held-ledger-raise-gate` |
 | `always-on-prune` | `skill:cc-tool-vet`, `skill:config-hygiene`, `skill:skill-golf` | - |
 | `api-contract-first` | `skill:hunt-sweep`, `skill:verification-gate` | - |
 | `audio-curation` | `skill:promo-video`, `skill:shell-footguns` | - |
 | `bootc-version-scan` | `skill:linux-gpu-troubleshoot` | - |
 | `bootc-workstation` | `skill:linux-gpu-troubleshoot`, `skill:luks-tpm-recovery` | - |
-| `bug-hunt` | `hook:bash-footgun-gate`, `hook:spawn-model-gate`, `skill:always-on-prune`, `skill:fanout-craft`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:model-golf`, `skill:pr-description`, `skill:repo-vet`, `skill:shell-footguns`, `skill:ui-craft`, `skill:verification-gate`, `skill:writing-craft`, `stance:issue-writing-style` | - |
+| `bug-hunt` | `hook:bash-footgun-gate`, `hook:spawn-model-gate`, `skill:always-on-prune`, `skill:fanout-craft`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:model-golf`, `skill:pr-description`, `skill:repo-vet`, `skill:shell-footguns`, `skill:ui-craft`, `skill:writing-craft`, `stance:issue-writing-style` | - |
 | `cc-tool-vet` | `skill:always-on-prune`, `skill:repo-vet`, `stance:ground-claims-with-a-cold-agent` | - |
 | `claude-config-export` | `skill:claude-config-import`, `skill:claude-fleet-sync` | - |
 | `claude-config-import` | `skill:claude-config-export`, `skill:claude-fleet-sync`, `skill:config-hygiene` | `memory-bash-write-backstop`, `memory-write-gate` |
@@ -255,7 +255,7 @@ rather than a dependency.
 | `linux-gpu-troubleshoot` | `skill:bootc-workstation` | - |
 | `luks-tpm-recovery` | `skill:bootc-workstation`, `skill:linux-gpu-troubleshoot` | - |
 | `model-golf` | `skill:audio-curation`, `skill:fanout-craft`, `skill:skill-golf` | `bash-footgun-gate` |
-| `pr-description` | - | - |
+| `pr-description` | `stance:skill-authoring-craft` | - |
 | `promo-video` | - | - |
 | `repo-orient` | `skill:cc-tool-vet`, `skill:repo-vet` | - |
 | `repo-readme` | `skill:doc-cold-read` | - |
@@ -286,7 +286,7 @@ rather than a dependency.
 | `precompact-snapshot` | - |
 | `prompt-clock` | `hook:postcompact-handoff` |
 | `route-lesson-gate` | `stance:route-lessons-yourself` |
-| `script-lint` | `skill:shell-footguns`, `stance:shell-gotchas` |
+| `script-lint` | `hook:bash-footgun-gate`, `skill:shell-footguns`, `stance:shell-gotchas` |
 | `search-craft-gate` | `skill:search-craft` |
 | `secret-redact` | `hook:bash-footgun-gate`, `skill:shell-footguns`, `stance:print-names-not-values` |
 | `shared-checkout-backstop` | - |

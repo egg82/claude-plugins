@@ -1,6 +1,6 @@
 ---
 name: bug-hunt
-description: "Hunt real defects in a repo and root-cause them — correctness, performance and cost, security, resilience under faults, state that breaks over months, UI and accessibility, LLM features deciding behaviour in prose. Use when the user wants bugs found, asks what's broken, slow or insecure here, wants a perf/security/accessibility hunt, or wants an issue reproduced, root-caused, confirmed or filed. NOT a diff (/code-review) or trust verdict (repo-vet); the standing multi-lane sweep is hunt-sweep."
+description: "Hunt real defects in a repo and root-cause them — correctness, performance and cost, security, resilience, state that breaks over months, UI and accessibility, LLM features deciding behaviour in prose. Use when asked what's broken, slow or insecure here, for a perf/security/accessibility hunt, or to reproduce, root-cause or file an issue. NOT a diff (/code-review) or trust verdict (repo-vet); the standing sweep is hunt-sweep."
 ---
 
 # Hunt bugs in a repo at rest

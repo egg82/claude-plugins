@@ -1,6 +1,6 @@
 ---
 name: talos-ops
-description: Operate, upgrade, and debug Talos Linux nodes and Talos-based Kubernetes clusters, and manage Talos machine config. Use when operating, upgrading, or debugging Talos Linux nodes / a Talos-based cluster, or managing Talos machine config, finding new-cluster defaults an upgraded cluster lacks, rebooting nodes after a VM CPU/memory resize, or a node that can't reach DNS/NTP or flaps reachability (a static node IP leased out by DHCP).
+description: Operate, upgrade and debug Talos Linux nodes and Talos-based Kubernetes clusters, and manage Talos machine config. Also use for new-cluster defaults an upgraded cluster lacks, rebooting nodes after a VM CPU/memory resize, or a node that can't reach DNS/NTP or flaps reachability (a static node IP leased out by DHCP).
 ---
 
 # Talos Ops

@@ -1,6 +1,6 @@
 ---
 name: config-hygiene
-description: "Report drift in a Claude Code setup — outgrown memory indexes, skills carrying instance data, docs their directory has moved past, unregistered hooks. Use for a periodic tidy-up of skills/memory/docs, when a memory index feels bloated or triggers a compaction nudge, before sharing a skill, or as the scheduled hygiene check. Also gates a copy leaving this machine (plugin, marketplace repo, transfer bundle) for NO-SHIP markers and leaked names. Reports only."
+description: "Report drift in a Claude Code setup — outgrown memory indexes, skills carrying instance data, stale docs, unregistered hooks. Use for a periodic tidy-up of skills/memory/docs, a bloated memory index or compaction nudge, before sharing a skill, or the scheduled hygiene check; also gates a copy leaving this machine (plugin, marketplace repo, bundle) for NO-SHIP markers and leaked names. Reports only."
 ---
 
 # Config hygiene

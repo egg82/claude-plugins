@@ -312,7 +312,7 @@ def check(query):
 TESTS = [
     # expected-answer
     ("expected-answer", '"vm.max_map_count" "65530" default', True),
-    ("expected-answer", 'aquarium filter tank capacity "75 L" "100 L"', True),
+    ("expected-answer", 'garden pump reservoir capacity "75 L" "100 L"', True),
     ("expected-answer", 'tent pole maximum diameter 9mm spec', True),
     ("expected-answer", '"60mm" refractor telescope lens', False),          # constraint, §71
     ("expected-answer", 'CVE-2024-3094 xz backdoor advisory', False),

@@ -1,6 +1,78 @@
-# Error profiles, adoption checks, sources
+# Error profiles, adoption checks, human-only list, sources
 
-Detail behind `SKILL.md` steps 10 and 11.
+Load when you are deciding whether to trust a check or introducing a gate into an existing repo (`SKILL.md` steps 10
+and 11), or when listing what no gate reaches. Worked detail first, then the figures, adoption checks and sources.
+
+## Step 10: which way a check fails
+
+A wrong verifier does not fail neutrally — it misleads, and a wrong critique gets acted on about as readily as a right
+one. Establish a check's **error profile** (does it cry wolf, or wave things through?) before relying on it; the
+direction is domain-dependent. The figures and how to quote them safely: the error-profile section below.
+
+- **A false-negative-prone gate is the dangerous one**, because it reports green over unverified
+  work. That is the *falsely clean* failure: a broken mechanism and a healthy one look identical.
+- **A false-positive-prone gate gets switched off**, which leaves you strictly worse off than the
+  prose it replaced — you now have neither the check nor the habit.
+- **A gate you cannot characterise is not yet a gate.** Break something on purpose and confirm it
+  goes red; that is the only evidence that distinguishes "passing" from "not looking".
+- **When the criterion is "does it refrain from X", the check must count X — not the announcement
+  about X.** A refusal check scored on hedging language passed an answer that said "I can't give you
+  verified numbers" and then supplied eleven fabricated ones. The gate ran, reported green, and was
+  measuring the apology rather than the thing.
+- **A gate's own "am I inert?" signal must not be computed from the gate's filtered input** — or it
+  reports on the filter and calls that a verdict about the world. Derive the health count from the
+  *widest* structure the scan depends on, so "I saw nothing" and "there was nothing" stay
+  distinguishable. (Incident: the inert-signal incident below.)
+
+This is why a new rule wants both a must-block *and* a must-allow case: one case alone cannot tell
+a working gate apart from one that blocks everything, or from one that blocks nothing.
+
+## Step 11: introducing a gate into a repo that already violates it
+
+Before enabling anything blocking, **replay it over the last N commits** — the only way to see the cost:
+
+```bash
+for c in $(git log --format=%H -20 -- '<paths>'); do
+  git archive "$c" | (cd "$tmp" && tar -x) && run_the_gate "$tmp"
+done
+```
+
+If it would have blocked most normal commits, the scoping is wrong. Per-*file* scoping
+inherits a legacy file's entire debt the moment you touch it; you want per-*diff*, or a
+generated baseline (`ansible-lint --generate-ignore`, golangci-lint's `--new-from-rev`, SonarSource's
+Clean-as-You-Code) so it gates **new** findings.
+
+If you must carry existing debt:
+
+- **A ratchet is a budget that can only shrink.** Without a decrement path a baseline
+  is amnesty with better branding (cf. ArchUnit's `FreezingArchRule`: generative rule,
+  *separate* violation store, store may only shrink).
+- **Prefer per-instance amnesty at the site** over an opaque baseline file — annotate
+  each existing violation inline, so the debt appears in every diff that touches it and
+  its count is greppable. A baseline file is invisible to the person editing the line.
+
+Then run the checks nobody thinks to run — **does one job actually execute; does it match how code
+arrives; is the tooling pinned; is the diff computation correct under CI's shallow clone; is the
+gate's own code tested; is an invariant BETWEEN two artifacts actually tested** — detail for each in
+the adoption-checks section below.
+
+## What only a human can catch
+
+No gate reaches:
+
+- **A citation whose disposition nobody checked** — a rule justified by a ticket closed
+  as working-as-intended.
+- **A one-off grep wearing a class costume** — correct, inert, and looks like coverage.
+- **Prose that claims more than the code enforces** — "every check was verified against
+  its pre-fix commit" is a sentence, not a test.
+- **Whether the gate matches how the team actually works.**
+
+## The case files (detail)
+
+`instrument-failures.md` is a **selected subset**, not a complete record: case studies whose evidence
+could not be told without the environment they happened in were left out, so a gap there is not
+evidence that a failure mode has never been seen. Append your own as you hit them, to the file of its
+kind with a line in the index — the set is worth what its worked specifics are worth.
 
 ## The error-direction evidence (step 10)
 

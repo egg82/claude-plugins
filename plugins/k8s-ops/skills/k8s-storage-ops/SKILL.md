@@ -1,6 +1,6 @@
 ---
 name: k8s-storage-ops
-description: Diagnoses and fixes homelab Kubernetes persistent storage. Use when a PVC won't bind, a pod is stuck ContainerCreating on a volume, a storage operator (Rook-Ceph/Longhorn) is unhealthy, volume expansion is stuck, or stateful workloads are down. Also use when CHOOSING a storage class or arguing about redundancy (whether to add local/node-pinned storage, whether a replicated CSI is worth its overhead, whether a volume is 'HA'), because those answers invert depending on what the layer beneath Kubernetes already replicates.
+description: Diagnoses and fixes homelab Kubernetes persistent storage. Use when a PVC won't bind, a pod is stuck ContainerCreating on a volume, Rook-Ceph/Longhorn is unhealthy, volume expansion is stuck, or stateful workloads are down; also when choosing a storage class or redundancy (node-pinned vs replicated CSI, whether a volume is 'HA').
 ---
 
 # k8s-storage-ops

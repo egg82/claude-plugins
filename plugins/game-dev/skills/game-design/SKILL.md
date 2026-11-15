@@ -1,6 +1,6 @@
 ---
 name: game-design
-description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, juice, game feel, controls, readability, polish; 'dopamine'/compulsion-loop claims; onboarding, tutorials, glows vs words, players stuck on how to progress, hidden unlocks, quest markers, yellow paint; rewards, streaks, return visits; currencies, sinks/faucets, inflation, cost or XP curves, balance, dominant strategies; difficulty, assists, failure, checkpoints; random drops, odds, pity timers, loot boxes; co-op, toxicity, matchmaking, leaderboards; genre conventions (roguelike, puzzle, strategy, platformer, idle/incremental/prestige, story pacing, choices, mysteries, spoilers); playtests, progression models; making automation or simulations understandable; quality-of-life features, friction vs convenience, hand-holding that drains the fun; a HUD, touch controls, settings menu. NOT prose or game lines (writing-craft) or data dashboards (ui-craft)."
+description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, game feel, controls, polish; 'dopamine' claims; onboarding, players stuck on how to progress, hidden unlocks; rewards, streaks; currencies, cost or XP curves, balance; difficulty, failure, checkpoints; loot, odds, pity timers; multiplayer, leaderboards; genre conventions (roguelike, idle/prestige, puzzle, story, spoilers); playtests; quality-of-life vs friction, hand-holding; a HUD, touch controls, settings. NOT game prose (writing-craft) or data dashboards (ui-craft)."
 ---
 
 # Game design

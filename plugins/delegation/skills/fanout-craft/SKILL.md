@@ -1,6 +1,6 @@
 ---
 name: fanout-craft
-description: "How to delegate to subagents or peer sessions so it stays affordable and nothing gets lost: which model per agent, the brief, collecting results. Use BEFORE spawning subagents for research, sweeps or parallel investigation; before setting up a controller session over other sessions; when a fan-out returned less than it should; and before heavy local work, a CI pipeline or an API burst while other sessions share the host. NOT whether you may fan out."
+description: "How to delegate to subagents or peer sessions affordably without losing work: model per agent, the brief, collecting results. Use BEFORE spawning subagents for research, sweeps or parallel work, before a controller session, when a fan-out returned less than expected, and before heavy local work, CI or an API burst on a shared host. NOT whether you may fan out."
 ---
 
 # Fan-out craft

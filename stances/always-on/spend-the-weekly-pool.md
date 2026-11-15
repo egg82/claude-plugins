@@ -14,12 +14,11 @@ schedule, not a cost to minimise.
 reset: start the next worthwhile job rather than holding it "to be safe", and front-load big fan-outs early
 in a week. Hold back only when the remaining pool is genuinely smaller than the next job, and show the
 arithmetic (one whole build day cost about 10% of a week). **The cap is a wall:** past the weekly pool there is only
-paying per token, which they avoid, so hitting 100% before the reset stops everything. **If the plan also has a 5-hour usage window** (not every
-plan or account has dropped it), that is a second, shorter wall: size a big fan-out to fit the window it starts in,
-or it stalls mid-run until the window resets. **If the plan also includes
-monthly Claude API credits**, keep them apart from the pool: Claude Code sessions and subagents never draw on them;
-only code that calls the API itself does (in-product Claude features, SDK scripts, API batches). Up to that amount
-those calls are not out-of-pocket, which changes the calculus for them alone. Spend credits the same way, as a
-schedule not a saving, and keep a dated ledger of what used them, since nothing in the session shows the balance. While their current goal (e.g. a
-shareable link) is unfinished, pace so it lands before the pool does. Per-app daily call caps that protect their own
-terminal mid-week still stand. Pairs with [[skill-fanout-is-authorized]].
+paying per token, which they avoid, so hitting 100% before the reset stops everything. **If the plan also has a 5-hour
+usage window** (not every plan or account has dropped it), that is a second, shorter wall: size a big fan-out to fit
+the window it starts in, or it stalls mid-run until the window resets. **If the plan also includes monthly Claude API
+credits**, keep them apart from the pool: sessions and subagents never draw on them; only code that calls the API
+itself does (in-product features, SDK scripts, batches), and up to that amount those calls are not out-of-pocket.
+Spend them as a schedule too, and keep a dated ledger of what used them: nothing in the session shows the balance.
+While their current goal (e.g. a shareable link) is unfinished, pace so it lands before the pool does. Per-app daily
+call caps that protect their own terminal mid-week still stand. Pairs with [[skill-fanout-is-authorized]].

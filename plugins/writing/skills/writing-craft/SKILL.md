@@ -1,6 +1,6 @@
 ---
 name: writing-craft
-description: "How to write text a person reads so nobody can tell an LLM wrote it. Use when writing or revising any prose — essays, tutorials, UI and game microcopy, emails, support replies, posts, product copy, speeches, fiction, lore, dialogue, poetry, non-English text, names, headlines, lines an LLM generates at runtime; when text \"sounds like AI\"; when asked to de-slop, humanize, voice-pass or review prose; before showing a rewrite as finished. Docs: the de-LLM pass (doc-cold-read owns structure). NOT visual UI design (ui-craft)."
+description: "How to write text a person reads so nobody can tell an LLM wrote it. Use when writing or revising any prose — essays, emails, posts, UI and game microcopy, fiction, dialogue, names, non-English text, lines an LLM generates at runtime; when text \"sounds like AI\"; when asked to de-slop, humanize or voice-pass. Docs get its de-LLM pass (doc-cold-read owns structure). NOT visual UI design (ui-craft)."
 ---
 
 # Writing craft

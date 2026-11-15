@@ -1,6 +1,6 @@
 ---
 name: agentic-engineering
-description: "How to keep a codebase that coding agents write well-designed — structural gates, held ledgers, decoupling patterns, a fit pass before new systems, LLM behaviour kept in code. Use when starting or restructuring an agent-built app, a file or function has become a god object, adding tests to untested code, writing a repo's engineering doc or CLAUDE.md, an agent loosened a threshold, setting up or moving a repo's queue onto GitLab/GitHub issues, labels and boards, or asked how to do agentic / vibe-coded development well."
+description: "How to keep an agent-written codebase well-designed — structural gates, held ledgers, decoupling, a fit pass before new systems, LLM behaviour kept in code. Use when starting or restructuring an agent-built app, a god object or file, adding tests to untested code, writing a repo's CLAUDE.md or engineering doc, an agent loosened a threshold, setting up a repo's queue on GitLab/GitHub issues and boards, or asked how to do agentic / vibe-coded development well."
 ---
 
 # Agentic engineering
@@ -12,6 +12,22 @@ their own right; a pattern earns its place by making a class of bug impossible o
 **The measured fact the method rests on:** agent-written code erodes as the agent extends it, and quality
 guidance in the prompt lowers the starting level without changing the rate of decay. Only structural
 checks hold. Evidence and citations: `references/evidence.md`. Case files: `references/cases.md`.
+
+## Which reference
+
+| Situation | Load |
+|---|---|
+| Repo already breaks a size/type/boundary rule; two branches conflict on a ledger; a count or check is being raised or loosened | `references/held-ledgers.md` |
+| Splitting a god file; writing `docs/systems.md`; layering or citation gate; commenting rule | `references/structure.md` |
+| Fit pass found a candidate pattern; decoupling a shared system | `references/patterns.md` |
+| Adding tests, blind test writer, mutation audit, CI time budget | `references/tests.md` |
+| Refactor or consolidation plan; writing CLAUDE.md; orchestrator over writers; who edits shared docs | `references/steering-and-landing.md` |
+| Queue on GitLab/GitHub issues, labels, boards | `references/forge-queue.md` |
+| A model decides or writes something at runtime; LLM-labelled corpora | `references/llm-in-product.md` |
+| Merging a writer's MR | `references/reviewing-rework.md` |
+| Adopting this in an existing repo | `references/rollout.md` |
+| Past incidents and measured evidence | `references/cases.md`, `references/evidence.md` |
+| Gate/ledger/doc skeletons to copy | `templates/` |
 
 ## 1. A rule that can be a gate is one
 
@@ -32,330 +48,78 @@ checks hold. Evidence and citations: `references/evidence.md`. Case files: `refe
   loop feels tedious") is a "more or less" idea: make it a readout that reports, never a hard
   gate. Turned into a structural ban it outgrows its intent and designs bend around its letter. Before gating a design remark, ask
   which of the three it guards.
+- **Never raise a held count or loosen a check to get a change through** (agents did it twice in
+  one repo; the real cause was a fixable regression). Put the line in the repo's CLAUDE.md and every
+  worker's brief. Ledger mechanics: `references/held-ledgers.md`.
+- **Never gate behaviour on regex over natural language.** Put a field where the text is authored, or a
+  structured field in the model's output; word matching is only for flagging something to a human
+  (many misfiring places in one repo). More: `references/llm-in-product.md`.
 
 ## 2. Held ledgers: adopting rules in code that already breaks them
 
-New code starts with an empty held list that stays empty. Existing code cannot meet the limits on the
-day the rule arrives, so freeze today's violations in a **per-file ledger** that may only shrink.
-
-- **Per file and kind, never one global count.** A global count lets a fix in one file pay for a new
-  violation in another. Repo A proved that with a planted swap.
-- **Fail in both directions.** Over the held count, or new, fails naming the file. Under it fails too,
-  as "stale, lower it", so the ledger always equals the code.
-- **Parallel writers conflict on the ledger at every merge.** Take neither side whole: apply each
-  branch's per-file delta (its ledger minus its merge base's) onto the target's, check no file or rule
-  rose, then set the final counts from CI's "stale, lower it" output. A split moves counts between
-  files, so it may re-seed only when no pre-existing file rises in any rule. (One repo's rework
-  merged a dozen branches this way; taking one side whole silently undoes the other's reductions.)
-- **Never raise a held count or loosen a check to get a change through.** Agents did it twice in
-  repo A, and both times the real cause was a fixable regression. Put this line in the repo's CLAUDE.md
-  and in every worker's brief. A Stop hook can enforce it (`held-ledger-raise-gate.sh` in this setup).
-- **In a downstream fork, the upstream merge is the one change allowed to re-seed.** Code that someone
-  else keeps growing can't be held to "never raise", and a gate that fails every upstream merge gets
-  switched off. The merge script rewrites the ledgers after merging, so that MR's ledger diff records
-  what upstream grew; every other change stays held.
-- **Replacing a gate with one that measures better is a design change, not loosening**: allowed with
-  evidence the old one mismeasured and the owner's approval, as its own change stating both.
-- **Nor make the code worse to stay under a limit**, e.g. by cramming lines, deleting explanatory
-  comments, or moving SQL work into Python to save a line. No count rises, so only review sees it. Pay
-  with a real reduction, split the file, or report it.
-- **A suppression is a fix the count can't tell apart:** `# pyright: ignore`, `# noqa` and `typing.cast`
-  all remove an error the way a fix does. Each one names its rule and a reason on the same line, and the
-  suppressions are counted in their own held ledger. Never cast a value to quiet a *safety* type (e.g.
-  `cast(LiteralString, f"…")` defeats psycopg's SQL-injection guard); fix the types instead.
-- Templates in `templates/`: `held_ledger.py`, `test_function_size.py`, `test_file_size.py`,
-  `pyright_gate.py`, `conftest_time_gate.py`, `test_boundaries.py` and `test_doc_citations.py` (with
-  its extractor `doc_citations.py`), each with its own controls and
-  setup notes. Copy them, set the package path, seed with `--write`, and commit the ledger with the gate.
-
-Using ledgers, one repo roughly halved its raw SQL calls outside `db/` while still shipping
-features. The same mechanism holds pyright errors: adopted with over a thousand errors, it was tractable.
-That backlog was only tractable as a ratchet.
+New code starts with an empty held list that stays empty. Existing code freezes today's violations in a
+**per-file ledger** that may only shrink: per file and kind (never one global count), failing in both
+directions (over the count, or stale and needing lowered). Parallel writers' merge rules, forks,
+suppressions and the templates: `references/held-ledgers.md`.
 
 ## 3. Structure
 
-- **Small files, each doing one thing, grouped in subdirectories, frontend and backend alike.** A file
-  is a group of functions with one purpose, not a feature's worth of everything. Split before a file
-  passes a few hundred lines. That rule plus an immediate split took repo A's entry-point file from several
-  hundred lines to a handful. The split files never regrew.
-- **Small files don't stop long functions.** Function size needs its own gate: 80 lines, held.
-- **Test files count.** Point the file-size gate at tests as well as source, and split a test file by
-  the subject it tests. A repo that held function size but not file size grew a test file of over ten
-  thousand lines in which no function was over the limit.
+- **Small files, each doing one thing, grouped in subdirectories**; split before a file passes a few
+  hundred lines. **Function size has its own gate: 80 lines, held.** Test files count toward the file-size
+  gate. Systems inventory, layering allow-list, one home per fact, static types, comment rule: `references/structure.md`.
 - **Fit pass before any new kind of thing** (a system, new data, a new schedule): what is it an instance
   of, which row of the systems inventory already does that, and which known pattern solves it (GoF,
   *Game Programming Patterns*, §4: these are worth checking before inventing a shape)? Extend or merge;
   build new only when nothing fits, and say why on the work item ("Fits into: …"). Without a fit pass,
   agents build "systems in hiding": the same rule hand-copied two to four times, drifting apart.
 - Skeletons for `CLAUDE.md` and `docs/{engineering,systems,decisions}.md` (plus `open-work.md` for a repo with no forge): `templates/project-docs/`.
-- **A systems inventory** (`docs/systems.md`): each system's one question, where it lives, its pattern,
-  its callers. Under the tables, a **"Rules copied by hand"** section lists each rule written in two or
-  more places, leading with "Already disagrees:" where the copies have drifted and naming what removes
-  each copy; **"Looked at, and not systems"** records the no-op verdicts so nobody re-asks. Something counts as a system only
-  if all four hold: many callers across packages, one question behind a narrow interface, a plausible
-  second implementation, and it owns policy or state rather than a data shape. Everything else is a
-  plain import. **Gate the inventory with a citation test:** every backticked path and
-  `module.symbol` in it must resolve by real import, with a floor on how many it finds (the shape of
-  `templates/test_doc_citations.py`). A planned reference reads `` `planned: <target>` `` inside the
-  backticks: skipped while the target is missing, and **failing once it exists**. A repo with no
-  package to import (shell, Containerfiles) can only check that a code-shaped name still appears as a
-  word in its code, which is weaker. Without the marker, writers drop the backticks to get past the
-  gate, and the reference silently stops being checked.
-- **Package layering as an executable allow-list.** A new import edge fails until it's added, which is
-  the moment the design question should be asked.
-- **One home per fact.** A value the server and the client both need lives in one data file, or is
-  served. Generated files never share a directory with hand-edited ones: a file's location says what
-  it is.
-- **Static types, checked.** Annotate even where it is verbose, and make a checker (pyright/mypy, tsc)
-  gate CI. Annotations nothing checks drift into claims.
-- **Comments where an implementer needs them, and almost nowhere else.** API surfaces (interfaces,
-  public functions, wire models) carry their contract and purpose. Implementation code carries only
-  the rare "this looks optimizable but isn't, because…". Decision history and bug stories go in the
-  commit and the decisions doc, where they don't age in place. Agents, Opus especially, narrate
-  history into comments, so the rule goes in every writer's brief and the review. As a reference
-  shape, a hand-written Java service is 22% comments in its API module and about 1% in implementation;
-  one agent-written app was 29% everywhere.
+- **Comments where an implementer needs them, and almost nowhere else**: API surfaces carry their contract,
+  implementation code only the rare "looks optimizable but isn't, because…"; history goes in the commit
+  and decisions doc. Put the rule in every writer's brief.
 
 ## 4. Patterns, by fit
 
-GoF and Nystrom's *Game Programming Patterns* (read the chapter, not a summary) apply far beyond games.
 **Judging the fit matters more than the pattern.** Repo B planned a service locator, event queue,
-observer and double buffer, and built none of them. It built Command, Type Object and a small state
-machine, because those were what the work needed.
-
-- **Command** for user actions: frozen records in one closed union behind one `decide()`. Replay,
-  logging and automation come free.
-- **Type Object and data files** for content: a new kind is data, not a class.
-- **Service locator only for real systems** (sound, map, clock, catalogue), each behind one interface
-  with a Null Object default; callers go through the locator and never import the implementation.
-  **Every entry point must wire it, deploy checks and tools included.** A Null Object silently turns
-  missing wiring into plausible wrong answers (repo A's deploy check reported failures the live app
-  doesn't have).
-- **Queues and double buffers** to decouple a producer from its consumers, worker pools draining a queue
-  included. Leaf helpers stay plain imports.
-- **Replace shape-sniffing with explicit fields** (Type Object or Specification). A frozen record with
-  `source`/`kind`/`part` let a dozen code paths merge into one owner.
-- **State that is a function of history plus a date** stays a pure query passed in, not a global
-  service.
-- **Template method plus per-variant strategy (an abstract updater class) needs a second extraction
-  once variants converge.** Two 199-line updaters that differ in one enum argument should be one generic
-  base.
-- **Don't:** singletons or module globals for shared systems; god objects, or one object's fields shared
-  across many mixins (that's coupling spread out, not decoupling); inheritance trees for content kinds.
-- **Record rejected patterns with the reason**, and the "looked at, and fine" verdicts, so the next agent
-  doesn't propose them again.
+observer and double buffer, and built none of them; it built Command, Type Object and a small state
+machine, because those were what the work needed. The catalogue (Command, Type Object, service locator
+with Null Object, queues, explicit fields over shape-sniffing, and the don'ts): `references/patterns.md`.
+Record rejected patterns with the reason.
 
 ## 5. Tests
 
-- **Tests from the agent that made the change are weak.** A mutation audit of a large
-  agent-written suite found dozens of surviving planted mutants. Agent-written fix tests showed no effect on
-  outcomes.
-- **One suite per contract, written blind:** a different agent, given only the interface and the
-  contract, writes the tests, and the writer adds no duplicate. Isolation measurably helps; a second
-  suite beside it is unmeasured (`references/evidence.md`). In repo A a blind suite found a real
-  undo bug the implementation-aware tests missed. **This is the best use of an agent for someone who
-  designs well and dislikes writing tests.**
-- **Test depth follows risk, tiered once in the engineering doc** (the template's table): silent or
-  data-losing logic gets behaviour-level tests first; glue one smoke test per entry point; UI
-  render-and-look, never snapshots; one-off scripts none. In audited repos tests were about half of
-  what agents wrote while most escaped bugs were unit-sized logic defects.
-- **Simulations run nightly, readouts never fail.** One smoke route per PR, the full run on a label;
-  very few escaped bugs needed a simulation to catch, while a nightly lane still caught regressions. A nightly
-  red is read and queued the next day. Moving a suite there: `verification-gate`'s
-  `references/suite-conformance.md`.
-- **Property tests from the stated contract** find real bugs (56% of LLM-written reports valid in a
-  100-package study). Run a fast profile on every push and a deep one on a schedule.
-- **Prove a suite can fail:** plant a written list of wrong implementations (`MUTANTS.txt`), add directed
-  tests for the survivors, and record equivalent mutants with the reason no test can tell them apart.
-  Commit the script that plants them beside the list: plants left in scratch make a "before" score nobody can re-run.
-- **Bug hunts land findings-first:** each finding is committed as a strict xfail asserting the wanted
-  behaviour, then fixed in a separate commit that flips it.
-- **When an interface removes or renames a type, port the existing suites in the same change.** A suite
-  that no longer imports doesn't go red; it silently stops collecting (about 90 contract tests did).
+Tests from the agent that made the change are weak (dozens of surviving planted mutants in one large suite). **One suite
+per contract, written blind** by a different agent given only the interface; depth follows risk; simulations run
+nightly; prove a suite can fail with planted mutants. **Bug hunts land findings-first:** a strict xfail
+asserting the wanted behaviour, then the fix in a separate commit that flips it. Detail: `references/tests.md`.
 
 ## 6. A test budget from the first test
 
-Repo A's suite grew slow and was sped up after the fact with shards, a durations file and CPU
-requests. Make speed a gate while the suite still runs in seconds:
-
-- **State the scope and a per-PR wall-clock budget at project start**, in the engineering doc (a CLI:
-  under 2 min; an app with an API: about 5). Anchor it on an outside figure, never the suite's own
-  history: a unit test costs milliseconds, 0.05 s at most. Hunts that compared a suite with itself made
-  it faster by their own measure while the total never moved.
-- **Budgets are wall clock and count setup, teardown and waiting**: each CI job's timeout is its
-  budget, plus a per-test ceiling (`templates/conftest_time_gate.py`, held list starting empty). The
-  CPU-only body gate this template used to be taught agents to move cost into fixtures, and passed a test waiting
-  out a 5 s production timeout. Time in tests comes from an injected clock (`verification-gate` §7).
-  Runner noise is real (unchanged tests swung from 1.0 s to 2.8 s between pipelines against a 2 s
-  ceiling), so ceilings get generous headroom over millisecond tests, and a slow test is held with its
-  own measured ceiling.
-- **Whoever writes a test makes it fast before committing it**: run it under the gate and read the
-  slowest durations. The usual agent-made cause is quadratic re-computation (re-simulating from time
-  zero per sample); carry state forward instead.
-- **Run what you touched**, plus the structural gates; CI runs the rest. A full-suite run in a
-  subagent is gated (`fanout-craft`).
-- **Test jobs run in a prebuilt image** with dependencies installed, rebuilt only when requirements
-  change, so no job spends its first minute on `pip install`.
-- **Mutation runs need per-test timeouts**, thread-based: about 1 in 10 mutants hangs. (Worker counts
-  when several agents test on one host: `fanout-craft`.)
+State the scope and a per-PR wall-clock budget at project start (a CLI under 2 min; an app with an API about 5),
+anchored on an outside figure, never the suite's own history; budgets are wall clock including setup and
+waiting. Detail and the per-test ceiling gate: `references/tests.md`.
 
 ## 7. How changes land
 
-- **Structure and behaviour in separate commits.** A refactor, port or move lands byte-identical first,
-  proven by identical fixtures, frames, `openapi.json` or hashes. Any fix found on the way is its own
-  later commit with its own test.
-- **Pin before you split.** Run a mutation pass on the code about to move and add directed tests for the
-  survivors, in the commit before the split. The split is then checked by tests already proven able to
-  fail; in one agent-built app, existing tests had missed 50 of 73 such mutants.
-- **When patches pile up, re-plan or delete.** About ten patches to one behaviour mean the design can't
-  express the requirement. Re-specify in prose and replace, keeping the old bug detectors as acceptance
-  tests. A third cosmetic tweak to the same feature asks "should this exist?" Several fix chains in
-  Repo A ended in deletion.
-- **A consolidation runs in phases**, each shipping alone and deleting one named copy, with explicit
-  licence to delete cosmetic compatibility paths.
-- **Ceremony scales with the task.** A new system gets interface first, a design note with "Rejected,
-  and why", then an implementer and a blind test writer in parallel worktrees, with ambiguities logged to
-  a gaps file. A one-sentence change just gets made, with its test.
+**Structure and behaviour in separate commits**: a refactor, port or move lands byte-identical first, proven by
+identical fixtures or hashes. **Pin before you split** (mutation pass, directed tests, in the commit before).
+**When patches pile up (about ten), re-plan or delete.** Ceremony scales with the task. Detail:
+`references/steering-and-landing.md`.
 
 ## 8. Steering the agent
 
-- **CLAUDE.md is a short router plus the few rules that must fire every session.** Both repos' are under
-  sixty lines. Detail lives in the docs it points to (`docs/engineering.md`, `systems.md`,
-  `decisions.md`). Context files cost tokens on every request and help mainly with a repo's non-standard
-  rules.
-- **Rules arrive right after an incident**, one sentence plus a pointer to the decision that owns the
-  detail. Superseded decisions stay in place with a dated note.
-- **One queue kept true**, swept against the code periodically for done or never-built claims. On a forge
-  it is the forge's issues, labels and board, and an MR closes its issue; `docs/open-work.md` only where
-  there is no forge. Cite an issue by number, never a position in the queue. Layout, and moving a queue
-  file onto the forge: `references/forge-queue.md`.
-- **When an agent errs, engineer it out.** Add one context-file line naming the bad behaviour, plus a
-  check or script the agent runs into; a must-happen action goes in a hook. A rule that already failed
-  once as prose is escalated, not restated.
-- **The default shape for real work is an orchestrator over subagents.** Real work means anything that
-  touches structure, adds a kind of thing, or spans more than one queue item. The orchestrator holds the
-  plan, the rules and the conformance review, and never fills its context with implementation. Writers
-  each start fresh on one item, and a separate agent writes blind tests. The value is the separation,
-  not parallelism: overnight on one large rework, the orchestrator caught its writers' behaviour change in a
-  structure commit, a ledger workaround and a shared database, all of which a single agent would have
-  waved through in its own work. A change you can state in one sentence that the gates already cover
-  just gets made, with its test. Mechanics are in `fanout-craft`: one task per fresh agent from the
-  queue, writers capped at 2-3, each in its own worktree and database. The gates are what make
-  parallel writers safe in one repo; without them, keep to one writer.
-- **The orchestrator alone edits the shared single-file docs** (the systems inventory, a decisions index, the
-  queue, `CLAUDE.md`, `engineering.md`). A writer ends its report with a doc delta, the exact rows and lines to
-  change, and the orchestrator applies it at merge, after rebasing. Parallel writers editing those files collided
-  at every merge in one repo, and the workaround (bullets instead of table rows, so fewer lines conflict) bloated its
-  inventory to nearly a thousand lines. A writer still edits a decisions file it owns outright (where decisions are split per system), and may fix a
-  backticked citation mechanically when it renames what the citation names, so its own citation gate stays green.
-- **Written scope rules don't cap agent-accelerated scope.** Repo A's own decisions said "scope it
-  tightly" and it reached hundreds of commits in days. Scope is the human's call, made per item.
+CLAUDE.md is a short router plus the few rules that must fire every session. When an agent errs, engineer it
+out (a context-file line plus a check; a must-happen action goes in a hook). The default shape for real work is
+an orchestrator over subagents, and the orchestrator alone edits shared single-file docs. One queue kept true
+(`references/forge-queue.md`). Detail: `references/steering-and-landing.md`.
 
 ## 9. LLMs inside the product
 
-- **A stateless call can't keep a rate.** Frequencies are seeded rolls in code, with the numbers in a
-  data file; the prompt says what this one call does.
-- **Never gate behaviour on words in prose.** Regex over natural language misfires ("ash" in "cashier",
-  "fine" read as a penalty word; 17 places in one repo). Put a field where the text is authored, or a
-  structured field in the model's output; word matching is only for flagging something to a human.
-- **Have the model emit structured fields when it writes**, and let code re-check them later. Never
-  re-ask a model whether a stored line still holds.
-- **Variety comes from code** (a seeded lens per call, shuffle-bag pools), not personas or "avoid
-  clichés". Pick the model per output kind by a blind batch; the biggest model came last on the shortest outputs.
-- **A quoted example in a prompt or tool description becomes the template.** One example sentence in a tool
-  field's description ("One moment, checking…") opened every line a model generated for days. Describe
-  the shape instead, or rotate examples from code.
-- **Tool schemas are provider-specific inputs.** A JSON-schema keyword one provider accepts can make another reject
-  every call (Gemini 400s on nested `maxItems` alongside a strict response format), and a fallback route hides the
-  outage. Keep bounds in the parser, and count calls per provider and outcome after any schema change.
-- **LLM-labelled data kept over time** (a corpus classified into named buckets) fails with confident wrong
-  numbers and no error:
-  - **Labels are a function of the prompt, not just the label set.** Labels (and derived figures such as
-    "coverage") compare only between runs with the same prompt, few-shot exemplars included. Store a prompt
-    hash per label row (a re-run in progress holds two prompts), refuse to carry labels across any wording
-    change even with byte-identical class definitions, and leave old rows NULL rather than backfilling a
-    guessed provenance. After one exemplar refresh a fifth of previously matched items stopped matching
-    because labels had been carried forward.
-  - **A guard whose input is produced by the thing it gates can't fire the first time it matters.** A digest
-    compared with a row only the labelling pass writes finds no row, so "if row and differs" is False and the
-    check passes. Interrogate the population (rows carry provenance), not a side table, and write provenance
-    only after the work it describes succeeds. SQL: `col <> :v` matches zero rows when every row is NULL; use
-    `IS DISTINCT FROM`, and confirm which branch fires on live data before fixing.
-  - **Sweep a corpus by partition, never by agent exploration**, which samples it without knowing it did.
-    Chunk contiguously by date (a time-clustered problem concentrates in one chunk; striding smears it under
-    every threshold), one worker per chunk, assert `items_read == corpus_size`, isolate per-chunk failures and
-    exit non-zero if any failed: steady yield looks healthy while a fifth of the corpus is missing.
-  - **Name classes by the symptom the reporter sees; keep cause as a separate overlay of hypotheses.** Labels
-    are permanent and causes are guesses. Each cause carries one concrete check that would refute it, and the
-    check must separate the mechanism from its likeliest alternative. Look in structured columns (request
-    type, reporter) before the prose: many reporters with byte-identical text is a machine, not a habit.
-  - **Exemplars: choose by margin, re-test after every prompt change.** Take items claimed by exactly one
-    class with nothing close behind, re-classify each candidate under the prompt that will contain it, and
-    after adding classes re-run the regression over ALL classes (every class shares one prompt). Validate
-    exemplar ids against the real key set; the proposing model can invent one.
-  - **Framing moves the headline number; a favourable sub-sample gives direction, not size.** "An empty list
-    is a good answer" undercounted matches, so A/B it against neutral wording. A gain measured on items known
-    to have a home was about half that corpus-wide. A monotonic climb in the running total across partial
-    samples is an ordering effect.
+A stateless call can't keep a rate (seeded rolls in code, numbers in a data file). Never gate behaviour on words
+in prose. A quoted example in a prompt becomes the template. LLM-labelled data kept over time fails silently.
+Detail: `references/llm-in-product.md`.
 
-## Reviewing an agent's rework
+## Reviewing an agent's rework, and rolling out to an existing repo
 
-Review against these rules, not against taste. A reviewer told to "find anything" always finds
-something, and acting on it adds layers. This is the check an orchestrator runs on each writer
-subagent's MR before merging it, or hands to a fresh reviewer agent: **conformance** to the items
-below, the repo's `engineering.md` and `systems.md`, and the owner's decisions. The writer's own tests
-and gates carry correctness. A reviewer that drifts into general review lengthens every merge loop,
-so mark anything beyond these items non-blocking. Read the MR diff, its pipeline, and the ledger diff:
-
-1. **Ledgers only went down**, and the held JSON matches a `--write` run on the merged tree.
-2. **A new gate shipped with its controls** (planted failures, a non-empty-input assert), and the
-   MR or its commits show the plant going red.
-3. **A split is byte-identical**: the MR names its proof (identical outputs or hashes, the same test
-   results), and no behaviour change rides along in the same commit.
-4. **Tests are blind and can fail**: written from the interface by an agent that didn't write the
-   code, with a planted-mutant run or a red-first commit, not just a green suite. One suite per
-   contract: the writer added no duplicate, and test depth matches the code's risk tier.
-5. **The design moved toward fewer, narrower things**: net lines down or flat for a refactor, no new
-   parallel system (a fit pass shows on any new kind of thing), and patterns where they remove a
-   class of bug, not as decoration (no new locator for something with one caller).
-6. **A split narrowed what the files share**, not just their sizes. Count shared mutable fields and how
-   many files write each; a byte-identical split can turn one closure's state into an object written
-   from ten files. The fix is an owner with named transitions and a held gate on writes outside it. An
-   owner made of per-field setters gives traceability, not decoupling, and a setter that takes a field
-   name is a door around the gate. (Case: `references/cases.md`, the JS split.)
-7. **No defensive layers** were added for cases that can't happen, no thresholds were loosened, and no
-   history was narrated into implementation comments.
-8. **A release needing a second step names who takes it, and when.** If merging deploys, and the
-   change also needs a step outside the merge (pushing scripts to another system, a hand-run
-   migration, a config flip), the MR says who does it and merges only when that person is ready to
-   do it straight away. Check the MR's claim about the gap against the repo's own rules, not its
-   description. In one repo, a change merged without its out-of-band step broke production
-   while the MR described a harmless gap.
-9. **Docs follow the repo's conventions**, checked by reading, since prose isn't gated. A finished
-   queue item is deleted, not marked done. A decision states what is true now. No doc restates
-   another doc's subject.
-10. **CI ran on production's runtime.** For any migration, query, or engine-specific SQL, the CI
-    database (and interpreter) is the same major version production runs. Read both, don't trust
-    the MR's "PG 17". In one repo, CI on postgres:16 passed a migration that 17 rejected at CREATE
-    INDEX (index functions run under a restricted search_path), and the api rollout crashlooped.
-
-Report findings as pass, or as concrete defects with file and line. A clean MR gets one line.
-
-## Rolling this out to an existing repo
-
-1. Measure it: functions over 80 lines, files over ~300, pyright errors, slowest tests, import hubs,
-   and CI wall time per job against a stated budget.
-2. A docs-only pass before any code change: a consistency sweep of the doc layer against the code
-   (every cited path and symbol resolves, every system that exists has a `systems.md` row) and
-   against the doc conventions in `templates/project-docs/`. It is not a writing exercise. Its output
-   is the inventory the fit pass reads, so later work extends an existing system instead of
-   duplicating it.
-3. Write `docs/engineering.md` with the repo's rules, test budget and risk tiers, pointing at the
-   ledgers for the numbers rather than a dated table (the table goes stale with the first split).
-   Queue "bring the suite to the current rules"
-   (`verification-gate/references/suite-conformance.md`) as an item.
-4. Add the gates with ledgers seeded at today's counts, each with its controls, in CI.
-5. Trim CLAUDE.md toward a router: the house rule, "never raise a held count", the fit pass, and
-   pointers.
-6. Queue the worst offenders as backlog items, each split byte-identically when touched. Don't start
-   with a big-bang refactor.
+Review a writer's MR for conformance to a ten-item checklist, not taste (`references/reviewing-rework.md`).
+Adopt in an existing repo by measuring first, a docs-only pass, then gates seeded at today's counts, never a
+big-bang refactor (`references/rollout.md`).

@@ -1,6 +1,6 @@
 {
   "name": "research",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Web searches that find the answer: query construction, reading a bad result set, and a gate that loads the method first.",
   "author": {
     "name": "egg82",

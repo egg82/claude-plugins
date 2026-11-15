@@ -32,8 +32,8 @@ the file ("Retry API calls after a 429", not "Update client.py"). Use the repo's
 <One or two sentences: what changes for a user or operator, in words a stranger understands.>
 
 ## Why
-<!-- The observed problem and who it affects, with the number that shows it (the error rate,
-     how often it happens). For a bug: the trigger and the old behaviour. Link the issue. -->
+<!-- The observed problem and who it affects, with the number that shows it (40 failed requests an
+     hour, 9 of 10 nightly runs timing out). For a bug: the trigger and the old behaviour. Link the issue. -->
 
 ## How
 <!-- The resulting behaviour and the one implementation choice that matters, with the alternative
@@ -51,13 +51,11 @@ never write "N/A":
 | **Risk** | the change can break something beyond its own tests: a migration, deleted data, a config or schema other code reads, a behaviour users rely on |
 | **After merge** | a human or a deploy must do something, or there is a live check to run once it ships |
 | **Rollback** | reverting the merge is not enough on its own (data migrated, resources deleted, external state changed) |
-| **Screenshots** | something a user sees changes ([below](#screenshots-and-recordings)) |
-| **Diagram** | the [diagram test](#when-a-diagram-earns-its-place) passes |
+| **Screenshots** | something a user sees changes (`references/screenshots.md`) |
+| **Diagram** | the test in `references/diagrams.md` passes |
 
-**Infra / GitOps changes** (manifests, Terraform, Ansible) need less prose and more of the conditional
-sections: name the blast radius (which site, cluster or service), let **Verified** show what the
-dry run, plan or rendered diff produced, and always give **After merge** (the live check) and
-**Rollback** when anything stateful moves.
+Infra / GitOps changes: always give After merge (the live check) and Rollback when anything stateful moves
+(`references/infra.md`).
 
 If one part needs the reviewer's judgement (a threshold, a naming choice, a tradeoff), say which, in
 one line. It is the cheapest way to get a useful review.
@@ -95,65 +93,14 @@ or the reasoning belongs in a decisions doc.
   `Resolves #7`, even inside backticks or in a sentence about a different change. Write one only on
   the line meant to close; elsewhere say "issue 7".
 
-## Blocks: when each earns its place
+## Which reference
 
-| Block | Use when | Skip when |
-|---|---|---|
-| Table | comparing before/after measurements, or options against a benchmark | there is one number (say it in the sentence) |
-| Code snippet | the reader needs a new API shape, config key or command | it restates the diff |
-| Quoted output | one or two lines are the evidence for a claim in Verified | it is a log dump |
-| `<details>` | bulk the reader may want but needn't read: a long log, generated output, a group of screenshots, with a visible summary line above it | it would hide the why, the risk or the after-merge step |
-| Checklist | the repo's template has one | never add one yourself. An author ticks their own boxes without reading them; a step that must happen goes under **After merge** as a sentence |
-| Screenshots / recording | a visible change; see below | the change isn't visible |
-| Diagram | the test below passes | almost always |
-
-Keep blank lines after `</summary>` and before `</details>`, or the Markdown inside won't render.
-
-## When a diagram earns its place
-
-Draw one only when the PR changes **control flow the reviewer would otherwise rebuild in their head
-from several files**: new or reordered branches across three or more components, a retry or fallback
-loop, a state machine, or two paths whose difference is the point (write vs read). Skip it for a change
-inside one function, a straight sequence (a numbered list says it), a single decision, UI layout,
-config, dependencies, renames, docs and test-only changes. If the flow fits in one sentence, write the
-sentence. A diagram that restates the How bullets one for one is the commonest failure.
-
-Draw **the behaviour this PR changes**, not the system. A Mermaid `flowchart TD`: plain rectangular
-boxes with short verb-led labels, conditions on the edges, the real branches and loops and no invented
-ones. Put independent paths side by side (`subgraph`) when comparing them is the point. Put it under a
-`## Diagram` heading after `## How`, with one sentence first on what the reviewer should notice.
-
-**Render it and look at it before publishing**, because Mermaid silently produces unreadable layouts:
-
-```bash
-podman run --rm -v "$dir":/data:Z ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:11.4.2 \
-  -i /data/flow.mmd -o /data/flow.png -b white
-```
-
-(`$dir` must be writable by the container user; `chmod 777` a scratch dir. Use `mmdc` directly where
-it is installed.) Then Read the PNG and check labels, clipping and that it matches the final code.
-
-**Embedding:** GitHub and GitLab both render a ` ```mermaid ` block in descriptions. Use that by
-default; it stays editable and needs no upload. Upload the PNG only when readers mostly see the PR
-somewhere that won't render it (email notifications, some mobile apps). Never send private architecture
-to a public diagram-rendering service; render locally.
-
-## Screenshots and recordings
-
-For a visible change only. Real captures of the PR build, and of the base build for "before"; never
-edit the DOM to stage one. Same UI state, viewport, data and theme on both sides, side by side in a
-table. Use a short recording or GIF only when the change is an interaction or animation a still can't
-show, and keep the stills too. Synthetic data; nothing secret in frame. `headless-render` covers
-capturing on a machine with no browser. Don't commit them to the repo, and if they should exist but
-couldn't be captured, say what is missing.
-
-**Uploading** (a filename in the body is not an image):
-
-- **GitLab** (checked with glab 1.112): `glab api --method POST "projects/:id/uploads" --form
-  "file=@shot.png"` returns JSON whose `markdown` field is a ready `![shot](/uploads/...)` line.
-- **GitHub:** `gh pr create --attach <file>` with matching `![alt](<same path>)` in the body replaces
-  the path with an uploaded URL. Needs gh ≥ 2.99; check `gh pr create --help` for `--attach`. Without
-  it, say the screenshots are not attached rather than listing their filenames.
+| Situation | Load |
+|---|---|
+| Manifests, Terraform or Ansible (blast radius, After merge, Rollback) | `references/infra.md` |
+| Considering a table, snippet, quoted output, `<details>` or checklist | `references/blocks.md` |
+| The PR changes control flow across several components (diagram?) | `references/diagrams.md` |
+| Something a user sees changes (capture, upload, recordings) | `references/screenshots.md` |
 
 ## Publish, then read it back
 
@@ -171,7 +118,7 @@ Check for an existing PR/MR on that branch first; update it instead of opening a
 current body and keep a human's edits). Then **read back** the published title and body and check:
 
 - the body is the one you wrote: not empty, not only an attribution line, no literal `$(` left
-  unexpanded;
+  unexpanded (all three happen);
 - no local or scratch paths in image links or text, and any diagram renders.
 
 Return the URL. Creating it does not mean merging it or enabling auto-merge.
