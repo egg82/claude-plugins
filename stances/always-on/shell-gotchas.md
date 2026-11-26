@@ -29,4 +29,4 @@ the zsh way there. Send remote work as `ssh host 'bash -s' < script.sh` or `ssh 
   read as a command you are about to run: three rules once recommended an array that is empty in the shell they guarded.
 
 Catalog: the `shell-footguns` skill. The silent ones are blocked by `bash-footgun-gate.sh`; new
-foot-guns go in the skill. Incidents: `~/.claude/memory/evidence/shell-gotchas.md`.
+foot-guns go in the skill.

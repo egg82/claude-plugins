@@ -108,8 +108,7 @@ cd claude-plugins/stances
 
 `install.sh` copies each named file into `~/.claude/memory/` and adds an `@~/.claude/memory/<name>.md` line to
 `~/.claude/CLAUDE.md`. If you already have a file with that name, it leaves yours alone and doesn't import it. To
-remove a stance, delete the file and its line. Some stances point at an `evidence/` file of incidents that isn't in
-this repo; the rule stands without it.
+remove a stance, delete the file and its line.
 
 `stances/on-demand/` holds notes for a project's memory directory rather than every session, `stances/rules/` holds
 the rule file `memory-discipline` is written against, and `stances/prompts/` has a prompt for cutting LLM cruft out

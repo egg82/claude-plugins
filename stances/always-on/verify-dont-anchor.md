@@ -56,5 +56,4 @@ the end of long tasks. Bound a claim ("of what I saw…") or go cover the rest. 
 
 Methods: the `shell-footguns` skill (probes that can fail) and `verification-gate` (whether a gate can
 fail; its `references/instrument-failures.md` Part 1 holds the case files and further rules).
-Incidents: `~/.claude/memory/evidence/verify-dont-anchor.md`. Relates to
-[[assert-scripted-edits]], [[no-fabricated-certainty]].
+Relates to [[assert-scripted-edits]], [[no-fabricated-certainty]].

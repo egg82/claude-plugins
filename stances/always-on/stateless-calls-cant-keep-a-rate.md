@@ -18,4 +18,4 @@ per-call instruction ("this time, X is allowed"). Keep the rates as data the tun
 Never write "rarely/sometimes/occasionally" as an instruction in such a prompt; descriptive phrases
 given as facts ("done now and then") are fine. The same holds for instructions to me across sessions:
 a cadence needs a backing store (a dated log or schedule file), not a sentence. Relates to
-[[verify-dont-anchor]]. History: `evidence/stateless-calls-cant-keep-a-rate.md`.
+[[verify-dont-anchor]].
