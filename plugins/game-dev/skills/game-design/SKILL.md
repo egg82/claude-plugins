@@ -1,6 +1,6 @@
 ---
 name: game-design
-description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, game feel, controls, polish; 'dopamine' claims; onboarding, players stuck on how to progress, hidden unlocks; rewards, streaks; currencies, cost or XP curves, balance; difficulty, failure, checkpoints; loot, odds, pity timers; multiplayer, leaderboards; genre conventions (roguelike, idle/prestige, puzzle, story, spoilers); playtests; quality-of-life vs friction, hand-holding; a HUD, touch controls, settings. NOT game prose (writing-craft) or data dashboards (ui-craft)."
+description: "Game design for any genre and gamified apps. Use when designing or reviewing fun, game feel, controls, polish; 'dopamine' claims; onboarding, players stuck on how to progress, hidden unlocks; rewards, streaks; currencies, cost or XP curves, balance; difficulty, failure, checkpoints; loot, odds, pity timers; multiplayer, leaderboards; choices and consequences, dilemmas, promises; genre conventions (roguelike, idle/prestige, puzzle, story, spoilers); playtests; quality-of-life vs friction, hand-holding; a HUD, touch controls, settings. NOT game prose (writing-craft) or data dashboards (ui-craft)."
 ---
 
 # Game design
@@ -49,7 +49,7 @@ an economy or a pacing change gets the whole loop.
 | Quality-of-life features, convenience vs meaningful friction, fast travel, skips, auto-anything, over-teaching or hand-holding that made it less fun | `references/friction.md` |
 | Screen layout, HUD, diegetic UI, an interface that grows, touch targets, hover, mobile browser viewport, settings/options menus | `references/game-ui.md` |
 | What players of a genre expect: roguelike, puzzle, strategy/4X, platformer, simulation | `references/genres/overview.md` |
-| Story-driven games: delivery, pacing story against play, choices and agency, mysteries solved by learning, spoilers | `references/genres/narrative.md` |
+| Story-driven games: delivery, pacing story against play, choices and agency, delayed consequences, dilemmas, reacting to patterns, choices with long absences, mysteries solved by learning, spoilers | `references/genres/narrative.md` |
 | Idle and incremental games: offline progress, exponential costs, prestige | `references/genres/idle.md` |
 
 The source rows behind each reference, with url, how much was read, and the label, are in `evidence/<topic>.jsonl`

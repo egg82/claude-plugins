@@ -146,7 +146,7 @@ which side of the cycle you are on.
 
 Helm values are a permissive merge: a key you got wrong is not an error, it is ignored and the chart's
 default ships in its place. `helm template` exits 0, Flux reports `Ready=True`, and the release does
-something you did not ask for. Four shapes:
+something you did not ask for. The shapes:
 
 - **Wrong key.** The chart took a list (`volume.dataDirs`); a scalar `volume.data` was written. The
   chart's `hostPath` default stayed and the namespace's PodSecurity `baseline` rejected it at admission,
@@ -158,6 +158,17 @@ something you did not ask for. Four shapes:
 - **"Removed" by omission.** Deleting a key never removes a chart default; the merge puts it back. A
   comment saying "no CPU limit" beside an omitted `limits.cpu` still rendered the chart's `500m`. Only an
   explicit `cpu: null` deletes a default key.
+- **A null with no default under it.** The converse, and it fails at upgrade instead of shipping:
+  where the chart sets no default for the key, Helm passes `memory: null` through and the API server
+  reads a limit of 0 (`must be less than or equal to memory limit of 0`; the release went
+  `RetriesExceeded`). Write `null` only over a default you saw in the chart's `values.yaml`, and when
+  asserting on the render count the key's *presence*: a null is not truthy, so `.get()` passes it.
+
+**Server-side apply only drops a field nobody else owns.** Deleting a field from the manifest makes
+Flux stop asserting it, but if another manager also owns it (a `flux bootstrap` CLI apply from months
+ago, an operator's `Update`), it stays, and the Kustomization reads Ready at the new revision. Check
+the live object, not the revision (`--show-managed-fields` names the co-owner), and remove the field
+with `kubectl patch --type=json` `remove`.
 
 The discriminator is not "did it render". Render, then assert on the output for the property you meant
 to change, and grep for **the default you were trying to displace**:

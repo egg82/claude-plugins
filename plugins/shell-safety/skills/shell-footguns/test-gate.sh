@@ -601,6 +601,8 @@ t 0 "MEMORY.md index append (documented idiom)"   'echo "- [X](x.md) — hook" >
 t 0 "bulk cp OUT to a transfer bundle"            'cp ~/.claude/memory/*.md /tmp/claude-transfer/'
 t 0 "bulk cp IN from a bundle"                    'cp /tmp/claude-transfer/x.md ~/.claude/memory/'
 t 0 "write somewhere that is not a memory"        'echo hi > /tmp/scratch/notes.md'
+t 0 "'tee' inside a grep pattern, reading a skill" "grep -n 'tee-masks' ~/.claude/skills/x/instance.json"
+t 2 "sudo tee -a into a skill"                    'echo x | sudo tee -a ~/.claude/skills/x/SKILL.md'
 # KNOWN OVER-TRIGGER, ASSERTED ON PURPOSE so the verdict is executable and nobody re-derives it.
 # A skill path as a `cp` SOURCE plus a Python write to a SCRATCH path blocks, because the Python
 # branch fires on the conjunction and cannot prove the two refer to one file. Narrowing it would
@@ -699,8 +701,20 @@ t 2 "system prune with volumes"          'podman system prune -a --volumes -f'
 echo "volume-prune-unfiltered MUST ALLOW:"
 t 0 "prune by label"                     'podman volume prune -f --filter label=agent=a1'
 t 0 "one volume by name"                 'podman volume rm my-pg-data'
-t 0 "system prune without volumes"       'podman system prune -f'
 t 0 "listing volumes"                    'podman volume ls'
+echo "image-prune-unfiltered MUST BLOCK:"
+t 2 "image prune after a test"           'podman rmi -f mytest >/dev/null; podman image prune -f'
+t 2 "system prune without volumes"       'podman system prune -f'
+t 2 "rmi all"                            'podman rmi -a -f'
+t 2 "rmi all, combined short flags"      'podman rmi -af'
+t 2 "image rm --all"                     'docker image rm --all'
+t 2 "docker image prune"                 'docker image prune -af'
+echo "image-prune-unfiltered MUST ALLOW:"
+t 0 "rmi by name"                        'podman rmi -f localhost/mytest:1'
+t 0 "image prune by label"               'podman image prune -f --filter label=agent=k6'
+t 0 "listing images"                     'podman images -a'
+t 0 "rmi by name, -a flag on the next line" $'podman rmi mytest\ngrep -ra pattern .'
+t 2 "--filter on a later line is not this prune's" $'podman image prune -f\necho --filter'
 
 echo "preprinted-empty-verdict MUST BLOCK:"
 t 2 "(empty above = not implemented)"   'grep -ric fooFeature src; echo "(empty above = not implemented)"'

@@ -79,6 +79,10 @@ gh api graphql -f query='mutation($v:ID!){updateProjectV2View(input:{viewId:$v,n
   blocked issue a closing **Blocked on:** line naming what it waits for. Work that adds a new kind of
   thing carries a **Fits into:** line naming what it extends.
 - Design rules stay in `docs/decisions.md`; an issue links to the section rather than restating it.
+- **Before filing an issue for a new ask, search the open issues' bodies for its key terms** (`gh issue list --search
+  "<term> in:body"`, several terms). An issue moved from a queue file often holds the ask as a numbered sub-bullet of
+  a bigger item, with its design already decided: one feature was filed and briefed again while an open issue already
+  planned it.
 
 ## Working the queue
 
@@ -87,6 +91,9 @@ gh api graphql -f query='mutation($v:ID!){updateProjectV2View(input:{viewId:$v,n
   from a queue file often lists several "left:" bullets, and `Closes` on one bullet closes them all (an issue once closed
   with its admin page unbuilt). Otherwise write `Part of #n`, and delete the shipped bullet from the issue at
   merge. Check the issue's body before writing the keyword into a writer's brief.
+- **Target a stacked PR at `main`, never at the branch it builds on**, and say in its body which PR merges first. Merging
+  with branch deletion deletes that base, and GitHub then closes the child PR, which cannot be reopened (it has to
+  be opened again as a new PR). The child's diff shows the parent's commits until the parent merges; a rebase drops them.
 - An item finished outside an MR (a question answered, a decision made) gets a closing comment saying what settled it.
 - Work that lands in another repo is queued there, and the issue here links to it.
 - Cite an issue by number (`#4`), never a position on the board.

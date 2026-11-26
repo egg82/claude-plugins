@@ -48,7 +48,19 @@ Every command needs a config + targets: `--talosconfig <file>` (or `TALOSCONFIG`
 - **A patch merges lists and cannot remove an entry** (e.g. one `extraManifests` URL). Removing one needs
   a full `apply-config` built from the live config: fetch it into a mode-600 temp file, delete the line
   by text edit asserting exactly one match, dry-run, apply, read back, shred. Map keys can be removed by
-  patch: `key: {$patch: delete}`.
+  patch: `key: {$patch: delete}`. A list entry WITH a name (an `inlineManifests` entry) can be replaced
+  by patch: send a delete then the new entry in one call, `--patch @del.yaml --patch @new.yaml` with
+  `del.yaml` = `cluster: {inlineManifests: [{name: coredns, $patch: delete}]}` (a second entry of the
+  same name is otherwise rejected as `duplicate`). JSON6902 patches are refused on a multi-document
+  config.
+- **Never `apply-config` from committed base files without a dry-run against the live node.** They
+  drift in more than image tags: committed files have carried different secrets and certificates from the
+  live config and lacked API-server flags added live. Count the changed lines; anything beyond your
+  edit is drift.
+- **Talos only CREATES its manifests at boot; it never updates existing objects.** A changed manifest
+  (including a new `inlineManifests` entry replacing a built-in one) reaches the cluster only via
+  `upgrade-k8s`, or by server-side applying it yourself as field manager `talos`. To *remove* a field,
+  use `kubectl patch --type=json`: a `talos` Update entry can co-own it, and apply won't drop it.
 - A bad config that won't boot: apply the fix with `--mode=staged`, or recover via the **maintenance-mode** path (node boots into maintenance and accepts config over the API) / console access.
 
 ## Upgrades (one node at a time)

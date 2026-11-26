@@ -219,6 +219,10 @@ commands and `verify`. The hand-reconcile step only matters when content actuall
 
 ## Guardrails
 - **Back up first, every time** (step 1). The mirror is only safe after absorb + backup.
+- **Run from the host holding the newest `sync.py`, or absorb this skill first and restart.** Pushing
+  `.claude/skills/` replaces the running tool mid-run: a peer's newer `sync.py` added a host to `FLEET`, so
+  every later push reached a host that `backup` and `inventory` never saw, and overwrote an edit there.
+  Before step 1, diff `sync.py` against each peer's copy.
 - **Never blind-copy a diverging natural-language file**, and never let the script pick a
   prose winner by mtime. Read both, merge, or ask.
 - **Never delete** a memory file or skill that exists on only one host without absorbing
@@ -262,4 +266,9 @@ commands and `verify`. The hand-reconcile step only matters when content actuall
   absolute paths or `--` and check exit status; never `ssh` inside `while read`. Read
   `references/remote-shell-traps.md` before writing the loop.
 - `creds` needs passwordless sudo on every live host; `--dry-run` inventories by name only.
+- **A source host that fails `decrypt` on every cred (`Failed to unseal secret using TPM2: Operation not
+  permitted`) has drifted out of its TPM policy, but a cred encrypted there today still works.** `creds` picks
+  the newest copy as the source, so that host blocks every refresh. Confirm another host decrypts the same
+  creds, move the broken host's copies to holding, and re-run `creds`, which then `[create]`s them from a
+  healthy host.
 - Not a daemon. Re-run after meaningful changes, or wrap step-by-step in `/loop`.

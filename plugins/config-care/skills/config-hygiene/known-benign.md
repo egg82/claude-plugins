@@ -20,5 +20,3 @@ What is *not* benign, and the reason the check exists: a measurement of current 
 "validated on <date>", a fleet size) inside a skill body. That is a finding from one run, and it belongs in
 a companion data file beside the skill, not in the method.
 
-| `verification-gate` — the ~84% false-positive / ~96% false-negative figures, and the "one variant" count | **Benign — keep them.** Measurements of a published past result, not of current state; the world cannot contradict them, and they are the entire evidence for the rule they sit beside. |
-| `shell-footguns` (`references/probes-that-lie.md`) — the count in the loop-of-literal-matches entry | **Benign.** A count of past incidents that motivated the rule. |

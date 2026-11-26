@@ -978,7 +978,8 @@ if [p for p in _memhits if not p.endswith("MEMORY.md")]:
     _pyw = False
     if re.search(r">>?\s*[^\s|;&]*" + _MEMPATH, raw_cmd):
         _how = "a `>` / `>>` redirect"
-    elif re.search(r"\btee\b[^|;&\n]*" + _MEMPATH, raw_cmd):
+    # `tee` in command position only: a bare \btee\b also matched "tee-masks" inside a grep pattern.
+    elif re.search(r"(?:^|[|;&\n(]|\bsudo)\s*tee\b[^|;&\n]*" + _MEMPATH, raw_cmd):
         _how = "`tee`"
     elif re.search(r"\bsed\b[^|;&\n]*\s-i[^|;&\n]*" + _MEMPATH, raw_cmd):
         _how = "`sed -i`"
@@ -1409,12 +1410,25 @@ for _m in ([] if _FILE_ERREXIT else
 # ran `podman rm -f -v <its pg>; podman volume prune -f >/dev/null` to tidy up after a test database
 # and could not say afterwards what it had deleted. `rm -v` already removes that container's anonymous volumes;
 # anything else is `podman volume rm <name>`, or prune with `--filter label=<yours>`.
-if (re.search(r"%s\s+volume\s+prune\b(?![^;&|]*--filter)" % _ctr, cmd)
-        or re.search(r"%s\s+system\s+prune\b(?=[^;&|]*--volumes)(?![^;&|]*--filter)" % _ctr, cmd)):
+if (re.search(r"%s\s+volume\s+prune\b(?![^;&|\n]*--filter)" % _ctr, cmd)
+        or re.search(r"%s\s+system\s+prune\b(?=[^;&|\n]*--volumes)(?![^;&|\n]*--filter)" % _ctr, cmd)):
     findings.append(
         "`volume prune` / `system prune --volumes` deletes every unreferenced volume on the box, other "
         "sessions' and the operator's included. `podman rm -v` already took your container's anonymous "
         "volumes; remove anything else by name (`podman volume rm <name>`) or prune with `--filter label=<yours>`."
+    )
+
+# RULE-ID: image-prune-unfiltered
+# `podman image prune`, `system prune` and `rmi -a` act on the whole store, other sessions' dangling build
+# layers and stopped containers included. An agent tidying its test images ran `podman image prune -f`
+# on a shared host and could not say what it had removed. Remove what you made by name or ID, or filter by
+# your label.
+if (re.search(r"%s\s+(?:image\s+prune|system\s+prune)\b(?![^;&|\n]*--filter)" % _ctr, cmd)
+        or re.search(r"%s\s+(?:rmi|image\s+rm)\b[^;&|\n]*\s(?:-[A-Za-z]*a[A-Za-z]*|--all)\b" % _ctr, cmd)):
+    findings.append(
+        "`image prune` / `system prune` / `rmi -a` act on the whole store, other sessions' build layers "
+        "and containers included. Remove what you created by name or ID (`podman rmi <id>`), or prune "
+        "with `--filter label=<yours>`."
     )
 
 # RULE-ID: subagent-full-suite

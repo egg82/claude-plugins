@@ -29,4 +29,13 @@ relay their reports (append each to the handoff, then prompt the successor) and 
 handoff" and you negotiate with yourself. The tell: `herdr agent prompt`'s `agent_session.value` is your own session id
 (the uuid in your scratchpad path). Check that before telling a "duplicate" to stop.
 
+**Watch every peer you prompt, all at once, in the background.** `herdr agent wait` and `agent prompt --wait` each
+hold your turn on one session while another sits stuck. Once each name shows `working` in `herdr agent list` (just
+after a prompt a peer can still read idle, and the loop returns at once), start this with `run_in_background`, then
+keep working or end your turn:
+`until herdr agent list | jq -e --args 'any(.result.agents[]; (.name as $n | $ARGS.positional | index($n)) and .agent_status != "working")' <names> >/dev/null; do sleep 30; done`.
+It returns when any of them stops working; `herdr agent read` that one, act, and re-arm with the rest. A misspelled
+name never matches, and an unnamed agent has no `name` field at all. A `blocked` peer stays stuck until answered:
+deal with it first, reading the dialog and asking the user before answering it.
+
 Relates to [[skill-fanout-is-authorized]].

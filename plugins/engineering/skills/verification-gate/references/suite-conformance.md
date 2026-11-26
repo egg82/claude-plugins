@@ -56,6 +56,13 @@ Google at first). Per-test timeouts are thread-based, since about 1 in 10 mutant
        deleted paths count.
      - To prove a selector on its own branch, open the proof MR against that branch, not main. Against main,
        its diff includes the CI change and never looks docs-only.
+     - CI lint accepting a key does not mean the scheduler honours it. One GitLab instance validated
+       `rules:needs: []` and then scheduled the job by stage, so the "parallel" build still ran last. Check
+       the first pipeline's jobs (GraphQL `schedulingType` is `dag`, or the job goes `pending` with the
+       pipeline, not `created`). A separate job with a top-level `needs: []` works where `rules:needs` does
+       not.
+     - Measure a timing change alone on the runner. Several proof pipelines launched at once queue behind
+       each other and report the runner's concurrency, not the change.
 2. **Simulations out of the per-PR path**: nightly, one smoke route per PR sized from CI's durations,
    the full run on a label. Before the per-PR jobs go, read the nightly lane's history and see it green
    (one had been red since creation, unseen), and give its red somewhere read. If it is red on a real
