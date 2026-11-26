@@ -34,5 +34,3 @@ Before writing a fact down, ask **what would make it wrong** — that decides wh
 - **When adding to anything that routes by symptom, make the row name every entry that answers that symptom.** A new
   entry can capture a symptom a sibling already answered; grep the neighbours for the mechanism you just wrote up, since
   the one you are duplicating is the one that will contradict you.
-
-Full reasoning: `~/.claude/memory/evidence/knowledge-routing.md`.

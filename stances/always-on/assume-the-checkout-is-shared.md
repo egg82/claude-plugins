@@ -40,5 +40,4 @@ namespace are shared mutable state and change under you silently. `~/.claude` is
 - **Tells it already happened:** "nothing to commit" right after you edited, or a branch you never
   selected. Read `git reflog` before concluding your edits were never written.
 
-Incidents: `~/.claude/memory/evidence/assume-the-checkout-is-shared.md`. Relates to
-[[verify-dont-anchor]], [[preserve-before-destroying]].
+Relates to [[verify-dont-anchor]], [[preserve-before-destroying]].

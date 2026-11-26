@@ -32,5 +32,4 @@ is not a value, and ask what a number is a number OF (cases: `verification-gate`
 Before shipping a computed claim, ask what happens when the input is missing, stale, or on another
 scale, and make each render *differently* from a real value. Prefer omitting a row to guessing its
 threshold. When a check can only be right for some inputs, gate it and label the rest rather than
-applying it everywhere. Incidents: `~/.claude/memory/evidence/no-fabricated-certainty.md`. Relates to
-[[verify-dont-anchor]], [[prefer-subtraction]].
+applying it everywhere. Relates to [[verify-dont-anchor]], [[prefer-subtraction]].

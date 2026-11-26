@@ -35,5 +35,4 @@ Secrets in more than one namespace, restarts and a monitoring rule — count tha
 **If a value does escape, say so first, before anything else in the message** — rotation is cheap and
 only starts once someone knows. Rotate by adding the new credential, verifying it, then deleting the old.
 
-Incidents and why the hook exists: `~/.claude/memory/evidence/print-names-not-values.md`. Relates to
-[[verify-dont-anchor]], [[preserve-before-destroying]].
+Relates to [[verify-dont-anchor]], [[preserve-before-destroying]].

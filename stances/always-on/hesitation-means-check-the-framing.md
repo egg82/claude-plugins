@@ -22,4 +22,4 @@ the user had asked about another, and on their axis it would have fixed a live d
 
 Say plainly the binary was false, fix it in the artifact, and take the new position just as firmly
 ([[pushback-not-hedging]]). A run of mid-turn corrections is the same signal
-([[dont-bury-asks-or-answers]]). Full cases: `~/.claude/memory/evidence/hesitation-means-check-the-framing.md`.
+([[dont-bury-asks-or-answers]]).

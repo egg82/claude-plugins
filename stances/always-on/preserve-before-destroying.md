@@ -25,5 +25,4 @@ records when its upstream returned empty; a "re-point this file" call deletes th
 *recorded* path (vacate that path first); a forced download treated as an upgrade removed the file it
 replaced. Before deleting a file you judged by a proxy, copy it aside.
 
-Full incidents: `~/.claude/memory/evidence/preserve-before-destroying.md`. Relates to
-[[verify-dont-anchor]], [[assert-scripted-edits]], [[config-writes-replace]].
+Relates to [[verify-dont-anchor]], [[assert-scripted-edits]], [[config-writes-replace]].
