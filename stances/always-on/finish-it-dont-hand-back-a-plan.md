@@ -18,6 +18,9 @@ the user's wall-clock, not mine.
   same turn.
 - **A plan sentence is a smell.** Either do X or name what blocks it — a file another agent holds, an
   answer only the user can give, a credential. Blocked is a real answer; unstarted is not.
+- **A handoff is a plan too.** When you write one and work remains, start the successor session
+  yourself and prompt it with the handoff ([[herdr-peer-sessions]]); "the handoff is ready for the
+  next session" hands the user a chore.
 - Reports stay valuable; they must not *substitute* for the next piece of work. This does not license
   skipping verification ([[verify-dont-anchor]]).
 

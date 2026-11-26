@@ -93,6 +93,7 @@ Subagent fan-outs that stay affordable: briefs, a model named per agent, depth l
 - `agent-depth-gate` (hook, PreToolUse Agent; **blocks the call**) — stops a subagent tree recursing past a chosen depth (default: depth-2 agents may not spawn). Needs: nothing. Signals: subagents in your transcripts spawn their own subagents.
 - `shared-checkout-backstop` (hook, Stop; **holds the end of a turn once per session**) — reports a repo you do not own left on a non-default branch. Needs: git. Signals: you run several Claude sessions, or edit in the same clone Claude works in.
 - `spawn-model-gate` (hook, PreToolUse Agent; **blocks the call**) — refuses a spawn that names no model, an `opus` spawn whose prompt carries no `[opus: <reason>]`, and a Fable-model tree. Needs: nothing. Signals: you fan out and your subagents inherit the expensive default. Adapt: the Fable rule is the author's cost policy.
+- `subagent-wait-gate` (hook, PreToolUse Bash|Monitor; **blocks the call in a subagent only**) — refuses a subagent arming a `Monitor` or waiting out CI (`gh run watch`, `gh pr checks --watch`, `glab ci status --live`, `glab ci trace`, `glab ci view`); the main session is untouched. Needs: nothing. Signals: subagents in your transcripts poll with Monitor or sit in `gh run watch` while their PR's CI runs.
 - `subagent-digest` (hook, SubagentStop; advisory, never blocks) — appends each finished subagent's final message to a durable log so completed-but-uncollected work is findable. Needs: nothing; costs no tokens. Signals: you have lost track of what a subagent concluded after the parent died or compacted.
 
 ### config-care
@@ -220,7 +221,6 @@ appearing in another item's files counts as a mention, so some rows record a pas
 rather than a dependency.
 
 <!-- xref:begin -->
-
 #### Skills
 
 | Skill | Mentioned by | Hooks it mentions |
@@ -241,7 +241,7 @@ rather than a dependency.
 | `config-hygiene` | `hook:hygiene-sessionstart`, `hook:memory-bash-write-backstop`, `skill:always-on-prune`, `skill:skill-golf`, `skill:verification-gate`, `stance:knowledge-routing` | `bash-footgun-gate`, `hygiene-sessionstart` |
 | `confluence-kb-docs` | `skill:doc-cold-read`, `skill:repo-readme`, `skill:writing-craft` | - |
 | `doc-cold-read` | `skill:cc-tool-vet`, `skill:confluence-kb-docs`, `skill:repo-readme`, `skill:writing-craft`, `stance:distill-dont-dump` | - |
-| `fanout-craft` | `hook:spawn-model-gate`, `skill:agentic-engineering`, `skill:always-on-prune`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:repo-orient`, `skill:repo-vet`, `skill:shell-footguns`, `stance:share-the-host`, `stance:skill-fanout-is-authorized` | `agent-depth-gate`, `bash-footgun-gate`, `spawn-model-gate`, `subagent-digest` |
+| `fanout-craft` | `hook:spawn-model-gate`, `hook:subagent-wait-gate`, `skill:agentic-engineering`, `skill:always-on-prune`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:repo-orient`, `skill:repo-vet`, `skill:shell-footguns`, `stance:share-the-host`, `stance:skill-fanout-is-authorized` | `agent-depth-gate`, `bash-footgun-gate`, `spawn-model-gate`, `subagent-digest`, `subagent-wait-gate` |
 | `flux-gitops` | `skill:cnpg-postgres-ops`, `skill:k8s-secrets`, `skill:k8s-triage`, `skill:talos-ops` | - |
 | `game-design` | - | - |
 | `grafana-dashboards` | `skill:bug-hunt` | - |
@@ -258,7 +258,7 @@ rather than a dependency.
 | `pr-description` | `stance:skill-authoring-craft` | - |
 | `promo-video` | - | - |
 | `repo-orient` | `skill:cc-tool-vet`, `skill:repo-vet` | - |
-| `repo-readme` | `skill:doc-cold-read` | - |
+| `repo-readme` | `skill:doc-cold-read`, `skill:fanout-craft` | - |
 | `repo-vet` | `skill:bug-hunt`, `skill:cc-tool-vet`, `skill:config-hygiene`, `skill:headless-render`, `skill:repo-orient`, `skill:selfhosted-options`, `skill:shell-footguns`, `stance:ground-claims-with-a-cold-agent` | - |
 | `search-craft` | `hook:search-craft-gate`, `skill:fanout-craft`, `skill:repo-vet`, `skill:selfhosted-options`, `skill:skill-golf`, `stance:search-read-the-failure` | `search-craft-gate` |
 | `selfhosted-options` | - | - |
@@ -266,7 +266,7 @@ rather than a dependency.
 | `skill-golf` | `skill:always-on-prune`, `skill:cc-tool-vet`, `skill:config-hygiene` | - |
 | `talos-ops` | `skill:cluster-cert-renew`, `skill:k8s-resource-sizing`, `skill:k8s-triage` | - |
 | `ui-craft` | `skill:bug-hunt`, `skill:game-design`, `skill:grafana-dashboards`, `skill:hunt-sweep`, `skill:writing-craft` | - |
-| `verification-gate` | `skill:agentic-engineering`, `skill:api-contract-first`, `skill:bug-hunt`, `skill:config-hygiene`, `skill:hunt-sweep`, `skill:search-craft`, `skill:shell-footguns`, `stance:assert-scripted-edits`, `stance:no-fabricated-certainty`, `stance:verify-dont-anchor` | - |
+| `verification-gate` | `skill:agentic-engineering`, `skill:api-contract-first`, `skill:bug-hunt`, `skill:hunt-sweep`, `skill:search-craft`, `skill:shell-footguns`, `stance:assert-scripted-edits`, `stance:no-fabricated-certainty`, `stance:verify-dont-anchor` | - |
 | `writing-craft` | `skill:always-on-prune`, `skill:bug-hunt`, `skill:confluence-kb-docs`, `skill:doc-cold-read`, `skill:game-design`, `skill:pr-description`, `skill:promo-video`, `skill:repo-readme`, `skill:ui-craft`, `stance:distill-dont-dump` | - |
 
 #### Hooks
@@ -292,6 +292,7 @@ rather than a dependency.
 | `shared-checkout-backstop` | - |
 | `spawn-model-gate` | `skill:fanout-craft`, `stance:skill-fanout-is-authorized` |
 | `subagent-digest` | `skill:fanout-craft` |
+| `subagent-wait-gate` | `skill:fanout-craft` |
 
 #### Stances
 
@@ -309,7 +310,7 @@ rather than a dependency.
 | `finish-it-dont-hand-back-a-plan` | - |
 | `ground-claims-with-a-cold-agent` | `stance:subagent-paths-prime-results` |
 | `headless-browser-in-a-container` | `skill:config-hygiene` |
-| `herdr-peer-sessions` | - |
+| `herdr-peer-sessions` | `stance:finish-it-dont-hand-back-a-plan` |
 | `hesitation-means-check-the-framing` | - |
 | `home-dir-layout` | - |
 | `issue-writing-style` | `skill:bug-hunt` |
@@ -337,5 +338,4 @@ rather than a dependency.
 | `user-discuss-dont-thrash` | - |
 | `user-forcing-function-style` | `stance:skill-authoring-craft` |
 | `verify-dont-anchor` | `hook:prompt-clock`, `hook:route-lesson-gate`, `hook:shared-checkout-backstop`, `skill:fanout-craft`, `skill:shell-footguns`, `skill:verification-gate`, `stance:assert-scripted-edits`, `stance:assume-the-checkout-is-shared`, `stance:config-writes-replace`, `stance:content-is-king-not-proxies`, `stance:cut-llm-cruft`, `stance:finish-it-dont-hand-back-a-plan`, `stance:no-fabricated-certainty`, `stance:preserve-before-destroying`, `stance:print-names-not-values`, `stance:pushback-not-hedging`, `stance:size-test-workloads-to-node`, `stance:stateless-calls-cant-keep-a-rate`, `stance:user-discuss-dont-thrash` |
-
 <!-- xref:end -->

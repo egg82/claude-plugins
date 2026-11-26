@@ -1,6 +1,6 @@
 ---
 name: fanout-craft
-description: "How to delegate to subagents or peer sessions affordably without losing work: model per agent, the brief, collecting results. Use BEFORE spawning subagents for research, sweeps or parallel work, before a controller session, when a fan-out returned less than expected, and before heavy local work, CI or an API burst on a shared host. NOT whether you may fan out."
+description: "How to delegate to subagents or peer sessions affordably without losing work: model per agent, the brief, collecting results. Use BEFORE spawning subagents for research, sweeps or parallel work, before a controller session or rehearsing one on a fixture, when a fan-out returned less than expected, and before heavy local work, CI or an API burst on a shared host. NOT whether you may fan out."
 ---
 
 # Fan-out craft
@@ -42,6 +42,7 @@ whose items the agent only flips: a long-lived agent drifts and its context fill
 | a brief rule sounds arguable | `references/brief-incidents.md` |
 | starting or driving a peer session (§4b) | `references/peer-sessions.md` |
 | coordinating several peer sessions | `references/orchestrator-protocol.md` |
+| testing an orchestrator (or its rules) on a fixture before trusting it with real peers | `references/orchestrator-trials.md` |
 | heavy local work, a pipeline or an API burst while other sessions run | `references/shared-resources.md` |
 
 ## 1. Choose the model per agent
@@ -280,6 +281,16 @@ as covered; a stalled or truncated agent reports the same status as a finished o
 10 minutes into the background, so a child briefed against backgrounding lands there anyway: usually a
 suite, or a wait on a queued CI job. Orchestrators have read it as an ignored rule and proposed a gate. Ask
 what the call was waiting on and fix the brief's wait (`references/brief-hazards.md`), not the child.
+
+**A writer does not wait out its own PR's CI; the orchestrator's merge step does.** A writer briefed to
+watch CI spends most of its life in the watch, and each fix-and-push restarts the whole pipeline. Brief
+writers to push, open the PR, report and end. The orchestrator's merge step waits on CI and sends the writer back with
+the failing check. A writer that keeps pushing to clear CI is a sign the expensive check's output isn't in
+its hands. Don't replay a suite on the workstation to get it: CI's runners are parallel and the host is
+shared. Have CI upload the output as an artifact, and give the writer a pull command, so one red run plus
+one push settles it. (Measured case: `references/brief-incidents.md`, "Writers waiting out their own CI".
+Enforced: `subagent-wait-gate.sh` blocks `gh run watch`, `gh pr checks --watch`, `glab ci status --live`,
+`glab ci trace` and `glab ci view` in a subagent.)
 
 **A child cannot see its siblings**, so its claims about "another session" are unreliable: sibling edits read as a
 concurrent stranger. Three children in one run independently reported "this file was modified by another session,

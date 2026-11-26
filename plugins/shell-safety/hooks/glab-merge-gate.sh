@@ -11,6 +11,7 @@
 # RULES:
 #   - not a `glab mr merge` in command position            -> allow
 #   - `GLAB_MERGE_UNGATED=1` prefixes the command           -> allow (a repo with no CI)
+#   - the MR has conflicts or needs a rebase                 -> BLOCK: glab prints the URL, the MR stays open
 #   - the MR's head_pipeline is running or success           -> allow
 #   - head_pipeline is missing, or any other status          -> BLOCK (exit 2)
 #   - the MR id is a shell expansion (`"$1"` in a loop)      -> BLOCK: the hook sees the text, not
@@ -60,6 +61,13 @@ except Exception:
 if not isinstance(mr, dict):
     print("glab-merge-gate: could not look up the MR (%s); the pipeline gate did NOT run." % " ".join(view), file=sys.stderr)
     sys.exit(0)
+if mr.get("detailed_merge_status") in ("conflict", "need_rebase") or mr.get("has_conflicts"):
+    print(
+        "Blocked by glab-merge-gate: MR !%s has merge conflicts or needs a rebase. glab would print the MR URL anyway and the MR would "
+        "stay open. Rebase it onto the target branch first." % mr.get("iid", iid or "?"),
+        file=sys.stderr,
+    )
+    sys.exit(2)
 pipeline = mr.get("head_pipeline") or mr.get("pipeline") or {}
 status = pipeline.get("status")
 if status in ("running", "success"):
@@ -68,7 +76,10 @@ print(
     "Blocked by glab-merge-gate: MR !%s has %s. `glab mr merge` waits only for a RUNNING pipeline, "
     "so it would merge now, unverified, and print the same URL as a gated merge. Wait until the MR "
     "head_pipeline is running (then merge to set auto-merge) or success. A repo with no CI: prefix "
-    "the command with GLAB_MERGE_UNGATED=1."
+    "the command with GLAB_MERGE_UNGATED=1. A FAILED pipeline that cannot pass on an MR by design "
+    "(e.g. a CI-image change only main may push): verify it another way and say how; glab itself "
+    "refuses a failed pipeline even ungated, so the merge is "
+    "`glab api -X PUT projects/:id/merge_requests/<iid>/merge`, after the user agrees."
     % (mr.get("iid", iid or "?"), "no pipeline yet" if not status else "a %s pipeline" % status),
     file=sys.stderr,
 )

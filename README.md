@@ -58,7 +58,7 @@ with skills you already have.
 | `shell-safety` | Shell commands whose result would lie, scripts linted as they're written, background jobs nobody waits on, GitLab merges with no pipeline | `bash-footgun-gate`, `script-lint`, `detached-work-gate`, `glab-merge-gate` | yes: Bash calls |
 | `secret-guard` | Secrets redacted from command output before the model sees them | `secret-redact` | no |
 | `research` | Web searches that find the answer | `search-craft-gate` | yes: the 1st and 4th search until the skill loads |
-| `delegation` | Subagents that stay affordable; a checkout shared safely with other sessions | `agent-depth-gate`, `spawn-model-gate`, `subagent-digest`, `shared-checkout-backstop` | yes: subagent spawns |
+| `delegation` | Subagents that stay affordable; a checkout shared safely with other sessions | `agent-depth-gate`, `spawn-model-gate`, `subagent-wait-gate`, `subagent-digest`, `shared-checkout-backstop` | yes: subagent spawns, and CI watches inside a subagent |
 | `config-care` | Keeping a Claude Code setup lean: a drift report at session start (plus an optional monthly sweep), always-on load pruning, skill audits | `hygiene-sessionstart` | no |
 | `memory-discipline` | Strict rules for memory notes, and lessons routed to where they belong | `memory-write-gate`, `memory-bash-write-backstop`, `route-lesson-gate` | yes: memory writes |
 | `config-transfer` | Moving Claude Code config between machines, or to someone else as a scrubbed bundle | none | no |

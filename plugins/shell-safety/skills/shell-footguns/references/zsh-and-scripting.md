@@ -150,7 +150,7 @@ string cannot tell whether an MR exists.
 it merges immediately, unverified, and prints the same MR URL either way. Read `head_pipeline.status` first
 and merge only on `running` (to auto-merge) or `success`; afterwards check `state` together with
 `merge_when_pipeline_succeeds`. Gated by `glab-merge-gate.sh` (PreToolUse), which asks the server for
-`head_pipeline.status` before the merge runs; suite `test-glab-merge-gate.sh`. A branch pushed before its MR existed has a
+`head_pipeline.status` and the MR's merge status (conflicts, needs a rebase) before the merge runs; suite `test-glab-merge-gate.sh`. A branch pushed before its MR existed has a
 `push` pipeline as well as the `merge_request_event` one on the same sha, and only the MR pipeline gates the merge, so
 read `head_pipeline`, not a pipeline list.
 

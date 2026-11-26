@@ -40,6 +40,23 @@ Measured against clips a human had already judged:
   which heard a chant as a whistle. Re-check before assuming either still holds.
 - Music mood and energy ("calm night", "busy market") are category-like, so a captioner is a fair
   check on titles; pair it with measured tempo, onset rate and dynamics.
+- **A near miss is a hearing limit, not a prompt problem.** Two freesound fire recordings ("Crackling
+  Flames", "Fire Bushes") were heard as heavy rain 3/3 by Gemini 3.1 Pro under every question format, and wind in
+  pines drifts to "water". Agreement across runs on a wrong answer looks like confidence; put such clips in front
+  of the ear as probes.
+- **For a second, targeted pass, yes/no is the safe default; multiple choice is only as good as its foils.**
+  Yes/no "is this X?" false-accepted 4/72 far decoys and 6/78 near ones. Multiple choice false-accepted 25/72 and
+  14/78, and moving the "none" option into the shuffle with a "match, not closest" question did not help (27/72,
+  17/78). Most of those came from one option list, whose vague noise foils ("vinyl record static", "food frying")
+  partly match jingles, UI blips and silence. Foils must be specific sounds, never textures. One newer Gemini model is the
+  only listener that heard a silent control as silence.
+- **CLAP (laion/clap-htsat-unfused, local, free) is a usable category screen and ranker for beds**: 19/23 on the
+  labelled clips against Gemini's 20, but a catch-all phrase ("a sound") in the label set dropped it to 13/23, so
+  validate every phrase set on labelled clips. It finds the right neighbourhood for fire and wind; for sub-0.4 s UI
+  sounds it ranked silence and stingers first. Several windows of one recording crowd its top ranks: keep one per
+  recording.
+- **Audiobox Aesthetics production quality (PQ) does not detect "no content"**: digital silence scored above the
+  labelled clips' mean. A flag at most, never a gate.
 
 ## 3. Rules that came from a human wincing
 

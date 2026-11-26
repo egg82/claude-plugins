@@ -139,6 +139,22 @@ never recover on its own, so destroy it.
 - Prove a backup by restoring it: counts per table, live vs restored, and the app's own consistency check
   run against the restored `-rw` service from a one-off pod. Delete the drill Cluster and its PVCs after.
 
+## Recovering old data when the current object store has been pruned
+
+- **Look for earlier object stores and archive generations.** Each rebuild may have archived somewhere new: a
+  different `serverName`, bucket or MinIO host, an older cluster's manifests in git, or ZFS
+  snapshots of the MinIO dataset. "Retention pruned it" holds for one store only.
+- **A MinIO object can be read straight off the drive without credentials** (single-drive `xl-single`, no
+  compression or SSE in `xl.meta`): `<bucket>/<key>/<uuid>/part.1` is the object split into 1 MiB blocks, each
+  preceded by a 32-byte bitrot hash. Strip the hashes and you have the original `data.tar.gz`. An object small
+  enough to be inlined lives in `xl.meta` itself.
+- **To read rows without a cluster**, untar into a dir and run `postgres:<major>` under podman (`--entrypoint`, so
+  the image's init script doesn't run). Then blank `custom.conf`/`override.conf` (CNPG's `archive_command` points
+  at `/controller`), move `backup_label` aside, create `pg_wal/{archive_status,summaries}`, and `pg_resetwal -f`.
+  The data may be slightly inconsistent, which is fine for extracting rows and not acceptable for a real restore.
+- **No base backup left? Grep the WAL anyway.** Short text values sit uncompressed in `zcat`'d WAL. In practice
+  this turns up index pages (names, short text fields) more often than whole rows.
+
 ## After a bulk delete: verify the batch jobs, not just the endpoints
 
 A mass delete plus `ANALYZE` (or `VACUUM`/`REINDEX`) re-plans every query on the table. After

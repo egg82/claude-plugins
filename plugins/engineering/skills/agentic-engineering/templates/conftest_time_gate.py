@@ -32,10 +32,12 @@ headroom), so a held test can't quietly get slower, and an entry leaves when it'
 deliberately slow scheduled run sets TEST_CEILING_S and
 FIXTURE_CEILING_S itself."""
 
+import importlib
 import os
 import time
 
 import pytest
+from _pytest.runner import runtestprotocol
 
 CEILING_S = float(os.environ.get("TEST_CEILING_S", "2.0"))
 FIXTURE_CEILING_S = float(os.environ.get("FIXTURE_CEILING_S", "10.0"))
@@ -43,11 +45,15 @@ HELD: dict[str, float] = {}  # node id -> its own ceiling in seconds
 HELD_FIXTURES: dict[str, float] = {}  # fixture name -> its own ceiling in seconds
 SPENT_KEY = pytest.StashKey[float]()
 SHARED_KEY = pytest.StashKey[float]()
+OVER_KEY = pytest.StashKey[float]()  # the first timing, when it was over the ceiling
+SLOW_ONCE = "time_gate_slow_once"
 
 
 class Shared:
     """Seconds spent setting up shared fixtures, outermost only, so a shared fixture that
-    requests another is not subtracted twice."""
+    requests another is not subtracted twice. Only `request.getfixturevalue` inside a shared
+    fixture's body nests: pytest sets up DECLARED arguments before calling this hook, so a
+    control built from declared arguments never reaches the depth guard."""
 
     depth = 0
     total = 0.0
@@ -106,6 +112,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]):
         own -= item.stash.get(SHARED_KEY, 0.0)
     spent = charge(item, own)
     if report.when == "teardown" and report.passed and too_slow(item.nodeid, spent):
+        item.stash[OVER_KEY] = spent
         report.outcome = "failed"
         report.longrepr = (
             f"{item.nodeid} took {spent:.2f}s wall clock including setup and teardown "
@@ -114,7 +121,55 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]):
         )
 
 
-# Put these in tests/test_time_gate.py so the gate proves it can fail. A control that runs
+def rearm_hang_guard(item: pytest.Item) -> None:
+    """pytest-timeout's timer covers the whole protocol, so a second timing gets the full guard of its own."""
+    hook = item.config.pluginmanager.hook
+    if item.config.pluginmanager.has_plugin("timeout"):
+        settings = importlib.import_module("pytest_timeout")._get_item_settings(item)
+        if settings.timeout and not settings.func_only:
+            hook.pytest_timeout_cancel_timer(item=item)
+            hook.pytest_timeout_set_timer(item=item, settings=settings)
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_protocol(item: pytest.Item, nextitem: pytest.Item | None):
+    """One noisy sample does not fail a test: a test that passes but for the ceiling is timed
+    once more, in the same worker straight after (its fixtures set up again, shared ones kept).
+    It fails only if the second timing is over too. Real failures and fixture ceilings are never
+    retimed. Under xdist each worker retimes its own test, so the second timing is alone only
+    within its process."""
+    hook = item.ihook
+    hook.pytest_runtest_logstart(nodeid=item.nodeid, location=item.location)
+    reports = runtestprotocol(item, nextitem=nextitem, log=False)
+    first = item.stash.get(OVER_KEY, None)
+    if first is not None:
+        del item.stash[OVER_KEY]
+        if SPENT_KEY in item.stash:
+            del item.stash[SPENT_KEY]
+        rearm_hang_guard(item)
+        reports = runtestprotocol(item, nextitem=nextitem, log=False)
+        if OVER_KEY not in item.stash:
+            call = next((r for r in reports if r.when == "call"), reports[-1])
+            call.user_properties.append((SLOW_ONCE, f"{first:.2f}"))
+    for report in reports:
+        hook.pytest_runtest_logreport(report=report)
+    hook.pytest_runtest_logfinish(nodeid=item.nodeid, location=item.location)
+    return True
+
+
+def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter) -> None:
+    """Tests over the ceiling on their first timing and under on the second: slow, not failed.
+    Read this section over several runs; a test that keeps appearing is a test to speed up."""
+    slow = [(r.nodeid, v) for r in terminalreporter.stats.get("passed", []) for k, v in r.user_properties
+            if k == SLOW_ONCE]
+    if slow:
+        terminalreporter.section("time gate: slow once, passed on a second timing")
+        for nodeid, first in slow:
+            terminalreporter.write_line(f"{nodeid}: {first}s the first time, under {CEILING_S}s the second")
+
+
+# Put these in tests/test_time_gate.py so the gate proves it can fail. Add two retime controls:
+# one slow only on its first run passes and appears in the summary; one slow every run fails. A control that runs
 # pytest in a subprocess takes seconds and trips the gate itself: run the subprocess once in
 # a module-scoped fixture (timed as a shared fixture) and assert on its result per test.
 #
@@ -156,3 +211,10 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]):
 #     def test_slow_after_the_shared_fixture(tree):   # must ALSO error at teardown
 #         time.sleep(0.3)
 # The last case catches bookkeeping bugs in the subtraction, which first-item controls miss.
+# None of these reaches the nesting guard in `Shared`; a second run does. Add to the file a
+# session fixture `inner` (sleep 0.15), a session fixture `outer(request)` that calls
+# `request.getfixturevalue("inner")` then sleeps 0.15, a function fixture `fair` (sleep 0.2) and
+# `def test_after_nested_shared(outer, fair): pass`; deselect it above (`-k "not nested"`) and
+# require it to error under TEST_CEILING_S=0.1 FIXTURE_CEILING_S=10. Counted twice, its own
+# 0.2 s vanishes under the ceiling. Prove the controls can fail: seed faults into the gate (drop
+# the depth guard, subtract twice) and watch each one turn a control red.

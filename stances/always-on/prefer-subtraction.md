@@ -27,7 +27,11 @@ present, then written again two paragraphs above its twin; a diff renders the he
 before automating a manual step, ask what its timing was holding; a one-off job is a throwaway script, not a feature
 (cases: `evidence/prefer-subtraction.md`). **A new *kind* of thing (a system, something placed, new data, a new
 schedule) gets a fit pass before design** — what is it an instance of, what already does that — then extend or merge
-rather than bolt on (method: `agentic-engineering` §3). Tweaks need no fit pass.
+rather than bolt on (method: `agentic-engineering` §3). Tweaks need no fit pass. **When the user brainstorms a list of
+examples, each one is a probe for that fit pass, not a spec.** Answer each with what already covers it, or the one
+general addition that covers them all (libraries in an existing run, so the agent works it out). Never file them as
+features, one per example. In one user's words: "throwing stuff at you for you to say 'oh this is already solved with
+X thing anyway'".
 
 **Writing or restructuring code: load `agentic-engineering`.** It holds the design taste these stances assume, held
 firmly (its §4, "Patterns, by fit"). One of those rules applies everywhere: **never gate behaviour on regex over

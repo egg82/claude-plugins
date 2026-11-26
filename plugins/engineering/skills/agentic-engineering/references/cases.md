@@ -73,6 +73,34 @@ against this skill.
 - **Name-matched security rules are bypassable:** probing a read-only SQL check found an aliased import,
   `getattr` with a constant, and a bound method each writing past it. The fix resolves imports per file.
 
+## PR CI drifts into the nightly set
+
+- **A simulation-heavy repo:** full end-to-end runs had moved to the nightly job. Later a PR rule began
+  running them whenever a changed file was in a computed dependency list. The list grew until it covered
+  nearly all engine and content code, and average PR wall clock rose about sixfold; a content PR ran
+  several times the jobs and runner-minutes of a UI-only one. No job timeout ever went red. Saved
+  checkpoints were cached under one hash over all inputs, so every content edit replayed every run from
+  the start, on CI and in each writer's local refresh.
+- **A second repo:** an MR ran every simulation when it touched anything in the planner's import closure
+  (about half the files) or the content directory. When written, the rule fired on a minority of commits;
+  once active work moved inside the closure it fired on most MRs, and those cost as much as the nightly.
+  Nothing in the rule grew. The fix scopes by the files an MR edits, plus a smoke run; replayed over
+  recent history, most commits ran the smoke run only.
+
+## Flaky tests: our own gates
+
+Reruns that later passed, read from CI logs:
+- **One repo:** every real flake was the per-test wall-clock gate or the hang guard, tripping just over the
+  limit. Every one was in a test that loads the full content set. Dozens of test files call the loader
+  uncached, at about a second a load, and the cost rises as content grows.
+- **Another:** a quarter were the same gate on contract and route tests. The rest were real-time waits in
+  async tests and a log-line test failing on a time of day.
+- **A third:** a date-boundary test failed near midnight UTC. That points to a
+  real-date dependence, not verified. Its unchanged tests also swung by nearly 3x against a fixed ceiling.
+
+The second and third kinds break `verification-gate`'s existing rules (poll, never sleep; injected clocks).
+The first is the time gate itself: a one-sample pass/fail on a noisy runner.
+
 ## A hand-written Java service: the human baseline
 
 A Java service built mostly by hand with a little browser chat help, and the decoupling is sound:

@@ -43,6 +43,13 @@ wrapper line only because that line also contains "grep". Drop it, as in `while 
 'x.sh 62:')" -gt 0 ]`, and the count includes the wrapper, never reaches zero, and the waiter spins forever. Without
 that stage, anchor to the real invocation (`'^bash /abs/x.sh'`) or use the bracket trick (`'[x].sh'`).
 
+**A fixed port plus kill-by-pattern kills a peer's server.** **Deliberately NOT gated** (a pattern kill on a
+port is often right). A render step ran `python3 -m http.server 8765 &`, then killed whatever matched
+`http\.server 8765`. Another session already held 8765: the new server failed to bind (output to /dev/null), Firefox
+screenshotted the peer's app, and the cleanup killed the peer's server. Take a free port
+(`python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])'`), keep `srv=$!`,
+`curl` your own page and check the response before shooting, and `kill "$srv"`, never a match on the port.
+
 ## Killing a parallel job
 
 **Kill the parent before the children, or you accomplish nothing.** **Deliberately NOT gated** — the
@@ -73,6 +80,11 @@ volumes too, not just the one you orphaned. An agent ran `podman rm -f -v <its p
 podman volume prune -f >/dev/null` to tidy up after a test database and could not say afterwards what
 it had deleted. `rm -v` already removes that container's anonymous volumes; remove anything else by
 name (`podman volume rm <name>`), or prune with `--filter label=<yours>`.
+
+**`podman image prune`, `system prune` and `rmi -a` are store-wide too.** `[gate:image-prune-unfiltered]`
+They remove other sessions' dangling build layers and stopped containers. An agent tidying its
+test images ran `podman image prune -f` on a shared host and could not say what it had removed. Remove
+what you created by name or ID, or prune with `--filter label=<yours>`.
 
 **`cd <dir>;` then a git write runs in the wrong clone when the cd fails.** `[gate:cd-semicolon-then-git-write]`
 With `;` (or a newline) the rest of the string runs regardless, so `git worktree add ... ; cd ~/wt/x && git rebase ...; git push ...`
@@ -203,6 +215,12 @@ it.** `:Z` and `:z` both relabel recursively. A worktree with `node_modules` plu
 held one `podman run` for 11+ minutes, with other sessions' `podman ps`/`images`/`run` queued behind it; a hung install
 looked like the cause and wasn't. To mount a checkout use `--security-opt label=disable`, or `:O` (overlay) when writes
 should be discarded; either starts in seconds.
+
+**Git does not work inside a container on a mounted worktree**: a worktree's `.git` is a file pointing at the main
+clone's `.git/worktrees/<name>`, a host path the container cannot see (`fatal: not a git repository`). So a `trap 'git
+checkout -- file' EXIT` revert inside the container fails, and the planted mutant stays in the host tree, looking like a
+real edit. Mutate a copy instead (`cp -a /w/app /tmp/m`, mount read-only with `:ro`), or revert on the host afterwards
+and check the plant is gone.
 
 **A long-running command under `kubectl exec` dies with its stream.** **Deliberately NOT gated** —
 no command string separates a two-second `cp` from a forty-minute one, so a rule here would fire on

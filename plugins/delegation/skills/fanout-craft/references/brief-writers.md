@@ -57,6 +57,12 @@ writers in one fan-out reported pre-commit clean while each new test file was no
 warning; all three surfaced only when the parent ran the gate after merging. Brief line: "`git add` new files
 before running the gate." And run the gate yourself on the branch before opening the MR.
 
+**A skill step that needs subagents is the parent's, not the leaf writer's.** A leaf cannot spawn, so a step like
+`repo-readme`'s adversarial cold read (2-3 context-free readers) gets skipped, and the child says so in one line of
+its report. *(incident)* A README PR was queued for merge with that line unread, and the owner caught it ("did it not
+go through the review steps?"). Before briefing a writer with a skill, find the steps that fan out. Run them
+yourself once the writer's draft lands, and treat a report line that says a step was skipped as a blocker.
+
 ## Gated numbers
 
 **Forbid loosening the gate, by name.** The rule is owned by `agentic-engineering` ("never raise a held

@@ -15,6 +15,11 @@ LLM-labelled corpora kept over time. (SKILL.md §9. The no-regex-over-prose rule
 - **A quoted example in a prompt or tool description becomes the template.** One example sentence in a tool
   field's description became the opener of most lines the model generated. Describe
   the shape instead, or rotate examples from code.
+- **Give an agent general capabilities, not one feature per use.** When the product's model can write and run
+  code, build the means (libraries in its run image, compute backends, where it may run, data it reads) and put the
+  method in its editable skill. Do not build a tool for each analysis. One product's feature request was first cut as
+  features, one per kind of calculation, then rewritten as general tools plus the agent's choice of what, when and
+  where.
 - **Tool schemas are provider-specific inputs.** A JSON-schema keyword one provider accepts can make another reject
   every call (Gemini 400s on nested `maxItems` alongside a strict response format), and a fallback route hides the
   outage. Keep bounds in the parser, and count calls per provider and outcome after any schema change.

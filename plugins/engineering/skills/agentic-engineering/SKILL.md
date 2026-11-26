@@ -115,7 +115,8 @@ an orchestrator over subagents, and the orchestrator alone edits shared single-f
 ## 9. LLMs inside the product
 
 A stateless call can't keep a rate (seeded rolls in code, numbers in a data file). Never gate behaviour on words
-in prose. A quoted example in a prompt becomes the template. LLM-labelled data kept over time fails silently.
+in prose. A quoted example in a prompt becomes the template. Give a product's agent general capabilities and a method in its
+skill, not a tool per use. LLM-labelled data kept over time fails silently.
 Detail: `references/llm-in-product.md`.
 
 ## Reviewing an agent's rework, and rolling out to an existing repo

@@ -49,3 +49,12 @@ if the parent approves them; that work has to be done wherever the user gives ap
 Partition seam: one slice root-caused an API route returning 500 in production; a second owned the page that calls it; a third, asked whether the 500 mattered, said correctly that none of its four files called that route, a true statement about its own manifest received as a statement about the app. The consumer sat in the second slice's directory swallowing the failure with a bare `.catch(() => {})` and rendering nothing.
 
 Deploy wake: a deploy rolled the pods, the restart kicked off a full ingest cycle, and an endpoint timed sixty seconds later read absurdly slow; `pg_stat_activity` showed the cycle still running. The fan-out-keyed rule was resident and did not fire because nobody was fanning out.
+
+## Writers waiting out their own CI
+
+Measured over a week of writer transcripts in one repo, charging each gap over a minute to the command
+before it. Writers briefed to watch their PR's CI spent about a third of their wall time in `gh run watch`,
+and a sixth replaying simulations locally to refresh readouts. More than half of those that opened PRs
+pushed three or more times, and each push restarted a pipeline of an hour or so. One local refresh held
+part of the shared host for over two hours. CI already uploaded the readouts and the repo had a command to
+pull them by run id, but the briefs never pointed writers at it.

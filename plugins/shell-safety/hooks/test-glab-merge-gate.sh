@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Suite for glab-merge-gate.sh. A stub `glab` on PATH answers `mr view` with the pipeline status in
-# $STUB_STATUS ("none" = no head_pipeline, "fail" = lookup error). GATE=<path> tests another copy;
+# $STUB_STATUS ("none" = no head_pipeline, "fail" = lookup error) and, if set, the MR's
+# detailed_merge_status in $STUB_MERGE. GATE=<path> tests another copy;
 # GATE=/nonexistent must fail every case.
 GATE="${GATE:-$(dirname "$0")/glab-merge-gate.sh}"
 stub=$(mktemp -d)
@@ -9,6 +10,7 @@ cat > "$stub/glab" <<'EOF'
 #!/usr/bin/env bash
 [ "$STUB_STATUS" = fail ] && { echo "404 Not Found" >&2; exit 1; }
 if [ "$STUB_STATUS" = none ]; then echo '{"iid":7,"head_pipeline":null}'
+elif [ -n "$STUB_MERGE" ]; then printf '{"iid":7,"detailed_merge_status":"%s","has_conflicts":%s,"head_pipeline":{"status":"%s"}}\n' "$STUB_MERGE" "$([ "$STUB_MERGE" = conflict ] && echo true || echo false)" "$STUB_STATUS"
 else printf '{"iid":7,"head_pipeline":{"status":"%s"}}\n' "$STUB_STATUS"; fi
 EOF
 chmod +x "$stub/glab"
@@ -34,9 +36,12 @@ t 2 running "MR id is a loop variable"       'for p in 1 2; do glab mr merge "$1
 t 2 running "MR id is a command substitution" 'glab mr merge $(glab mr list | head -1) --yes'
 t 2 none    "merge as a loop body's first word" 'for n in 1; do glab mr merge 20 --yes; done'
 t 2 none    "merge after then"               'if true; then glab mr merge 20 --yes; fi'
+STUB_MERGE=conflict    t 2 success "green pipeline, merge conflicts" 'glab mr merge 20 --yes'
+STUB_MERGE=need_rebase t 2 running "running pipeline, needs a rebase" 'glab mr merge 20 --yes'
 echo "MUST ALLOW:"
 t 0 running "running pipeline (sets auto-merge)" 'glab mr merge 20 --repo group/project --yes'
 t 0 success "green pipeline"                 'glab mr merge 20 --yes'
+STUB_MERGE=mergeable   t 0 success "green pipeline, mergeable"  'glab mr merge 20 --yes'
 t 0 running "variables only in flag values"  'glab mr merge 54 --sha "$sha" -m "Merge $b [ci skip]" --yes'
 t 0 none    "ungated escape for a repo with no CI" 'GLAB_MERGE_UNGATED=1 glab mr merge 20 --yes'
 t 0 none    "not a merge"                    'glab mr view 20 -F json'
